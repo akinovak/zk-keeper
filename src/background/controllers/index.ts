@@ -1,6 +1,7 @@
 import {AppService} from "@src/util/svc";
 import {MessageAction} from "@src/util/postMessage";
 import {browser} from "webextension-polyfill-ts";
+import * as semaphore from 'semaphore-lib';
 
 const controllers: {
   [type: string]: (app: AppService, message: MessageAction) => Promise<any>;
@@ -25,6 +26,7 @@ const controllers: {
 
   SET_APP_TEXT: async (app, message) => {
     console.log(message);
+    console.log(semaphore.genExternalNullifier('dusan'));
     return app.exec('main', 'setAppText', message.payload);
   },
 };

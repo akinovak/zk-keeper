@@ -5,9 +5,6 @@ const CopyPlugin = require('copy-webpack-plugin');
 const envPlugin = new webpack.EnvironmentPlugin(['NODE_ENV']);
 
 module.exports = {
-    node: {
-        fs: 'empty',
-    },
     entry: {
         injected: path.join(__dirname, "src/contentscripts/injected.ts"),
         content: path.join(__dirname, "src/contentscripts/index.ts"),
@@ -20,6 +17,12 @@ module.exports = {
     },
     plugins: [
       envPlugin,
+      new webpack.ProvidePlugin({
+        Buffer: ["buffer", "Buffer"],
+      }),
+      new webpack.ProvidePlugin({
+        process: "process/browser",
+      }),
     ],
     module: {
         rules: [
@@ -63,6 +66,18 @@ module.exports = {
         extensions: [".ts", ".tsx", ".js",  '.png', '.svg'],
         alias: {
             "@src": path.resolve(__dirname, "src/"),
+            buffer: "buffer",
         },
+        fallback: {
+            browserify: require.resolve("browserify"),
+            stream: require.resolve("stream-browserify"),
+            path: require.resolve("path-browserify"),
+            crypto: require.resolve("crypto-browserify"),
+            os: require.resolve("os-browserify/browser"),
+            http: require.resolve("stream-http"),
+            https: require.resolve("https-browserify"),
+            fs: false,
+          },
     },
+    externals: /^(worker_threads)$/,
 };
