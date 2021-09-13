@@ -30,6 +30,17 @@ async function setAppText(text: string) {
 }
 
 /**
+ * Get Identity
+ * //TODO add some strategy here, like latest, etc...
+ */
+ async function getIdentity() {
+  return post({
+    type: 'GET_IDENTIY',
+    payload: {},
+  });
+}
+
+/**
  * Open Popup
  */
 async function openPopup() {
@@ -45,6 +56,7 @@ async function openPopup() {
 const client = {
   setAppText,
   openPopup,
+  getIdentity
 };
 
 window.injected = {

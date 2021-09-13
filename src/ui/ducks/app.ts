@@ -6,6 +6,7 @@ import postMessage from "@src/util/postMessage";
 
 export enum ActionType {
   SET_APP_TEXT = 'app/setAppText',
+  GET_IDENTITY = 'app/getIdentity',
 }
 
 type Action = {
@@ -35,6 +36,11 @@ export const updateAppText = (text: string) => async (dispatch: Dispatch) => {
 export const setAppText = (text: string) => ({
   type: ActionType.SET_APP_TEXT,
   payload: text,
+});
+
+export const getIdentity = (identity: any) => ({
+  type: ActionType.GET_IDENTITY,
+  payload: identity,
 });
 
 export default function app(state = initialState, action: Action): State {

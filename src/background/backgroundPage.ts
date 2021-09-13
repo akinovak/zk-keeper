@@ -4,6 +4,7 @@ import {AppService} from "@src/util/svc";
 import controllers from "@src/background/controllers";
 import Main from "@src/background/services/main-service";
 import Other from "@src/background/services/other-service";
+import Identity from '@src/background/services/identity-service';
 
 (async function() {
     let app: AppService;
@@ -22,6 +23,7 @@ import Other from "@src/background/services/other-service";
     const startedApp = new AppService();
     startedApp.add('main', new Main());
     startedApp.add('other', new Other());
+    startedApp.add('identity', new Identity());
     await startedApp.start();
     app = startedApp;
 

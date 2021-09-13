@@ -4,4 +4,8 @@ export default class Main extends GenericService {
     setAppText = async (appText: string) => {
         return this.exec('other', 'setAppText', appText);
     };
+
+    getIdentity = async () => {
+        return this.exec('identity', 'get');
+    }
 }

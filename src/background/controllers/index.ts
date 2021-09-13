@@ -29,6 +29,10 @@ const controllers: {
     console.log(semaphore.genExternalNullifier('dusan'));
     return app.exec('main', 'setAppText', message.payload);
   },
+
+  GET_IDENTITY: async (app, message) => {
+    return app.exec('main', 'getIdentity', message.payload);
+  },
 };
 
 export default controllers;
