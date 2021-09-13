@@ -50,7 +50,7 @@ export default function app(state = initialState, action: Action): State {
         ...state,
         text: action.payload,
       };
-    default:
+    default: // guess that here I can call get identity so it gets fetched when I open popup?
       return state;
   }
 }
