@@ -6,6 +6,6 @@ export default class Main extends GenericService {
     };
 
     getIdentity = async () => {
-        return this.exec('identity', 'get');
+        return this.exec('semaphore', 'get');
     }
 }
