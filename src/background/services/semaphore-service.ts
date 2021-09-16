@@ -1,6 +1,6 @@
 import {GenericService} from "@src/util/svc";
 import pushMessage from "@src/util/pushMessage";
-import { setIdentity } from "@src/ui/ducks/app";
+import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 import { get, set } from '@src/background/services/storage';
 
 import { FastSemaphore, OrdinarySemaphore, RLN, Identity, IProof, IWitnessData }from 'semaphore-lib';
@@ -38,8 +38,9 @@ export default class Semaphore extends GenericService {
         return this.identityCommitment.toString();
     };
 
-    genProofFromBuiltTree = async (merkleProof: any, externalNullifier: string | bigint, signal: string, wasmFilePath: string, finalZkeyPath: string): Promise<any> => {
+    genProofFromBuiltTree = async (payload: IBuiltTreeData): Promise<any> => {
         if(!this.identity) return 'No identity';
+        const { merkleProof, externalNullifier, signal, wasmFilePath, finalZkeyPath } = payload;
         return FastSemaphore.genProofFromBuiltTree(this.identity, merkleProof, externalNullifier, signal, wasmFilePath, finalZkeyPath);
     }
 }

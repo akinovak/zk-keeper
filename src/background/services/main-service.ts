@@ -8,4 +8,8 @@ export default class Main extends GenericService {
     getIdentity = async () => {
         return this.exec('semaphore', 'get');
     }
+
+    semaphoreProof = async(payload) => {
+        return this.exec('semaphore', 'genProofFromBuiltTree', payload);
+    }
 }

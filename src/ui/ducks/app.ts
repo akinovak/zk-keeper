@@ -84,3 +84,11 @@ export const getIdentity = () => async (dispatch: Dispatch) => {
     payload: identityCommitment,
   });
 }
+
+export interface IBuiltTreeData {
+  merkleProof: any, 
+  externalNullifier: string | bigint, 
+  signal: string, 
+  wasmFilePath: string, 
+  finalZkeyPath: string
+}

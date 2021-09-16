@@ -30,6 +30,10 @@ const controllers: {
   GET_IDENTITY: async (app, message) => {
     return app.exec('main', 'getIdentity', message.payload);
   },
+
+  SEMAPHORE_PROOF: async (app, message) => {
+    return app.exec('main', 'semaphoreProof', message.payload);
+  }
 };
 
 export default controllers;

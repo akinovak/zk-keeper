@@ -1,4 +1,5 @@
 import {MessageAction} from "@src/util/postMessage";
+import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 
 
 const promises: {
@@ -41,6 +42,16 @@ async function setAppText(text: string) {
 }
 
 /**
+ * Create Semaphore proof
+ */
+ async function semaphoreProof(payload: IBuiltTreeData) {
+  return post({
+    type: 'SEMAPHORE_PROOF',
+    payload,
+  });
+}
+
+/**
  * Open Popup
  */
 async function openPopup() {
@@ -56,7 +67,8 @@ async function openPopup() {
 const client = {
   setAppText,
   openPopup,
-  getIdentity
+  getIdentity,
+  semaphoreProof
 };
 
 window.injected = {
