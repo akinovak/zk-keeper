@@ -65,6 +65,7 @@
     },
     "dependencies": {
         "@types/classnames": "^2.2.11",
+        "bigint-conversion": "^2.1.12",
         "browserify": "^17.0.0",
         "classnames": "^2.2.6",
         "eventemitter2": "^6.4.4",

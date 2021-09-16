@@ -4,6 +4,7 @@ import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 import { get, set } from '@src/background/services/storage';
 
 import { FastSemaphore, OrdinarySemaphore, RLN, Identity, IProof, IWitnessData }from 'semaphore-lib';
+import * as bigintConversion from 'bigint-conversion';
 
 // set all hashers to poseidon by default
 FastSemaphore.setHasher('poseidon');
@@ -40,7 +41,17 @@ export default class Semaphore extends GenericService {
 
     genProofFromBuiltTree = async (payload: IBuiltTreeData): Promise<any> => {
         if(!this.identity) return 'No identity';
+        console.log('In semaphore proof');
         const { merkleProof, externalNullifier, signal, wasmFilePath, finalZkeyPath } = payload;
-        return FastSemaphore.genProofFromBuiltTree(this.identity, merkleProof, externalNullifier, signal, wasmFilePath, finalZkeyPath);
+
+        merkleProof.leaf = bigintConversion.hexToBigint(merkleProof.leaf);
+
+        merkleProof.pathElements = merkleProof.pathElements.map((path) => {
+            return path.map((elem) => { console.log(elem); return bigintConversion.hexToBigint(elem) })
+        })
+
+        const proof: IProof = await FastSemaphore.genProofFromBuiltTree(this.identity, merkleProof, externalNullifier, signal, wasmFilePath, finalZkeyPath);
+        console.log('managed to create proof', proof.proof);
+        return proof.proof;
     }
 }
