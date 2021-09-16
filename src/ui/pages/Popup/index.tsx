@@ -1,4 +1,4 @@
-import React, {ReactElement, useCallback, useState} from "react";
+import React, {ReactElement, useCallback, useState, useEffect } from "react";
 import "./popup.scss";
 import {Redirect, Route, Switch} from "react-router";
 import Button from "@src/ui/components/Button";
@@ -7,12 +7,21 @@ import Icon from "@src/ui/components/Icon";
 import Textarea from "@src/ui/components/Textarea";
 import Checkbox from "@src/ui/components/Checkbox";
 import SwitchButton from "@src/ui/components/SwitchButton";
-import {setAppText, updateAppText, useAppText} from "@src/ui/ducks/app";
+import {setAppText, updateAppText, useAppText, useIdentityComitment, getIdentity } from "@src/ui/ducks/app";
 import {useDispatch} from "react-redux";
+
+
 
 export default function Popup (): ReactElement {
   const appText = useAppText();
+  const identityCommitment = useIdentityComitment();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    // dispatch here
+    dispatch(getIdentity())
+  
+  }, []);
 
   const [text, setText] = useState('');
   const onUpdate = useCallback(async () => {
@@ -33,8 +42,10 @@ export default function Popup (): ReactElement {
                 onChange={e => setText(e.target.value)}
                 value={text}
             />
+            <div className="text-xs font-bold">Identity Commitment</div>
+            <div className="text-2xl">{identityCommitment}</div>
             <Button
-                className="my-4 w-full"
+                className="my-4 w-full" 
                 onClick={onUpdate}
                 disabled={!text}
             >

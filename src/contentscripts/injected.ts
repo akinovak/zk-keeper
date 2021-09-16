@@ -35,7 +35,7 @@ async function setAppText(text: string) {
  */
  async function getIdentity() {
   return post({
-    type: 'GET_IDENTIY',
+    type: 'GET_IDENTITY',
     payload: {},
   });
 }

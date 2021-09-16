@@ -6,7 +6,7 @@ import postMessage from "@src/util/postMessage";
 
 export enum ActionType {
   SET_APP_TEXT = 'app/setAppText',
-  GET_IDENTITY = 'app/getIdentity',
+  SET_IDENTITIES = 'app/setIdentity',
 }
 
 type Action = {
@@ -18,10 +18,12 @@ type Action = {
 
 type State = {
   text: string;
+  identityCommitment: string,
 };
 
 const initialState: State = {
   text: 'Hello, World!',
+  identityCommitment: '',
 };
 
 export const updateAppText = (text: string) => async (dispatch: Dispatch) => {
@@ -38,8 +40,8 @@ export const setAppText = (text: string) => ({
   payload: text,
 });
 
-export const getIdentity = (identity: any) => ({
-  type: ActionType.GET_IDENTITY,
+export const setIdentity = (identity: any) => ({
+  type: ActionType.SET_IDENTITIES,
   payload: identity,
 });
 
@@ -50,7 +52,12 @@ export default function app(state = initialState, action: Action): State {
         ...state,
         text: action.payload,
       };
-    default: // guess that here I can call get identity so it gets fetched when I open popup?
+    case ActionType.SET_IDENTITIES:
+      return {
+        ...state,
+        identityCommitment: action.payload,
+      };
+    default:
       return state;
   }
 }
@@ -60,3 +67,20 @@ export const useAppText = () => {
     return state.app.text;
   }, deepEqual)
 };
+
+export const useIdentityComitment = () => {
+  return useSelector((state: AppRootState) => {
+    return state.app.identityCommitment;
+  }, deepEqual)
+};
+
+// import postMessage from "@src/util/postMessage";
+
+export const getIdentity = () => async (dispatch: Dispatch) => {
+  // this will post a message to background and invoke the controller handler
+  const identityCommitment = await postMessage({ type: 'GET_IDENTITY' });
+  dispatch({
+    type: ActionType.SET_IDENTITIES,
+    payload: identityCommitment,
+  });
+}

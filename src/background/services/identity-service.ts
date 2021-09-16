@@ -1,6 +1,6 @@
 import {GenericService} from "@src/util/svc";
 import pushMessage from "@src/util/pushMessage";
-import { getIdentity } from "@src/ui/ducks/app";
+import { setIdentity } from "@src/ui/ducks/app";
 
 export default class Identity extends GenericService {
 
@@ -11,6 +11,7 @@ export default class Identity extends GenericService {
     }
 
     get = async () => {
-        return pushMessage(getIdentity(this.identity));
+        // return pushMessage(setIdentity(this.identity.secret));
+        return this.identity.secret;
     };
 }
