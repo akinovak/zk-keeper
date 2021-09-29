@@ -5,6 +5,7 @@ import controllers from "@src/background/controllers";
 import Main from "@src/background/services/main-service";
 import Other from "@src/background/services/other-service";
 import Semaphore from '@src/background/services/semaphore-service';
+import Metamask from "@src/background/services/metamask";
 
 (async function() {
     let app: AppService;
@@ -24,6 +25,7 @@ import Semaphore from '@src/background/services/semaphore-service';
     startedApp.add('main', new Main());
     startedApp.add('other', new Other());
     startedApp.add('semaphore', new Semaphore());
+    startedApp.add('metamask', new Metamask());
     await startedApp.start();
     app = startedApp;
 

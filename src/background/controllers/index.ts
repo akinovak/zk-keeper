@@ -1,6 +1,7 @@
 import {AppService} from "@src/util/svc";
 import {MessageAction} from "@src/util/postMessage";
 import {browser} from "webextension-polyfill-ts";
+import {RPCAction} from "@src/util/constants";
 
 const controllers: {
   [type: string]: (app: AppService, message: MessageAction) => Promise<any>;
@@ -33,7 +34,15 @@ const controllers: {
 
   SEMAPHORE_PROOF: async (app, message) => {
     return app.exec('main', 'semaphoreProof', message.payload);
-  }
+  },
+
+  [RPCAction.CONNECT_METAMASK]: async (app, message) => {
+    return app.exec('metamask', 'connectMetamask');
+  },
+
+  [RPCAction.GET_WALLET_INFO]: async (app, message) => {
+    return app.exec('metamask', 'getWalletInfo');
+  },
 };
 
 export default controllers;

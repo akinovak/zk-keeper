@@ -1,56 +1,44 @@
-import React, {ReactElement, useCallback, useState, useEffect } from "react";
+import React, {ReactElement, useCallback, useEffect, useState} from "react";
 import "./popup.scss";
 import {Redirect, Route, Switch} from "react-router";
-import Button from "@src/ui/components/Button";
-import Input from "@src/ui/components/Input";
-import Icon from "@src/ui/components/Icon";
-import Textarea from "@src/ui/components/Textarea";
-import Checkbox from "@src/ui/components/Checkbox";
-import SwitchButton from "@src/ui/components/SwitchButton";
-import {setAppText, updateAppText, useAppText, useIdentityComitment, getIdentity } from "@src/ui/ducks/app";
+import Button, {ButtonType} from "@src/ui/components/Button";
+import {getIdentity, useAppText, useIdentityComitment} from "@src/ui/ducks/app";
 import {useDispatch} from "react-redux";
-
-
+import postMessage from "@src/util/postMessage";
+import {RPCAction} from "@src/util/constants";
+import {fetchWalletInfo, useAccount, useWeb3Connecting} from "@src/ui/ducks/web3";
 
 export default function Popup (): ReactElement {
-  const appText = useAppText();
   const identityCommitment = useIdentityComitment();
   const dispatch = useDispatch();
+  const web3Connecting = useWeb3Connecting();
+  const account = useAccount();
 
   useEffect(() => {
     // dispatch here
     dispatch(getIdentity())
-  
+    dispatch(fetchWalletInfo());
   }, []);
 
-  const [text, setText] = useState('');
-  const onUpdate = useCallback(async () => {
-    await dispatch(updateAppText(text));
-    setText('');
-  }, [text, dispatch]);
+  const connectMetamask = useCallback(async () => {
+    await postMessage({ type: RPCAction.CONNECT_METAMASK });
+  }, []);
 
   return (
     <div className="popup">
       <Switch>
         <Route path="/">
           <div className="p-4">
-            <div className="text-xs font-bold">APP TEXT</div>
-            <div className="text-2xl">{appText}</div>
-            <Input
-                className="my-4"
-                label="Update app text here"
-                onChange={e => setText(e.target.value)}
-                value={text}
-            />
+            <div className="text-xs font-bold">Account</div>
+            <div className="text-lg">{account || 'not connected'}</div>
             <div className="text-xs font-bold">Identity Commitment</div>
             <div className="text-2xl">{identityCommitment}</div>
             <Button
-                className="my-4 w-full" 
-                onClick={onUpdate}
-                disabled={!text}
+                btnType={ButtonType.primary}
+                onClick={connectMetamask}
+                loading={web3Connecting}
             >
-              <Icon className="text-white my-4 mr-2" fontAwesome="fas fa-pen" size={1} />
-              <span>Update Text</span>
+              Connect to Metamask
             </Button>
           </div>
         </Route>

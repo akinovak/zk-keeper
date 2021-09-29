@@ -2,9 +2,11 @@ import {applyMiddleware, combineReducers, createStore} from "redux";
 import {createLogger} from "redux-logger";
 import thunk from "redux-thunk";
 import app from "@src/ui/ducks/app";
+import web3 from "@src/ui/ducks/web3";
 
 const rootReducer = combineReducers({
-  app,
+    app,
+    web3,
 });
 
 export type AppRootState = ReturnType<typeof rootReducer>;

@@ -3,7 +3,7 @@ import pushMessage from "@src/util/pushMessage";
 import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 import { get, set } from '@src/background/services/storage';
 
-import { FastSemaphore, OrdinarySemaphore, RLN, Identity, IProof, IWitnessData }from 'semaphore-lib';
+import { FastSemaphore, OrdinarySemaphore, RLN, Identity, IProof, IWitnessData } from 'semaphore-lib';
 import * as bigintConversion from 'bigint-conversion';
 
 // set all hashers to poseidon by default
