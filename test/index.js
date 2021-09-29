@@ -9,7 +9,7 @@ const bigintConversion = require('bigint-conversion');
 
         // console.log(payload)
         const proof = await client.semaphoreProof(payload)
-        // console.log(proof)
+        console.log(proof)
     });
     
 })();
