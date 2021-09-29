@@ -4,3 +4,5 @@ build
 .idea
 dist/js
 dist.zip
+test/dist
+test/.parcel-cache
