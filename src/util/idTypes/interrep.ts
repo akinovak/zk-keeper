@@ -8,7 +8,7 @@ export const providerId = 'interrep';
 
 export type IdentityData = {
     web2Provider: 'Twitter' | 'Reddit' | 'Github';
-    idCommitment: String,
+    idCommitment: string,
 }
 
 export type CreateIdentityOption = {
