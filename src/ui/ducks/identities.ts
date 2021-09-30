@@ -9,6 +9,7 @@ import deepEqual from "fast-deep-equal";
 
 enum ActionType {
     SET_IDENTITIES = 'app/identities/setIdentities',
+    SET_REQUEST_PENDING = 'app/identities/setRequestPending',
 }
 
 type Action<payload> = {
@@ -20,10 +21,12 @@ type Action<payload> = {
 
 type State = {
     order: SafeIdentity[];
+    requestPending: boolean;
 }
 
 const initialState: State = {
     order: [],
+    requestPending: false,
 };
 
 export const createIdentity = (id: string, option: CreateInterrepIdentityOption) => async (dispatch: Dispatch) => {
@@ -41,9 +44,19 @@ export const setIdentities = (identities: SafeIdentity[]): Action<SafeIdentity[]
     payload: identities,
 })
 
+export const setIdentityRequestPending = (requestPending: boolean): Action<boolean> => ({
+    type: ActionType.SET_REQUEST_PENDING,
+    payload: requestPending,
+})
+
 export const fetchIdentities = () => async (dispatch: Dispatch) => {
     const identities = await postMessage({ type: RPCAction.GET_IDENTITIES });
     dispatch(setIdentities(identities));
+}
+
+export const fetchIdentityRequestPendingStatus = () => async (dispatch: Dispatch) => {
+    const pending = await postMessage({ type: RPCAction.GET_REQUEST_PENDING_STATUS });
+    dispatch(setIdentityRequestPending(pending));
 }
 
 export default function identities(state = initialState, action: Action<any>): State {
@@ -53,6 +66,11 @@ export default function identities(state = initialState, action: Action<any>): S
                 ...state,
                 order: action.payload,
             };
+        case ActionType.SET_REQUEST_PENDING:
+            return {
+                ...state,
+                requestPending: action.payload,
+            };
         default:
             return state;
     }
@@ -61,5 +79,11 @@ export default function identities(state = initialState, action: Action<any>): S
 export const useIdentities = () => {
     return useSelector((state: AppRootState) => {
         return state.identities.order;
+    }, deepEqual);
+}
+
+export const useIdentityRequestPending = () => {
+    return useSelector((state: AppRootState) => {
+        return state.identities.requestPending;
     }, deepEqual);
 }

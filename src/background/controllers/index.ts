@@ -24,18 +24,6 @@ const controllers: {
     })
   },
 
-  SET_APP_TEXT: async (app, message) => {
-    return app.exec('main', 'setAppText', message.payload);
-  },
-
-  GET_IDENTITY: async (app, message) => {
-    return app.exec('main', 'getIdentity', message.payload);
-  },
-
-  SEMAPHORE_PROOF: async (app, message) => {
-    return app.exec('main', 'semaphoreProof', message.payload);
-  },
-
   [RPCAction.CONNECT_METAMASK]: async (app, message) => {
     return app.exec('metamask', 'connectMetamask');
   },
@@ -46,6 +34,31 @@ const controllers: {
 
   [RPCAction.GET_IDENTITIES]: async (app, message) => {
     return app.exec('identity', 'getIdentities');
+  },
+
+  [RPCAction.GET_REQUEST_PENDING_STATUS]: async (app, message) => {
+    return app.exec('identity', 'getRequestPendingStatus');
+  },
+
+  [RPCAction.REQUEST_IDENTITIES]: async (app, message) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await app.exec('identity', 'requestIdentities');
+        const popup = await openPopup();
+        return closePopupOnAcceptOrReject(app, resolve, reject, popup);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  [RPCAction.CONFIRM_REQUEST]: async (app, message) => {
+    console.log('hi')
+    return app.exec('identity', 'confirmRequest');
+  },
+
+  [RPCAction.REJECT_REQUEST]: async (app, message) => {
+    return app.exec('identity', 'rejectRequest');
   },
 
   [RPCAction.CREATE_IDENTITY]: async (app, message) => {
@@ -76,4 +89,22 @@ async function openPopup() {
   });
 
   return popup;
+}
+
+function closePopupOnAcceptOrReject(
+    app: AppService,
+    resolve: (data: any) => void,
+    reject: (err: Error) => void,
+    popup: any,
+) {
+  app.on('identity.accepted', (returnIdentities) => {
+    console.log(returnIdentities);
+    resolve(returnIdentities);
+    browser.windows.remove(popup.id as number);
+  });
+
+  app.on('identity.rejected', () => {
+    reject(new Error('user rejected.'));
+    browser.windows.remove(popup.id as number);
+  });
 }

@@ -2,9 +2,6 @@ import {browser, WebRequest} from "webextension-polyfill-ts";
 import {MessageAction} from "@src/util/postMessage";
 import {AppService} from "@src/util/svc";
 import controllers from "@src/background/controllers";
-import Main from "@src/background/services/main-service";
-import Other from "@src/background/services/other-service";
-import Semaphore from '@src/background/services/semaphore-service';
 import Metamask from "@src/background/services/metamask";
 import Identity from "@src/background/services/identity";
 
@@ -23,9 +20,6 @@ import Identity from "@src/background/services/identity";
     });
 
     const startedApp = new AppService();
-    startedApp.add('main', new Main());
-    startedApp.add('other', new Other());
-    // startedApp.add('semaphore', new Semaphore());
     startedApp.add('metamask', new Metamask());
     startedApp.add('identity', new Identity());
     await startedApp.start();

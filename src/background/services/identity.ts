@@ -4,16 +4,18 @@ import {FullIdentity} from "@src/util/idTypes";
 import * as interrep from "@src/util/idTypes/interrep";
 import deepEqual from "fast-deep-equal";
 import pushMessage from "@src/util/pushMessage";
-import {setIdentities} from "@src/ui/ducks/identities";
+import {setIdentities, setIdentityRequestPending} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
 
 export default class Identity extends GenericService {
     identities: FullIdentity[];
+    requestPending: boolean;
 
     constructor() {
         super();
         this.identities = [];
+        this.requestPending = false;
     }
 
     refreshIdentities = async () => {
@@ -21,9 +23,37 @@ export default class Identity extends GenericService {
         this.identities = Object.entries(content || {}).map(([key, value]) => value as FullIdentity);
     }
 
-    getIdentities = async () => {
+    getRequestPendingStatus = async () => {
+        return this.requestPending;
+    }
+
+    getIdentities = async (dangerous = false) => {
         await this.refreshIdentities();
-        return this.identities;
+        if (dangerous) return this.identities;
+        return this.identities.map(({ data, hasher, idProvider, type }) => ({
+            data,
+            hasher,
+            idProvider,
+            type,
+        }));
+    }
+
+    requestIdentities = async () => {
+        this.requestPending = true;
+        return pushMessage(setIdentityRequestPending(true));
+    }
+
+    confirmRequest = async () => {
+        const identities = await this.getIdentities();
+        this.emit('accepted', identities);
+        this.requestPending = false;
+        return pushMessage(setIdentityRequestPending(false));
+    }
+
+    rejectRequest = async () => {
+        this.emit('rejected');
+        this.requestPending = false;
+        return pushMessage(setIdentityRequestPending(false));
     }
 
     addIdentity = async (newIdentity: FullIdentity) => {
@@ -46,8 +76,6 @@ export default class Identity extends GenericService {
         const web3 = await this.exec('metamask', 'getWeb3');
         const data = await this.exec('metamask', 'getWalletInfo');
         let identity: FullIdentity;
-
-        console.log(option);
 
         switch (providerId) {
             case interrep.providerId:
