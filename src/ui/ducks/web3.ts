@@ -53,6 +53,7 @@ export const fetchWalletInfo = () => async (dispatch: Dispatch) => {
 
     if (info) {
         dispatch(setAccount(info.account));
+        dispatch(setNetwork(info.networkType));
     }
 }
 
@@ -87,6 +88,12 @@ export const useWeb3Connecting = () => {
 export const useAccount = () => {
     return useSelector((state: AppRootState) => {
         return state.web3.account;
+    }, deepEqual);
+};
+
+export const useNetwork = () => {
+    return useSelector((state: AppRootState) => {
+        return state.web3.networkType;
     }, deepEqual);
 };
 

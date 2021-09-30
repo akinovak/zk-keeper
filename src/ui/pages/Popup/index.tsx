@@ -6,13 +6,14 @@ import {getIdentity, useAppText, useIdentityComitment} from "@src/ui/ducks/app";
 import {useDispatch} from "react-redux";
 import postMessage from "@src/util/postMessage";
 import {RPCAction} from "@src/util/constants";
-import {fetchWalletInfo, useAccount, useWeb3Connecting} from "@src/ui/ducks/web3";
+import {fetchWalletInfo, useAccount, useNetwork, useWeb3Connecting} from "@src/ui/ducks/web3";
 
 export default function Popup (): ReactElement {
   const identityCommitment = useIdentityComitment();
   const dispatch = useDispatch();
   const web3Connecting = useWeb3Connecting();
   const account = useAccount();
+  const networkType = useNetwork();
 
   useEffect(() => {
     // dispatch here
@@ -29,17 +30,27 @@ export default function Popup (): ReactElement {
       <Switch>
         <Route path="/">
           <div className="p-4">
-            <div className="text-xs font-bold">Account</div>
-            <div className="text-lg">{account || 'not connected'}</div>
+            <div className="text-xs font-bold mb-1">
+              {
+                account
+                  ? `Account (${networkType})`
+                  : ''
+              }
+            </div>
+            <div className="text-lg mb-2">
+              {account || (
+                  <Button
+                      btnType={ButtonType.primary}
+                      onClick={connectMetamask}
+                      loading={web3Connecting}
+                  >
+                    Connect to Metamask
+                  </Button>
+              )}
+            </div>
             <div className="text-xs font-bold">Identity Commitment</div>
             <div className="text-2xl">{identityCommitment}</div>
-            <Button
-                btnType={ButtonType.primary}
-                onClick={connectMetamask}
-                loading={web3Connecting}
-            >
-              Connect to Metamask
-            </Button>
+
           </div>
         </Route>
         <Route>
