@@ -18,15 +18,15 @@ export type SafeIdentity = {
 
 export type FullIdentity = SafeIdentity & {
     _keys: {
-        publicKey: String[],
-        privateKey: String,
+        publicKey: string[],
+        privateKey: string,
     },
     _secrets: {
-        nullifier: String,
-        trapdoor: String,
+        nullifier: string,
+        trapdoor: string,
     },
     _seed: {
-        entropy: String,
-        account: String,
+        entropy: string,
+        account: string,
     },
 }
