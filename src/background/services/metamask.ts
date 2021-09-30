@@ -29,6 +29,11 @@ export default class Metamask extends GenericService {
         }
     }
 
+    getWeb3 = async (): Promise<Web3> => {
+        if (!this.web3) throw new Error(`web3 is not initialized`);
+        return this.web3;
+    }
+
     getWalletInfo = async () => {
         await this.ensure();
 

@@ -43,6 +43,19 @@ const controllers: {
   [RPCAction.GET_WALLET_INFO]: async (app, message) => {
     return app.exec('metamask', 'getWalletInfo');
   },
+
+  [RPCAction.GET_IDENTITIES]: async (app, message) => {
+    return app.exec('identity', 'getIdentities');
+  },
+
+  [RPCAction.CREATE_IDENTITY]: async (app, message) => {
+    return app.exec(
+      'identity',
+      'createIdentity',
+      message.payload.id,
+      message.payload.option,
+    );
+  },
 };
 
 export default controllers;

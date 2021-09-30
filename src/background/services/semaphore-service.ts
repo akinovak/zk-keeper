@@ -12,7 +12,6 @@ OrdinarySemaphore.setHasher('poseidon');
 RLN.setHasher('poseidon');
 
 export default class Semaphore extends GenericService {
-
     private identity: Identity | null;
     private identityCommitment: any;
 
