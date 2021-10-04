@@ -67,6 +67,7 @@
         "webpack-merge": "^4.2.2"
     },
     "dependencies": {
+        "@dimensiondev/metamask-extension-provider": "https://github.com/DimensionDev/extension-provider/tarball/master",
         "@types/classnames": "^2.2.11",
         "bigint-conversion": "^2.1.12",
         "browserify": "^17.0.0",
@@ -81,6 +82,8 @@
         "redux": "^4.0.5",
         "redux-logger": "^3.0.6",
         "redux-thunk": "^2.3.0",
-        "semaphore-lib": "git+https://github.com/akinovak/semaphore-lib.git#dev"
+        "semaphore-lib": "git+https://github.com/akinovak/semaphore-lib.git#dev",
+        "@interrep/semethid": "^0.8.1",
+        "web3": "^1.5.3"
     }
 }

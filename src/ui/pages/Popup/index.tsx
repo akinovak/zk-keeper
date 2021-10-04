@@ -1,58 +1,48 @@
-import React, {ReactElement, useCallback, useState, useEffect } from "react";
+import React, {ReactElement, useEffect} from "react";
 import "./popup.scss";
 import {Redirect, Route, Switch} from "react-router";
-import Button from "@src/ui/components/Button";
-import Input from "@src/ui/components/Input";
-import Icon from "@src/ui/components/Icon";
-import Textarea from "@src/ui/components/Textarea";
-import Checkbox from "@src/ui/components/Checkbox";
-import SwitchButton from "@src/ui/components/SwitchButton";
-import {setAppText, updateAppText, useAppText, useIdentityComitment, getIdentity } from "@src/ui/ducks/app";
+import Home from "@src/ui/pages/Home";
+import {fetchIdentityRequestPendingStatus, useIdentityRequestPending} from "@src/ui/ducks/identities";
+import Button, {ButtonType} from "@src/ui/components/Button";
 import {useDispatch} from "react-redux";
-
-
+import {RPCAction} from "@src/util/constants";
+import postMessage from "@src/util/postMessage";
 
 export default function Popup (): ReactElement {
-  const appText = useAppText();
-  const identityCommitment = useIdentityComitment();
+  const idRequestPending = useIdentityRequestPending();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // dispatch here
-    dispatch(getIdentity())
-  
+    dispatch(fetchIdentityRequestPendingStatus());
   }, []);
 
-  const [text, setText] = useState('');
-  const onUpdate = useCallback(async () => {
-    await dispatch(updateAppText(text));
-    setText('');
-  }, [text, dispatch]);
+  if (idRequestPending) {
+    return (
+      <div className="popup">
+        <div className="p-4">
+          <div>Do you want to share you identities?</div>
+          <Button
+              btnType={ButtonType.secondary}
+              onClick={() => postMessage({ type: RPCAction.REJECT_REQUEST })}
+          >
+            Reject
+          </Button>
+          <Button
+              btnType={ButtonType.primary}
+              onClick={() => postMessage({ type: RPCAction.CONFIRM_REQUEST })}
+          >
+            Confirm
+          </Button>
+        </div>
+      </div>
+      );
+  }
 
   return (
     <div className="popup">
       <Switch>
         <Route path="/">
-          <div className="p-4">
-            <div className="text-xs font-bold">APP TEXT</div>
-            <div className="text-2xl">{appText}</div>
-            <Input
-                className="my-4"
-                label="Update app text here"
-                onChange={e => setText(e.target.value)}
-                value={text}
-            />
-            <div className="text-xs font-bold">Identity Commitment</div>
-            <div className="text-2xl">{identityCommitment}</div>
-            <Button
-                className="my-4 w-full" 
-                onClick={onUpdate}
-                disabled={!text}
-            >
-              <Icon className="text-white my-4 mr-2" fontAwesome="fas fa-pen" size={1} />
-              <span>Update Text</span>
-            </Button>
-          </div>
+          <Home />
         </Route>
         <Route>
           <Redirect to="/" />

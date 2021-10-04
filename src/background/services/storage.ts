@@ -1,16 +1,11 @@
-export async function get(key): Promise<string | null> {
-    return new Promise((resolve) => {
-        chrome.storage.sync.get([key], function(result) {
-            if(result.key) resolve(result.key);
-            else resolve(null);
-        });
-    })
+import {browser} from "webextension-polyfill-ts";
+
+
+export async function get(key): Promise<any|null> {
+    const content = await browser.storage.sync.get(key);
+    return content ? content[key] : null;
 }
 
 export async function set(key, value) {
-    return new Promise((resolve) => {
-        chrome.storage.sync.set({key: value}, function() {
-            resolve(null);
-        });
-    })
+    return browser.storage.sync.set({[key]: value});
 }

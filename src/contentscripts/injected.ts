@@ -1,5 +1,6 @@
 import {MessageAction} from "@src/util/postMessage";
 import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
+import {RPCAction} from "@src/util/constants";
 
 
 const promises: {
@@ -21,33 +22,13 @@ async function connect() {
 }
 
 /**
- * Set App Text
- */
-async function setAppText(text: string) {
-  return post({
-    type: 'SET_APP_TEXT',
-    payload: text,
-  });
-}
-
-/**
  * Get Identity
  * //TODO add some strategy here, like latest, etc...
  */
  async function getIdentity() {
   return post({
-    type: 'GET_IDENTITY',
+    type: RPCAction.REQUEST_IDENTITIES,
     payload: {},
-  });
-}
-
-/**
- * Create Semaphore proof
- */
- async function semaphoreProof(payload: IBuiltTreeData) {
-  return post({
-    type: 'SEMAPHORE_PROOF',
-    payload,
   });
 }
 
@@ -65,10 +46,8 @@ async function openPopup() {
  * Injected Client
  */
 const client = {
-  setAppText,
   openPopup,
   getIdentity,
-  semaphoreProof
 };
 
 window.injected = {
