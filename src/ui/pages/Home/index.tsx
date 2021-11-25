@@ -62,18 +62,14 @@ export default function Home (): ReactElement {
             </div>
             <div className="text-2xl py-2">
                 {
-                    identities.map((identity) => {
-                        const {
-                            type,
-                            data: { web2Provider, idCommitment },
-                        } = identity;
+                    identities.map((identityCommitment) => {
                         return (
                             <div className="border rounded p-2 my-2">
-                                <div className="font-bold text-xs text-gray-500">
+                                {/* <div className="font-bold text-xs text-gray-500">
                                     {`${type} (${web2Provider})`}
-                                </div>
+                                </div> */}
                                 <div className="text-lg">
-                                    {`${idCommitment.slice(0, 8)}...${idCommitment.slice(-6)}`}
+                                    {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
                                 </div>
                             </div>
                         )

@@ -1,8 +1,8 @@
-import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/util/idTypes/interrep";
+import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/util/interrep";
 import {Dispatch} from "redux";
 import postMessage from "@src/util/postMessage";
 import {RPCAction} from "@src/util/constants";
-import {SafeIdentity} from "@src/util/idTypes";
+// import {SafeIdentity} from "@src/util/idTypes";
 import {useSelector} from "react-redux";
 import {AppRootState} from "@src/ui/store/configureAppStore";
 import deepEqual from "fast-deep-equal";
@@ -20,12 +20,12 @@ type Action<payload> = {
 }
 
 type State = {
-    order: SafeIdentity[];
+    identityCommitments: string[];
     requestPending: boolean;
 }
 
 const initialState: State = {
-    order: [],
+    identityCommitments: [],
     requestPending: false,
 };
 
@@ -39,7 +39,7 @@ export const createIdentity = (id: string, option: CreateInterrepIdentityOption)
     });
 }
 
-export const setIdentities = (identities: SafeIdentity[]): Action<SafeIdentity[]> => ({
+export const setIdentities = (identities: string[]): Action<string[]> => ({
     type: ActionType.SET_IDENTITIES,
     payload: identities,
 })
@@ -64,7 +64,7 @@ export default function identities(state = initialState, action: Action<any>): S
         case ActionType.SET_IDENTITIES:
             return {
                 ...state,
-                order: action.payload,
+                identityCommitments: action.payload,
             };
         case ActionType.SET_REQUEST_PENDING:
             return {
@@ -78,7 +78,7 @@ export default function identities(state = initialState, action: Action<any>): S
 
 export const useIdentities = () => {
     return useSelector((state: AppRootState) => {
-        return state.identities.order;
+        return state.identities.identityCommitments;
     }, deepEqual);
 }
 

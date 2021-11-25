@@ -12,9 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bigint-conversion": "^2.1.12",
-    "parcel": "^2.0.0-rc.0",
-    "semaphore-lib": "git+https://github.com/akinovak/semaphore-lib.git#dev"
+    "parcel": "^2.0.0-rc.0"
   },
   "devDependencies": {
     "http-server": "^13.0.2"
