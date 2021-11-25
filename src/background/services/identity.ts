@@ -4,6 +4,7 @@ import {ZkIdentity} from "@libsem/identity";
 import * as interrep from "@src/util/interrep";
 import deepEqual from "fast-deep-equal";
 import pushMessage from "@src/util/pushMessage";
+import { bigintToHex } from "bigint-conversion";
 import {setIdentities, setIdentityRequestPending} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
@@ -31,7 +32,7 @@ export default class Identity extends GenericService {
 
     getIdentities = async () => {
         await this.refreshIdentities();
-        return this.identities;
+        return this.to_commitments();
         // await this.refreshIdentities();
         // if (dangerous) return this.identities;
     }
@@ -42,8 +43,8 @@ export default class Identity extends GenericService {
     }
 
     confirmRequest = async () => {
-        const identities = await this.getIdentities();
-        this.emit('accepted', identities);
+        await this.refreshIdentities();
+        this.emit('accepted', this.to_commitments());
         this.requestPending = false;
         return pushMessage(setIdentityRequestPending(false));
     }
@@ -55,14 +56,14 @@ export default class Identity extends GenericService {
     }
 
     addIdentity = async (newIdentity: ZkIdentity) => {
-        const existing = await this.getIdentities();
-        for (const identity of existing) {
+        await this.refreshIdentities();
+        for (const identity of this.identities) {
             if (deepEqual(identity, newIdentity)) {
                 return;
             }
         }
 
-        const newIdentities: Array<string> = existing.map((identity: ZkIdentity) => {
+        const newIdentities: Array<string> = this.identities.map((identity: ZkIdentity) => {
             return identity.serializeIdentity();
         });
 
@@ -71,7 +72,11 @@ export default class Identity extends GenericService {
         return set(DB_KEY, newIdentities);
     }
 
-    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption): Promise<ZkIdentity> => {
+    to_commitments() {
+        return this.identities.map((identity: ZkIdentity) => bigintToHex(identity.genIdentityCommitment()))
+    }
+
+    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption): Promise<boolean> => {
         const web3 = await this.exec('metamask', 'getWeb3');
         const data = await this.exec('metamask', 'getWalletInfo');
         let identity: ZkIdentity;
@@ -87,7 +92,7 @@ export default class Identity extends GenericService {
                 console.log(identity);
 
                 await this.addIdentity(identity);
-                return identity;
+                return true;
             default:
                 throw new Error(`unknown providerId - ${providerId}`);
         }
