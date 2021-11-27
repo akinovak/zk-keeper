@@ -2,6 +2,9 @@ import {AppService} from "@src/util/svc";
 import {MessageAction} from "@src/util/postMessage";
 import {browser} from "webextension-polyfill-ts";
 import {RPCAction} from "@src/util/constants";
+import { ZkIdentity } from "@libsem/identity";
+import { ISafeProof, ISemaphoreProofRequest } from "../services/protocols/interfaces";
+import { validCircuit, validZkey, validMerkleStorage } from "../services/whitelisted";
 
 const controllers: {
   [type: string]: (app: AppService, message: MessageAction) => Promise<any>;
@@ -32,33 +35,60 @@ const controllers: {
     return app.exec('metamask', 'getWalletInfo');
   },
 
-  [RPCAction.GET_IDENTITIES]: async (app, message) => {
-    return app.exec('identity', 'getIdentities');
+  [RPCAction.GET_COMMITMENTS]: async (app, message) => {
+    return app.exec('identity', 'getIdentityCommitments');
   },
 
-  [RPCAction.GET_REQUEST_PENDING_STATUS]: async (app, message) => {
-    return app.exec('identity', 'getRequestPendingStatus');
+  [RPCAction.SET_ACTIVE_IDENTITY]: async (app, message) => {
+    const { identityCommitment }: { identityCommitment: string } = message.payload;
+    return app.exec('identity', 'setActiveIdentity', identityCommitment);
   },
 
-  [RPCAction.REQUEST_IDENTITIES]: async (app, message) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await app.exec('identity', 'requestIdentities');
-        const popup = await openPopup();
-        return closePopupOnAcceptOrReject(app, resolve, reject, popup);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
+  // [RPCAction.GET_REQUEST_PENDING_STATUS]: async (app, message) => {
+  //   return app.exec('identity', 'getRequestPendingStatus');
+  // },
 
-  [RPCAction.CONFIRM_REQUEST]: async (app, message) => {
-    console.log('hi')
-    return app.exec('identity', 'confirmRequest');
-  },
+  // [RPCAction.REQUEST_IDENTITIES]: async (app, message) => {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       await app.exec('identity', 'requestIdentities');
+  //       const popup = await openPopup();
+  //       return closePopupOnAcceptOrReject(app, resolve, reject, popup);
+  //     } catch (e) {
+  //       reject(e);
+  //     }
+  //   });
+  // },
 
-  [RPCAction.REJECT_REQUEST]: async (app, message) => {
-    return app.exec('identity', 'rejectRequest');
+  // [RPCAction.CONFIRM_REQUEST]: async (app, message) => {
+  //   console.log('hi')
+  //   return app.exec('identity', 'confirmRequest');
+  // },
+
+  // [RPCAction.REJECT_REQUEST]: async (app, message) => {
+  //   return app.exec('identity', 'rejectRequest');
+  // },
+
+  //TODO add confirmation popup
+  [RPCAction.SEMAPHORE_PROOF]: async (app, message) => {
+    const request: ISemaphoreProofRequest = message.payload;
+    
+    const { circuitFilePath, zkeyFilePath, merkleServiceAddress } = request;
+
+    if(!validCircuit(circuitFilePath)) throw new Error("circuipt path is not trusted");
+    if(!validZkey(zkeyFilePath)) throw new Error("zkey path is not trusted");
+    if(!validMerkleStorage(merkleServiceAddress)) throw new Error("merkle service is not trusted");
+
+    const activeIdentity: ZkIdentity | undefined = await app.exec('identity', 'getActiveidentity');
+
+    if(!activeIdentity) throw new Error("active identity not detected");
+
+    const safeProof: ISafeProof = await app.exec('semaphore', 'genProof',
+      activeIdentity,
+      request
+    );
+
+    return JSON.stringify(safeProof);
   },
 
   [RPCAction.CREATE_IDENTITY]: async (app, message) => {
@@ -91,20 +121,20 @@ async function openPopup() {
   return popup;
 }
 
-function closePopupOnAcceptOrReject(
-    app: AppService,
-    resolve: (data: any) => void,
-    reject: (err: Error) => void,
-    popup: any,
-) {
-  app.on('identity.accepted', (returnIdentities) => {
-    console.log(returnIdentities);
-    resolve(returnIdentities);
-    browser.windows.remove(popup.id as number);
-  });
+// function closePopupOnAcceptOrReject(
+//     app: AppService,
+//     resolve: (data: any) => void,
+//     reject: (err: Error) => void,
+//     popup: any,
+// ) {
+//   app.on('identity.accepted', (returnIdentities) => {
+//     console.log(returnIdentities);
+//     resolve(returnIdentities);
+//     browser.windows.remove(popup.id as number);
+//   });
 
-  app.on('identity.rejected', () => {
-    reject(new Error('user rejected.'));
-    browser.windows.remove(popup.id as number);
-  });
-}
+//   app.on('identity.rejected', () => {
+//     reject(new Error('user rejected.'));
+//     browser.windows.remove(popup.id as number);
+//   });
+// }

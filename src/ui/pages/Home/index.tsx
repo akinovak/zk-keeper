@@ -8,7 +8,7 @@ import Icon from "@src/ui/components/Icon";
 import Modal from "@src/ui/components/Modal";
 import Input from "@src/ui/components/Input";
 import Dropdown from "@src/ui/components/Dropdown";
-import {createIdentity, fetchIdentities, useIdentities} from "@src/ui/ducks/identities";
+import {createIdentity, fetchIdentities, setActiveIdentity, useIdentities} from "@src/ui/ducks/identities";
 
 export default function Home (): ReactElement {
     const dispatch = useDispatch();
@@ -64,7 +64,14 @@ export default function Home (): ReactElement {
                 {
                     identities.map((identityCommitment) => {
                         return (
-                            <div className="border rounded p-2 my-2">
+                            <div 
+                                className="border rounded p-2 my-2"
+                                onClick={
+                                    async () => {
+                                        await dispatch(setActiveIdentity(identityCommitment))
+                                    }
+                                }
+                            >
                                 {/* <div className="font-bold text-xs text-gray-500">
                                     {`${type} (${web2Provider})`}
                                 </div> */}

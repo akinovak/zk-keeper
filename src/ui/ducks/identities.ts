@@ -8,7 +8,7 @@ import {AppRootState} from "@src/ui/store/configureAppStore";
 import deepEqual from "fast-deep-equal";
 
 enum ActionType {
-    SET_IDENTITIES = 'app/identities/setIdentities',
+    SET_COMMITMENTS = 'app/identities/setCommitments',
     SET_REQUEST_PENDING = 'app/identities/setRequestPending',
 }
 
@@ -39,8 +39,21 @@ export const createIdentity = (id: string, option: CreateInterrepIdentityOption)
     });
 }
 
+export const setActiveIdentity = (identityCommitment: string) => async (dispatch: Dispatch) => {
+    if(!identityCommitment) {
+        throw new Error('Identity Commitment not provided!');
+    }
+    return postMessage({
+        type: RPCAction.SET_ACTIVE_IDENTITY,
+        payload: {
+            identityCommitment
+        },
+    });
+}
+
+
 export const setIdentities = (identities: string[]): Action<string[]> => ({
-    type: ActionType.SET_IDENTITIES,
+    type: ActionType.SET_COMMITMENTS,
     payload: identities,
 })
 
@@ -50,18 +63,14 @@ export const setIdentityRequestPending = (requestPending: boolean): Action<boole
 })
 
 export const fetchIdentities = () => async (dispatch: Dispatch) => {
-    const identities = await postMessage({ type: RPCAction.GET_IDENTITIES });
+    const identities = await postMessage({ type: RPCAction.GET_COMMITMENTS });
     dispatch(setIdentities(identities));
 }
 
-export const fetchIdentityRequestPendingStatus = () => async (dispatch: Dispatch) => {
-    const pending = await postMessage({ type: RPCAction.GET_REQUEST_PENDING_STATUS });
-    dispatch(setIdentityRequestPending(pending));
-}
 
 export default function identities(state = initialState, action: Action<any>): State {
     switch (action.type) {
-        case ActionType.SET_IDENTITIES:
+        case ActionType.SET_COMMITMENTS:
             return {
                 ...state,
                 identityCommitments: action.payload,

@@ -2,103 +2,109 @@ import {GenericService} from "@src/util/svc";
 import {get, set} from "@src/background/services/storage";
 import {ZkIdentity} from "@libsem/identity";
 import * as interrep from "@src/util/interrep";
-import deepEqual from "fast-deep-equal";
-import pushMessage from "@src/util/pushMessage";
 import { bigintToHex } from "bigint-conversion";
-import {setIdentities, setIdentityRequestPending} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
 
 export default class Identity extends GenericService {
-    identities: ZkIdentity[];
-    requestPending: boolean;
+    identities: Map<string, ZkIdentity>;
+    activeIdentity?: ZkIdentity;
 
     constructor() {
         super();
-        this.identities = [];
-        this.requestPending = false;
+        this.identities = new Map();
+        this.activeIdentity = undefined;
     }
 
-    refreshIdentities = async () => {
+    fetchIdentities = async () => {
         const content = await get(DB_KEY);
-        this.identities = Object.entries(content || {}).map(([key, value]) => {
-            return ZkIdentity.genFromSerialized(value as string);
+        Object.entries(content || {}).map(([_, value]) => {
+            const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string);
+            const identityCommitment: bigint = identity.genIdentityCommitment();
+            this.identities.set(bigintToHex(identityCommitment), identity);
         })
     }
 
-    getRequestPendingStatus = async () => {
-        return this.requestPending;
-    }
-
-    getIdentities = async () => {
-        await this.refreshIdentities();
-        return this.to_commitments();
-        // await this.refreshIdentities();
-        // if (dangerous) return this.identities;
-    }
-
-    requestIdentities = async () => {
-        this.requestPending = true;
-        return pushMessage(setIdentityRequestPending(true));
-    }
-
-    confirmRequest = async () => {
-        await this.refreshIdentities();
-        this.emit('accepted', this.to_commitments());
-        this.requestPending = false;
-        return pushMessage(setIdentityRequestPending(false));
-    }
-
-    rejectRequest = async () => {
-        this.emit('rejected');
-        this.requestPending = false;
-        return pushMessage(setIdentityRequestPending(false));
-    }
-
-    addIdentity = async (newIdentity: ZkIdentity) => {
-        await this.refreshIdentities();
-        for (const identity of this.identities) {
-            if (deepEqual(identity, newIdentity)) {
-                return;
-            }
+    setDefaultIdentity = async () => {
+        if(!this.identities.size) {
+            await this.fetchIdentities();
         }
 
-        const newIdentities: Array<string> = this.identities.map((identity: ZkIdentity) => {
-            return identity.serializeIdentity();
-        });
+        // if no identities, map will be empty again
+        if(!this.identities.size) return;
 
-        newIdentities.push(newIdentity.serializeIdentity());
-        await pushMessage(setIdentities(newIdentities));
-        return set(DB_KEY, newIdentities);
+        const firstKey: string = this.identities.keys().next().value;
+        this.activeIdentity = this.identities.get(firstKey);
     }
 
-    to_commitments() {
-        return this.identities.map((identity: ZkIdentity) => bigintToHex(identity.genIdentityCommitment()))
+    setActiveIdentity = async (identityCommitment: string) => {
+        await this.fetchIdentities();
+
+        if(this.identities.has(identityCommitment)) {
+            this.activeIdentity = this.identities.get(identityCommitment);
+            console.log('Active identity set');
+        }
     }
 
-    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption): Promise<boolean> => {
-        const web3 = await this.exec('metamask', 'getWeb3');
-        const data = await this.exec('metamask', 'getWalletInfo');
-        let identity: ZkIdentity;
+    getActiveidentity = async (): Promise<ZkIdentity | undefined> => {
+        return this.activeIdentity;
+    }
 
-        switch (providerId) {
-            case interrep.providerId:
-                identity = await interrep.createIdentity({
-                    ...option,
-                    sign: (message: string) => web3.eth.personal.sign(message, data?.account),
-                    account: data?.account,
-                });
+    getIdentityCommitments = async () => {
+        await this.fetchIdentities();
+        const commitments: string[] = [];
+        for (let key of this.identities.keys()) {
+            commitments.push(key);
+        }
+        return commitments;
+    }
 
-                console.log(identity);
+    addIdentity = async (newIdentity: ZkIdentity): Promise<boolean> => {
+        await this.fetchIdentities();
 
-                await this.addIdentity(identity);
-                return true;
-            default:
-                throw new Error(`unknown providerId - ${providerId}`);
+        const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment());
+        const existing: boolean = this.identities.has(identityCommitment);
+
+        if(!existing) return false;
+
+        const existingIdentites: string[] = [];
+        for (let identity of this.identities.values()) {
+            existingIdentites.push(identity.serializeIdentity());
+        }
+
+        await set(DB_KEY, [newIdentity.serializeIdentity(), ...existingIdentites]);
+        await this.fetchIdentities();
+        return true;
+    }
+
+    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption): Promise<string> => {
+        try {
+            const web3 = await this.exec('metamask', 'getWeb3');
+            const data = await this.exec('metamask', 'getWalletInfo');
+            let identity: ZkIdentity;
+
+            switch (providerId) {
+                case interrep.providerId:
+                    identity = await interrep.createIdentity({
+                        ...option,
+                        sign: (message: string) => web3.eth.personal.sign(message, data?.account),
+                        account: data?.account,
+                    });
+
+                    const added = await this.addIdentity(identity);
+                    if(added) return "Identity successfully added";
+                    else return "Identity already exists";
+                default:
+                    throw new Error(`unknown providerId - ${providerId}`);
+            }
+        } catch(error) { 
+            throw new Error('Unknown error occurred');
         }
     }
 
     async start() {
-        this.refreshIdentities();
+        await this.fetchIdentities();
+        await this.setDefaultIdentity();
+        console.log(this.identities);
     }
 }

@@ -1,5 +1,4 @@
 import {MessageAction} from "@src/util/postMessage";
-import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 import {RPCAction} from "@src/util/constants";
 
 
@@ -25,12 +24,34 @@ async function connect() {
  * Get Identity
  * //TODO add some strategy here, like latest, etc...
  */
- async function getIdentity() {
+async function getIdentityCommitments() {
   return post({
-    type: RPCAction.REQUEST_IDENTITIES,
+    type: RPCAction.GET_COMMITMENTS,
     payload: {},
   });
 }
+
+async function semaphoreProof(
+  externalNullifier: string, 
+  signal: string, 
+  merkleServiceAddress: string,
+  circuitFilePath: string,
+  zkeyFilePath: string
+  ) {
+  return post({
+    type: RPCAction.SEMAPHORE_PROOF,
+    payload: {
+      externalNullifier,
+      signal,
+      merkleServiceAddress, 
+      circuitFilePath, 
+      zkeyFilePath, 
+    }
+  })
+  
+}
+
+
 
 /**
  * Open Popup
@@ -47,7 +68,8 @@ async function openPopup() {
  */
 const client = {
   openPopup,
-  getIdentity,
+  getIdentityCommitments,
+  semaphoreProof
 };
 
 window.injected = {
