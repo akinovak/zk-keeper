@@ -20,12 +20,12 @@ export default class IdentityService extends SimpleStorage {
         if(!encryptedContent) return true;
 
         const decrypted: any = LockService.decrypt(encryptedContent);
-        await this.setInMemory(decrypted);
+        await this.loadInMemory(decrypted);
         await this.setDefaultIdentity();
         return true;
     }
 
-    setInMemory = async (decrypted: any) => {
+    loadInMemory = async (decrypted: any) => {
         Object.entries(decrypted || {}).map(([_, value]) => {
             const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string);
             const identityCommitment: bigint = identity.genIdentityCommitment();
