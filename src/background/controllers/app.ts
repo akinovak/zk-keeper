@@ -4,17 +4,20 @@ import IdentityService from "../services/identity";
 import MetamaskService from "../services/metamask";
 import { ZkIdentity } from "@libsem/identity";
 import { RPCAction } from "@src/util/constants";
-import { NewIdentityRequest, WalletInfo } from "../interfaces";
+import { NewIdentityRequest, WalletInfo, ZkInputs } from "../interfaces";
 import * as interrep from "../../util/interrep";
 import Web3 from "web3";
+import ZkValidator from "../services/whitelisted";
 
 export default class App extends Handler {
     private identityService: IdentityService;
     private metamaskService: MetamaskService;
+    private zkValidator: ZkValidator;
     constructor() {
         super();
         this.identityService = new IdentityService();
         this.metamaskService = new MetamaskService();
+        this.zkValidator = new ZkValidator();
     }
 
     initialize = async (): Promise<App> => {
@@ -39,7 +42,7 @@ export default class App extends Handler {
                 const { option } = payload;
                 identity = await interrep.createIdentity({
                     ...option,
-                    sign: (message: string) => web3.eth.personal.sign(message, walletInfo?.account, "remove"),
+                    sign: (message: string) => web3.eth.sign(message, walletInfo?.account),
                     account: walletInfo?.account,
                 });
 
@@ -47,9 +50,9 @@ export default class App extends Handler {
                 throw new Error(`Provider: ${providerId} is not supported`);
             }
 
-            // await this.identityService.add
+            await this.identityService.addIdentity(identity);
+            return true;
         });
-
 
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments);
         return this;

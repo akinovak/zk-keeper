@@ -22,3 +22,9 @@ export type NewIdentityRequest = {
     providerId: string, 
     option: CreateIdentityOption
 }
+
+export type ZkInputs = {
+    circuitFilePath: string,
+    zkeyFilePath: string, 
+    merkleStorageAddress: string
+}

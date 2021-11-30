@@ -1,3 +1,5 @@
+import { ZkInputs } from "../interfaces";
+
 const whitelistedCircuitPaths: Array<string> = [
     'http://localhost:8000/circuit.wasm',
     'http://localhost:8000/semaphore.wasm'
@@ -12,14 +14,20 @@ const whitelistedMerkleStorages: Array<string> = [
     'http://localhost:5000/merkle',
 ]
 
-export function validCircuit(circuitFilePath: string): boolean {
-    return whitelistedCircuitPaths.includes(circuitFilePath);
-}
+export default class ZkValidator {
+    validateZkInputs(payload: Required<ZkInputs>) {
+        const { circuitFilePath, zkeyFilePath, merkleStorageAddress } = payload;
 
-export function validZkey(finalZkeyPath: string): boolean {
-    return whitelistedKeyPaths.includes(finalZkeyPath);
-}
+        if(!circuitFilePath) throw new Error("circuitFilePath not provided");
+        if(!zkeyFilePath) throw new Error("zkeyFilePath not provided");
 
-export function validMerkleStorage(whitelistedMerkleStorage: string) {
-    return whitelistedMerkleStorages.includes(whitelistedMerkleStorage);
+        const circutiValid = whitelistedCircuitPaths.includes(circuitFilePath);
+        if(!circutiValid) throw new Error(`${circuitFilePath} is not whitelisted`);
+
+        const zkeyValid = whitelistedKeyPaths.includes(zkeyFilePath);
+        if(!zkeyValid) throw new Error(`${zkeyFilePath} is not whitelisted`);
+
+        const merkleStorageValid = whitelistedMerkleStorages.includes(merkleStorageAddress);
+        if(!merkleStorageValid) throw new Error(`${merkleStorageAddress} is not whitelisted`);
+    }
 }

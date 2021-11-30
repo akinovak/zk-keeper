@@ -4,7 +4,6 @@ import {browser} from "webextension-polyfill-ts";
 import {RPCAction} from "@src/util/constants";
 import { ZkIdentity } from "@libsem/identity";
 import { ISafeProof, ISemaphoreProofRequest } from "../services/protocols/interfaces";
-import { validCircuit, validZkey, validMerkleStorage } from "../services/whitelisted";
 
 // let isUnlocked: boolean = false;
 
@@ -72,26 +71,6 @@ const controllers: {
   // },
 
   //TODO add confirmation popup
-  [RPCAction.SEMAPHORE_PROOF]: async (app, message) => {
-    const request: ISemaphoreProofRequest = message.payload;
-    
-    const { circuitFilePath, zkeyFilePath, merkleServiceAddress } = request;
-
-    if(!validCircuit(circuitFilePath)) throw new Error("circuipt path is not trusted");
-    if(!validZkey(zkeyFilePath)) throw new Error("zkey path is not trusted");
-    if(!validMerkleStorage(merkleServiceAddress)) throw new Error("merkle service is not trusted");
-
-    const activeIdentity: ZkIdentity | undefined = await app.exec('identity', 'getActiveidentity');
-
-    if(!activeIdentity) throw new Error("active identity not detected");
-
-    const safeProof: ISafeProof = await app.exec('semaphore', 'genProof',
-      activeIdentity,
-      request
-    );
-
-    return JSON.stringify(safeProof);
-  },
 
   [RPCAction.CREATE_IDENTITY]: async (app, message) => {
     return app.exec(
