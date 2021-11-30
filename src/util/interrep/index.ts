@@ -1,14 +1,8 @@
 import semethid from "@interrep/semethid"
 import { ZkIdentity } from "@libsem/identity"
+import { CreateIdentityOption } from "@src/background/interfaces";
 
 export const providerId = 'interrep';
-
-export type CreateIdentityOption = {
-    web2Provider: 'Twitter' | 'Reddit' | 'Github';
-    nonce?: number;
-    sign: (message: string) => Promise<string>,
-    account: string;
-}
 
 export const createIdentity = async (option: CreateIdentityOption): Promise<ZkIdentity> => {
     const {web2Provider, nonce = 0, sign, account} = option || {};

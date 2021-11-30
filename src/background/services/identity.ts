@@ -1,24 +1,32 @@
-import {GenericService} from "@src/util/svc";
-import {get, set} from "@src/background/services/storage";
 import {ZkIdentity} from "@libsem/identity";
-import * as interrep from "@src/util/interrep";
 import { bigintToHex } from "bigint-conversion";
+import SimpleStorage from "./simple-storage";
+import LockService from "./lock";
 
 const DB_KEY = '@@identities@@';
 
-export default class Identity extends GenericService {
+export default class IdentityService extends SimpleStorage {
     identities: Map<string, ZkIdentity>;
     activeIdentity?: ZkIdentity;
 
     constructor() {
-        super();
+        super(DB_KEY);
         this.identities = new Map();
         this.activeIdentity = undefined;
     }
 
-    fetchIdentities = async () => {
-        const content = await get(DB_KEY);
-        Object.entries(content || {}).map(([_, value]) => {
+    unlock = async (_: any) => {
+        const encryptedContent = await this.get();
+        if(!encryptedContent) return true;
+
+        const decrypted: any = LockService.decrypt(encryptedContent);
+        await this.setInMemory(decrypted);
+        await this.setDefaultIdentity();
+        return true;
+    }
+
+    setInMemory = async (decrypted: any) => {
+        Object.entries(decrypted || {}).map(([_, value]) => {
             const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string);
             const identityCommitment: bigint = identity.genIdentityCommitment();
             this.identities.set(bigintToHex(identityCommitment), identity);
@@ -26,11 +34,6 @@ export default class Identity extends GenericService {
     }
 
     setDefaultIdentity = async () => {
-        if(!this.identities.size) {
-            await this.fetchIdentities();
-        }
-
-        // if no identities, map will be empty again
         if(!this.identities.size) return;
 
         const firstKey: string = this.identities.keys().next().value;
@@ -38,8 +41,6 @@ export default class Identity extends GenericService {
     }
 
     setActiveIdentity = async (identityCommitment: string) => {
-        await this.fetchIdentities();
-
         if(this.identities.has(identityCommitment)) {
             this.activeIdentity = this.identities.get(identityCommitment);
             console.log('Active identity set');
@@ -51,7 +52,6 @@ export default class Identity extends GenericService {
     }
 
     getIdentityCommitments = async () => {
-        await this.fetchIdentities();
         const commitments: string[] = [];
         for (let key of this.identities.keys()) {
             commitments.push(key);
@@ -60,8 +60,6 @@ export default class Identity extends GenericService {
     }
 
     addIdentity = async (newIdentity: ZkIdentity): Promise<boolean> => {
-        await this.fetchIdentities();
-
         const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment());
         const existing: boolean = this.identities.has(identityCommitment);
 
@@ -72,39 +70,11 @@ export default class Identity extends GenericService {
             existingIdentites.push(identity.serializeIdentity());
         }
 
-        await set(DB_KEY, [newIdentity.serializeIdentity(), ...existingIdentites]);
-        await this.fetchIdentities();
+        const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
+        const ciphertext = LockService.encrypt(JSON.stringify(newValue));
+        await this.set(ciphertext);
+
+        this.identities.set(identityCommitment, newIdentity);
         return true;
-    }
-
-    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption): Promise<string> => {
-        try {
-            const web3 = await this.exec('metamask', 'getWeb3');
-            const data = await this.exec('metamask', 'getWalletInfo');
-            let identity: ZkIdentity;
-
-            switch (providerId) {
-                case interrep.providerId:
-                    identity = await interrep.createIdentity({
-                        ...option,
-                        sign: (message: string) => web3.eth.personal.sign(message, data?.account),
-                        account: data?.account,
-                    });
-
-                    const added = await this.addIdentity(identity);
-                    if(added) return "Identity successfully added";
-                    else return "Identity already exists";
-                default:
-                    throw new Error(`unknown providerId - ${providerId}`);
-            }
-        } catch(error) { 
-            throw new Error('Unknown error occurred');
-        }
-    }
-
-    async start() {
-        await this.fetchIdentities();
-        await this.setDefaultIdentity();
-        console.log(this.identities);
     }
 }

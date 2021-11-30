@@ -1,7 +1,7 @@
 import {browser} from "webextension-polyfill-ts";
 
 export type MessageAction = {
-  type: string;
+  method: string;
   payload?: any;
   error?: boolean;
   meta?: any;

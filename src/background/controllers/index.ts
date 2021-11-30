@@ -6,6 +6,8 @@ import { ZkIdentity } from "@libsem/identity";
 import { ISafeProof, ISemaphoreProofRequest } from "../services/protocols/interfaces";
 import { validCircuit, validZkey, validMerkleStorage } from "../services/whitelisted";
 
+// let isUnlocked: boolean = false;
+
 const controllers: {
   [type: string]: (app: AppService, message: MessageAction) => Promise<any>;
 } = {
@@ -23,7 +25,7 @@ const controllers: {
 
       browser.windows.onRemoved.addListener(onPopUpClose);
 
-      resolve(true);
+      resolve(popup);
     })
   },
 
@@ -121,20 +123,20 @@ async function openPopup() {
   return popup;
 }
 
-// function closePopupOnAcceptOrReject(
-//     app: AppService,
-//     resolve: (data: any) => void,
-//     reject: (err: Error) => void,
-//     popup: any,
-// ) {
-//   app.on('identity.accepted', (returnIdentities) => {
-//     console.log(returnIdentities);
-//     resolve(returnIdentities);
-//     browser.windows.remove(popup.id as number);
-//   });
+function closePopupOnAcceptOrReject(
+    app: AppService,
+    resolve: (data: any) => void,
+    reject: (err: Error) => void,
+    popup: any,
+) {
+  app.on('semaphore.accepted', (safeproof) => {
+    console.log(safeproof);
+    resolve(safeproof);
+    browser.windows.remove(popup.id as number);
+  });
 
-//   app.on('identity.rejected', () => {
-//     reject(new Error('user rejected.'));
-//     browser.windows.remove(popup.id as number);
-//   });
-// }
+  app.on('semaphore.rejected', () => {
+    reject(new Error('user rejected.'));
+    browser.windows.remove(popup.id as number);
+  });
+}

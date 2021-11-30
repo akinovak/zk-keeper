@@ -1,14 +1,14 @@
-import {GenericService} from "@src/util/svc";
 import pushMessage from "@src/util/pushMessage";
 import createMetaMaskProvider from "@dimensiondev/metamask-extension-provider";
 import Web3 from "web3";
 import {setAccount, setNetwork, setWeb3Connecting} from "@src/ui/ducks/web3";
+import { WalletInfo } from "../interfaces";
 
-export default class Metamask extends GenericService {
+export default class MetamaskService {
     provider?: any;
     web3?: Web3;
 
-    ensure = async () => {
+    ensure = async (_: any = null) => {
         if (!this.provider) {
             this.provider = await createMetaMaskProvider();
         }
@@ -34,7 +34,7 @@ export default class Metamask extends GenericService {
         return this.web3;
     }
 
-    getWalletInfo = async () => {
+    getWalletInfo = async (): Promise<WalletInfo | null> => {
         await this.ensure();
 
         if (!this.web3) {
@@ -81,9 +81,5 @@ export default class Metamask extends GenericService {
             await pushMessage(setWeb3Connecting(false));
             throw e;
         }
-    }
-
-    start = async () => {
-        this.ensure();
     }
 }

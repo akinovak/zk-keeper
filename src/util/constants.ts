@@ -8,5 +8,5 @@ export enum RPCAction {
     // REQUEST_IDENTITIES = 'rpc/identity/requestIdentities',
     // CONFIRM_REQUEST = 'rpc/identity/confirmRequest',
     // REJECT_REQUEST = 'rpc/identity/rejectRequest',
-    SEMAPHORE_PROOF = 'rpc/protocols/semaphore/genProof'
+    SEMAPHORE_PROOF = 'rpc/protocols/semaphore/genProof',
 }

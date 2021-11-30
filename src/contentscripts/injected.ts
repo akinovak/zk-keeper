@@ -1,6 +1,13 @@
 import {MessageAction} from "@src/util/postMessage";
 import {RPCAction} from "@src/util/constants";
 
+export type IRequest = {
+  method: string;
+  payload?: any;
+  error?: boolean;
+  meta?: any;
+};
+
 
 const promises: {
   [k: string]: {
@@ -20,14 +27,9 @@ async function connect() {
   return client;
 }
 
-/**
- * Get Identity
- * //TODO add some strategy here, like latest, etc...
- */
 async function getIdentityCommitments() {
   return post({
-    type: RPCAction.GET_COMMITMENTS,
-    payload: {},
+    method: 'getIdentityCommitments',
   });
 }
 
@@ -39,7 +41,7 @@ async function semaphoreProof(
   zkeyFilePath: string
   ) {
   return post({
-    type: RPCAction.SEMAPHORE_PROOF,
+    method: RPCAction.SEMAPHORE_PROOF,
     payload: {
       externalNullifier,
       signal,
@@ -48,9 +50,21 @@ async function semaphoreProof(
       zkeyFilePath, 
     }
   })
-  
 }
 
+async function unlock() {
+  return post({
+    method: 'unlock',
+    payload: { password: 'password123' }
+  })
+}
+
+async function logout() {
+  return post({
+    method: 'logout',
+    payload: { }
+  })
+}
 
 
 /**
@@ -58,7 +72,7 @@ async function semaphoreProof(
  */
 async function openPopup() {
   return post({
-    type: 'OPEN_POPUP',
+    method: 'OPEN_POPUP',
   });
 }
 
@@ -69,7 +83,9 @@ async function openPopup() {
 const client = {
   openPopup,
   getIdentityCommitments,
-  semaphoreProof
+  semaphoreProof,
+  unlock,
+  logout
 };
 
 window.injected = {
@@ -85,7 +101,7 @@ declare global {
 }
 
 // Connect injected script messages with content script messages
-async function post(message: MessageAction) {
+async function post(message: IRequest) {
   return new Promise((resolve, reject) => {
     const messageNonce = nonce++;
     window.postMessage({

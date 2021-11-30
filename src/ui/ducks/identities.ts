@@ -1,4 +1,4 @@
-import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/util/interrep";
+import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/background/interfaces";
 import {Dispatch} from "redux";
 import postMessage from "@src/util/postMessage";
 import {RPCAction} from "@src/util/constants";
@@ -31,7 +31,7 @@ const initialState: State = {
 
 export const createIdentity = (id: string, option: CreateInterrepIdentityOption) => async (dispatch: Dispatch) => {
     return postMessage({
-        type: RPCAction.CREATE_IDENTITY,
+        method: RPCAction.CREATE_IDENTITY,
         payload: {
             id,
             option,
@@ -44,7 +44,7 @@ export const setActiveIdentity = (identityCommitment: string) => async (dispatch
         throw new Error('Identity Commitment not provided!');
     }
     return postMessage({
-        type: RPCAction.SET_ACTIVE_IDENTITY,
+        method: RPCAction.SET_ACTIVE_IDENTITY,
         payload: {
             identityCommitment
         },
@@ -63,7 +63,7 @@ export const setIdentityRequestPending = (requestPending: boolean): Action<boole
 })
 
 export const fetchIdentities = () => async (dispatch: Dispatch) => {
-    const identities = await postMessage({ type: RPCAction.GET_COMMITMENTS });
+    const identities = await postMessage({ method: RPCAction.GET_COMMITMENTS });
     dispatch(setIdentities(identities));
 }
 

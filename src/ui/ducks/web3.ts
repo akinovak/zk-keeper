@@ -49,7 +49,7 @@ export const setNetwork = (network: string): Action<string> => ({
 });
 
 export const fetchWalletInfo = () => async (dispatch: Dispatch) => {
-    const info = await postMessage({ type: RPCAction.GET_WALLET_INFO });
+    const info = await postMessage({ method: RPCAction.GET_WALLET_INFO });
 
     if (info) {
         dispatch(setAccount(info.account));

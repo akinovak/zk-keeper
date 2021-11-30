@@ -25,7 +25,7 @@ export default function Home (): ReactElement {
     }, []);
 
     const connectMetamask = useCallback(async () => {
-        await postMessage({ type: RPCAction.CONNECT_METAMASK });
+        await postMessage({ method: RPCAction.CONNECT_METAMASK });
     }, []);
 
     return (
