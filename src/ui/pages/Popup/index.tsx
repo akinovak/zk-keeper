@@ -37,13 +37,13 @@ export default function Popup (): ReactElement {
               btnType={ButtonType.secondary}
               onClick={() => finalizeRequest(pendingRequest.id, 'accept')}
           >
-            Reject
+            Confirm
           </Button>
           <Button
               btnType={ButtonType.primary}
               onClick={() => finalizeRequest(pendingRequest.id, 'reject')}
           >
-            Confirm
+            Reject
           </Button>
         </div>
       </div>
