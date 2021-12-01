@@ -3,7 +3,7 @@ import { FullProof } from "@libsem/protocols";
 export interface ISemaphoreProofRequest {
     externalNullifier: string, 
     signal: string,
-    merkleServiceAddress: string, 
+    merkleStorageAddress: string, 
     circuitFilePath: string, 
     zkeyFilePath: string,
 }

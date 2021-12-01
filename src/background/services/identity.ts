@@ -90,7 +90,7 @@ export default class IdentityService extends SimpleStorage {
         const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
         const ciphertext = await LockService.encrypt(JSON.stringify(newValue));
         await this.set(ciphertext);
-        // await this.refresh();
+        await this.refresh();
         return true;
     }
 }
