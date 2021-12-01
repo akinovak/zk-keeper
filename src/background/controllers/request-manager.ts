@@ -13,7 +13,7 @@ export default class RequestManager extends EventEmitter2 {
     }
 
     getRequests = (): string => {
-        return JSON.stringify(this.pendingRequests[0]);
+        return JSON.stringify(this.pendingRequests);
     }
 
     finalizeRequest = async (payload: FinalizedRequest): Promise<boolean> => {
@@ -31,7 +31,7 @@ export default class RequestManager extends EventEmitter2 {
     addToQueue = async (type: PendingRequestType): Promise<string> => {
         const id: string = randomUUID();
         this.pendingRequests.push({ id, type });
-        await this.sendQueue();
+        await await BrowserUtils.openPopup();
         return id;
     }
 
@@ -51,10 +51,4 @@ export default class RequestManager extends EventEmitter2 {
             })
         })
     }
-
-    sendQueue = async () => {
-        await BrowserUtils.openPopup();
-        //TODO propagate queue with push message or just last element
-    }
-
 }

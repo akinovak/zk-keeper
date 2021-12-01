@@ -25,7 +25,6 @@ const initialState: State = {
     pendingRequest: undefined
 };
 
-
 export const setPendingRequest = (pendingRequests: PendingRequest | undefined): Action<PendingRequest> => {
     return { 
         type: ActionType.SET_PENDING_RQUEST,
@@ -49,7 +48,7 @@ export const finalizeRequest = (id: string, action: RequestResolutionAction) => 
     });
 }
 
-export default function identities(state = initialState, action: Action<any>): State {
+export default function requests(state = initialState, action: Action<any>): State {
     switch (action.type) {
         case ActionType.SET_PENDING_RQUEST:
             return {
