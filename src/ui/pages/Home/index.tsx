@@ -60,6 +60,17 @@ export default function Home (): ReactElement {
                     onClick={() => showModal(true)}
                 />
             </div>
+            <Button
+                btnType={ButtonType.primary}
+                onClick={() => {
+                    postMessage({
+                        method: 'unlock',
+                        payload: 'password123',
+                    })
+                }}
+            >
+                Unlock
+            </Button>
             <div className="text-2xl py-2">
                 {
                     identities.map((identityCommitment) => {
