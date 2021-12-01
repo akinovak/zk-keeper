@@ -2,6 +2,8 @@ import {ZkIdentity} from "@libsem/identity";
 import { bigintToHex } from "bigint-conversion";
 import SimpleStorage from "./simple-storage";
 import LockService from "./lock";
+import pushMessage from "@src/util/pushMessage";
+import {setIdentities} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
 
@@ -19,8 +21,8 @@ export default class IdentityService extends SimpleStorage {
         const encryptedContent = await this.get();
         if(!encryptedContent) return true;
 
-        const decrypted: any = LockService.decrypt(encryptedContent);
-        await this.loadInMemory(decrypted);
+        const decrypted: any = await LockService.decrypt(encryptedContent);
+        await this.loadInMemory(JSON.parse(decrypted));
         await this.setDefaultIdentity();
         return true;
     }
@@ -31,6 +33,7 @@ export default class IdentityService extends SimpleStorage {
             const identityCommitment: bigint = identity.genIdentityCommitment();
             this.identities.set(bigintToHex(identityCommitment), identity);
         })
+        pushMessage(setIdentities(await this.getIdentityCommitments()));
     }
 
     setDefaultIdentity = async () => {
@@ -71,7 +74,7 @@ export default class IdentityService extends SimpleStorage {
         }
 
         const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
-        const ciphertext = LockService.encrypt(JSON.stringify(newValue));
+        const ciphertext = await LockService.encrypt(JSON.stringify(newValue));
         await this.set(ciphertext);
 
         this.identities.set(identityCommitment, newIdentity);

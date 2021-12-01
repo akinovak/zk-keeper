@@ -9,6 +9,7 @@ import Modal from "@src/ui/components/Modal";
 import Input from "@src/ui/components/Input";
 import Dropdown from "@src/ui/components/Dropdown";
 import {createIdentity, fetchIdentities, setActiveIdentity, useIdentities} from "@src/ui/ducks/identities";
+import pushMessage from "@src/util/pushMessage";
 
 export default function Home (): ReactElement {
     const dispatch = useDispatch();
@@ -38,6 +39,17 @@ export default function Home (): ReactElement {
                         : 'Connect to Metamask'
                 }
             </div>
+            <Button
+                btnType={ButtonType.primary}
+                onClick={() => {
+                    postMessage({
+                        method: 'unlock',
+                        payload: 'password123',
+                    })
+                }}
+            >
+                Unlock
+            </Button>
             <div className="text-lg mb-2">
                 {
                     account
