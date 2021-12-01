@@ -42,5 +42,7 @@ app.post('/merkle', (req, res) => {
     console.log('Sending proof with root: ', serializedMerkleProof.root);
     res.send({ merkleProof: serializedMerkleProof });
 })
- 
-app.listen(5000)
+
+app.listen(5000, () => {
+    console.log('Merkle service is listening');
+})

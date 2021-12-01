@@ -2,6 +2,8 @@ import {ZkIdentity} from "@libsem/identity";
 import { bigintToHex } from "bigint-conversion";
 import SimpleStorage from "./simple-storage";
 import LockService from "./lock";
+import pushMessage from "@src/util/pushMessage";
+import {setIdentities} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
 
@@ -19,10 +21,26 @@ export default class IdentityService extends SimpleStorage {
         const encryptedContent = await this.get();
         if(!encryptedContent) return true;
 
-        const decrypted: any = LockService.decrypt(encryptedContent);
-        await this.loadInMemory(decrypted);
+        const decrypted: any = await LockService.decrypt(encryptedContent);
+        await this.loadInMemory(JSON.parse(decrypted));
         await this.setDefaultIdentity();
+
+        pushMessage(setIdentities(await this.getIdentityCommitments()));
         return true;
+    }
+
+    refresh = async () => {
+        const encryptedContent = await this.get();
+        if(!encryptedContent) return;
+
+        const decrypted: any = await LockService.decrypt(encryptedContent);
+        await this.loadInMemory(JSON.parse(decrypted));
+        //if the first identity just added, set it to active
+        if(this.identities.size === 1) {
+            await this.setDefaultIdentity();
+        }
+
+        pushMessage(setIdentities(await this.getIdentityCommitments()));
     }
 
     loadInMemory = async (decrypted: any) => {
@@ -43,7 +61,6 @@ export default class IdentityService extends SimpleStorage {
     setActiveIdentity = async (identityCommitment: string) => {
         if(this.identities.has(identityCommitment)) {
             this.activeIdentity = this.identities.get(identityCommitment);
-            console.log('Active identity set');
         }
     }
 
@@ -71,10 +88,9 @@ export default class IdentityService extends SimpleStorage {
         }
 
         const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
-        const ciphertext = LockService.encrypt(JSON.stringify(newValue));
+        const ciphertext = await LockService.encrypt(JSON.stringify(newValue));
         await this.set(ciphertext);
-
-        this.identities.set(identityCommitment, newIdentity);
+        // await this.refresh();
         return true;
     }
 }

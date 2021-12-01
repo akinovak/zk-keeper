@@ -8,7 +8,7 @@ import { IRequest } from "./interfaces";
 const app: App = new App();
 
 app.initialize()
-.then((app: App) => {
+.then(async (app: App) => {
     browser.runtime.onMessage.addListener(async (request: IRequest, _) => {
         try {
             const res = await app.handle(request);

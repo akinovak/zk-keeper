@@ -27,8 +27,10 @@ export default class ZkValidator {
         const zkeyValid = whitelistedKeyPaths.includes(zkeyFilePath);
         if(!zkeyValid) throw new Error(`${zkeyFilePath} is not whitelisted`);
 
-        const merkleStorageValid = whitelistedMerkleStorages.includes(merkleStorageAddress);
-        if(!merkleStorageValid) throw new Error(`${merkleStorageAddress} is not whitelisted`);
+        if(merkleStorageAddress) {
+            const merkleStorageValid = whitelistedMerkleStorages.includes(merkleStorageAddress);
+            if(!merkleStorageValid) throw new Error(`${merkleStorageAddress} is not whitelisted`);
+        }
 
         return payload;
     }

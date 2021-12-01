@@ -62,7 +62,6 @@ export default class App extends Handler {
                 throw new Error(`Provider: ${providerId} is not supported`);
             }
 
-            console.log('Debug: Identity is created: ', identity);
             await this.identityService.addIdentity(identity);
             return true;
         });
@@ -83,7 +82,7 @@ export default class App extends Handler {
 
             const safeProof: ISafeProof = await this.semaphoreService.genProof(identity, payload);
             return this.requestManager.newRequest(JSON.stringify(safeProof), PROOF);
-        })
+        });
 
         return this;
     }

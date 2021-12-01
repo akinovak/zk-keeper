@@ -6,7 +6,9 @@
     "scripts": {
         "build": "NODE_ENV=production webpack --config webpack.prod.js",
         "dev": "NODE_ENV=development webpack -w --config webpack.dev.js",
-        "test": "parcel test/index.html"
+        "dapp": "parcel test/index.html",
+        "serve": "./scripts/serve.sh",
+        "merkle": "node scripts/mock-merkle-proof.js"
     },
     "repository": {
         "type": "git",

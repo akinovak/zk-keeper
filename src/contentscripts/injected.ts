@@ -42,7 +42,7 @@ async function createDummyRequest() {
 async function semaphoreProof(
   externalNullifier: string, 
   signal: string, 
-  merkleServiceAddress: string,
+  merkleStorageAddress: string,
   circuitFilePath: string,
   zkeyFilePath: string
   ) {
@@ -51,7 +51,7 @@ async function semaphoreProof(
     payload: {
       externalNullifier,
       signal,
-      merkleServiceAddress, 
+      merkleStorageAddress, 
       circuitFilePath, 
       zkeyFilePath, 
     }

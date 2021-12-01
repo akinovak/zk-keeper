@@ -3,7 +3,7 @@ const { genExternalNullifier } = require("@libsem/protocols");
 
 const circuitFilePath = 'http://localhost:8000/semaphore.wasm';
 const zkeyFilePath = 'http://localhost:8000/semaphore_final.zkey';
-const merkleServiceAddress = 'http://localhost:5000/merkle';
+const merkleStorageAddress = 'http://localhost:5000/merkle';
 
 
 (async () => {
@@ -15,7 +15,7 @@ const merkleServiceAddress = 'http://localhost:5000/merkle';
         const safeProof = await client.semaphoreProof(
             externalNullifier,
             signal,
-            merkleServiceAddress, 
+            merkleStorageAddress, 
             circuitFilePath, 
             zkeyFilePath,  
         )
