@@ -28,3 +28,18 @@ export type ZkInputs = {
     zkeyFilePath: string, 
     merkleStorageAddress: string
 }
+
+//TODO here we can add different types, sign for example...
+export type PendingRequestType = 'proof';
+
+export type PendingRequest = {
+    id: string, 
+    type: PendingRequestType
+};
+
+export type RequestResolutionAction = 'accept' | 'reject';
+
+export type FinalizedRequest = {
+    id: string, 
+    action: RequestResolutionAction
+}

@@ -4,20 +4,29 @@ import IdentityService from "../services/identity";
 import MetamaskService from "../services/metamask";
 import { ZkIdentity } from "@libsem/identity";
 import { RPCAction } from "@src/util/constants";
-import { NewIdentityRequest, WalletInfo, ZkInputs } from "../interfaces";
+import { FinalizedRequest, NewIdentityRequest, WalletInfo, ZkInputs } from "../interfaces";
 import * as interrep from "../../util/interrep";
 import Web3 from "web3";
 import ZkValidator from "../services/whitelisted";
+import RequestManager from "./request-manager";
+import SemaphoreService from "../services/protocols/semaphore";
+import { ISafeProof, ISemaphoreProofRequest } from "../services/protocols/interfaces";
+
+const PROOF = 'proof';
 
 export default class App extends Handler {
     private identityService: IdentityService;
     private metamaskService: MetamaskService;
     private zkValidator: ZkValidator;
+    private requestManager: RequestManager;
+    private semaphoreService: SemaphoreService;
     constructor() {
         super();
         this.identityService = new IdentityService();
         this.metamaskService = new MetamaskService();
         this.zkValidator = new ZkValidator();
+        this.requestManager = new RequestManager();
+        this.semaphoreService = new SemaphoreService();
     }
 
     initialize = async (): Promise<App> => {
@@ -55,6 +64,18 @@ export default class App extends Handler {
         });
 
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments);
+
+        this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
+        this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
+
+        this.add(RPCAction.SEMAPHORE_PROOF, LockService.ensure, this.zkValidator.validateZkInputs, async (payload: ISemaphoreProofRequest) => {
+            const identity: ZkIdentity | undefined = await this.identityService.getActiveidentity();
+            if(!identity) throw new Error("active identity not found");
+
+            const safeProof: ISafeProof = await this.semaphoreService.genProof(identity, payload);
+            return this.requestManager.newRequest(JSON.stringify(safeProof), PROOF);
+        })
+
         return this;
     }
 

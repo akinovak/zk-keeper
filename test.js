@@ -1,56 +1,26 @@
-const a = (request) => {
-    console.log('a');
-    return request;
-}
+const { randomUUID } = require("crypto");
+const EventEmitter2 = require("eventemitter2");
 
-const b = (request) => {
-    console.log('b');
-    return request;
-}
-
-const c = (request) => {
-    console.log('c');
-    return request;
-}
-
-const square = (request) => {
-    const { x } = request;
-    return x * x;
-}
-
-class App {
-    handlers = {};
-
-    constructor() {}
-
-    add(rpc, middlewares, handler) {
-        this.handlers[rpc] = { middlewares: middlewares, handler }
+class SquareResolution extends EventEmitter2 {
+    constructor() {
+        super();
     }
 
-    handle(rpc, data) {
-        const handler = this.handlers[rpc];
+    listenOnNewPopup = () => {
+        this.on('new-popup', (listenerId) => {
+            //OPEN NEW POPUP AND WHEN BUTTON IS CLICKED SEND THIS LISTENER ID
+        })
+    }
 
-        if(!handler) return;
+    trySquare = (x) => {
+        const randomId = randomUUID();
+        this.emit('new-popup', randomId);
+        return new Promise((resolve, reject) => {
 
-        let request = data;
-
-        for(let middleware of handler.middlewares) {
-            request = middleware(request);
-        }
-
-        return handler.handler(request);
+            this.once(randomId, (action) => {
+                if(action === 'yes') resolve(x * x)
+                else reject(-1);
+            })
+        })
     }
 }
-
-const app = new App();
-
-app.add('nesto', [a, b, c], square);
-app.add('nesto2', [b, c], square);
-
-const response = app.handle('nesto', { x: 3 } );
-
-const response2 = app.handle('nesto2', { x: 5 } );
-
-
-console.log(response);
-console.log(response2);

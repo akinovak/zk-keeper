@@ -49,9 +49,9 @@ class LockService extends SimpleStorage {
         return true;
     }
 
-    ensure = async () => {
+    ensure = async (payload: any = null) => {
         if(!this.isUnlocked || !this.password) throw new Error('State is locked!');
-        return;
+        return payload;
     }
 
     encrypt = async (payload: string): Promise<string> => {

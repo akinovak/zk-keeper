@@ -29,5 +29,7 @@ export default class ZkValidator {
 
         const merkleStorageValid = whitelistedMerkleStorages.includes(merkleStorageAddress);
         if(!merkleStorageValid) throw new Error(`${merkleStorageAddress} is not whitelisted`);
+
+        return payload;
     }
 }

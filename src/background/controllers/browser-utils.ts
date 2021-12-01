@@ -1,6 +1,6 @@
 import { browser } from "webextension-polyfill-ts";
 
-export default class BrowserUtils {
+class BrowserUtils {
 
     createTab = async (options: any) => {
         return browser.tabs.create(options);
@@ -23,3 +23,5 @@ export default class BrowserUtils {
         })
     }
 }
+
+export default new BrowserUtils();

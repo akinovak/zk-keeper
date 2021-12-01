@@ -5,8 +5,7 @@ export enum RPCAction {
     SET_ACTIVE_IDENTITY = 'rpc/identity/setActiveIdentity',
     GET_COMMITMENTS = 'rpc/identity/getIdentityCommitments',
     GET_REQUEST_PENDING_STATUS = 'rpc/identity/getRequestPendingStatus',
-    // REQUEST_IDENTITIES = 'rpc/identity/requestIdentities',
-    // CONFIRM_REQUEST = 'rpc/identity/confirmRequest',
-    // REJECT_REQUEST = 'rpc/identity/rejectRequest',
+    FINALIZE_REQUEST = 'rpc/requests/finalize',
+    GET_PENDING_REQUESTS = 'rpc/requests/get',
     SEMAPHORE_PROOF = 'rpc/protocols/semaphore/genProof',
 }
