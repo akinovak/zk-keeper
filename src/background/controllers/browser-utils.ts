@@ -21,6 +21,16 @@ class BrowserUtils {
             width: 357,
             height: 600,
         })
+
+        return popup;
+    }
+
+    focusWindow = (windowId) => {
+        return browser.windows.update(windowId, { focused: true });
+    }
+
+    getAllWindows = () => {
+        return browser.windows.getAll();
     }
 }
 

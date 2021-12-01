@@ -9,10 +9,12 @@ let nonce = 0;
 
 export default class RequestManager extends EventEmitter2 {
     private pendingRequests: Array<PendingRequest>;
+    private popupId: number;
 
     constructor() {
         super();
         this.pendingRequests = new Array();
+        this.popupId = 0;
     }
 
     getRequests = (): PendingRequest[] => {
@@ -36,7 +38,7 @@ export default class RequestManager extends EventEmitter2 {
         const id: string = '' + nonce++;
         this.pendingRequests.push({ id, type });
         await pushMessage(setPendingRequest(this.pendingRequests));
-        await BrowserUtils.openPopup();
+        await this.handlePopup();
         return id;
     }
 
@@ -44,8 +46,10 @@ export default class RequestManager extends EventEmitter2 {
         const id: string = await this.addToQueue(type);
         return new Promise((resolve, reject) => {
             this.once(`${id}:finalized`, (action: RequestResolutionAction) => {
+                console.log('Im inside resolution with action: ', action);
                 switch (action) {
                     case 'accept':
+                        console.log('Resolving: ', data);
                         resolve(data);
                         return;
                     case 'reject':
@@ -56,5 +60,31 @@ export default class RequestManager extends EventEmitter2 {
                 }
             })
         })
+    }
+
+    isPopupOpened = async () => {
+        const windows = await BrowserUtils.getAllWindows();
+        if(!windows) return null; //IF nothing is open -> popup is not open
+
+        /** We must ensure that type of window is popup because before popup is opened
+         *  not active tab with same id is created (check openTab in BrowserUtils)
+         */
+        return windows.find((window) => {
+            return window && window.type === 'popup' && window.id === this.popupId;
+        })
+    }
+
+    handlePopup = async () => {
+        const popup = await this.isPopupOpened();
+
+        if(popup) {
+            BrowserUtils.focusWindow(this.popupId);
+        } else {
+            const newPopup = await BrowserUtils.openPopup();
+            if(!newPopup) throw new Error("Something went wrong in opening popup");
+            const { id } = newPopup;
+            if(!id) throw new Error("Something went wrong in opening popup");
+            this.popupId = id;
+        }
     }
 }

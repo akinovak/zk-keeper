@@ -70,7 +70,7 @@ export default class App extends Handler {
         this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
         this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
         this.add(RPCAction.DUMMY_REQUEST, async () => {
-            return this.requestManager.newRequest('', DUMMY);
+            return this.requestManager.newRequest('hello from dummy', DUMMY);
         });
 
         this.add(RPCAction.SEMAPHORE_PROOF, LockService.ensure, this.zkValidator.validateZkInputs, async (payload: ISemaphoreProofRequest) => {
