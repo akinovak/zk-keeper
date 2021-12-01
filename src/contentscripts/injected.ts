@@ -1,6 +1,12 @@
 import {MessageAction} from "@src/util/postMessage";
-import { setIdentity, IBuiltTreeData } from "@src/ui/ducks/app";
 import {RPCAction} from "@src/util/constants";
+
+export type IRequest = {
+  method: string;
+  payload?: any;
+  error?: boolean;
+  meta?: any;
+};
 
 
 const promises: {
@@ -21,23 +27,58 @@ async function connect() {
   return client;
 }
 
-/**
- * Get Identity
- * //TODO add some strategy here, like latest, etc...
- */
- async function getIdentity() {
+async function getIdentityCommitments() {
   return post({
-    type: RPCAction.REQUEST_IDENTITIES,
-    payload: {},
+    method: RPCAction.GET_COMMITMENTS,
   });
 }
+
+async function createDummyRequest() {
+  return post({
+    method: RPCAction.DUMMY_REQUEST,
+  });
+}
+
+async function semaphoreProof(
+  externalNullifier: string, 
+  signal: string, 
+  merkleStorageAddress: string,
+  circuitFilePath: string,
+  zkeyFilePath: string
+  ) {
+  return post({
+    method: RPCAction.SEMAPHORE_PROOF,
+    payload: {
+      externalNullifier,
+      signal,
+      merkleStorageAddress, 
+      circuitFilePath, 
+      zkeyFilePath, 
+    }
+  })
+}
+
+async function unlock() {
+  return post({
+    method: 'unlock',
+    payload: { password: 'password123' }
+  })
+}
+
+async function logout() {
+  return post({
+    method: 'logout',
+    payload: { }
+  })
+}
+
 
 /**
  * Open Popup
  */
 async function openPopup() {
   return post({
-    type: 'OPEN_POPUP',
+    method: 'OPEN_POPUP',
   });
 }
 
@@ -47,7 +88,11 @@ async function openPopup() {
  */
 const client = {
   openPopup,
-  getIdentity,
+  getIdentityCommitments,
+  createDummyRequest,
+  semaphoreProof,
+  unlock,
+  logout
 };
 
 window.injected = {
@@ -63,12 +108,15 @@ declare global {
 }
 
 // Connect injected script messages with content script messages
-async function post(message: MessageAction) {
+async function post(message: IRequest) {
   return new Promise((resolve, reject) => {
     const messageNonce = nonce++;
     window.postMessage({
       target: 'injected-contentscript',
-      message,
+      message: {
+        ...message,
+        type: message.method,
+      },
       nonce: messageNonce,
     }, '*');
 

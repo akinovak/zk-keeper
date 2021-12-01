@@ -28,7 +28,7 @@ const initialState: State = {
 
 export const updateAppText = (text: string) => async (dispatch: Dispatch) => {
   await postMessage({
-    type: 'SET_APP_TEXT',
+    method: 'SET_APP_TEXT',
     payload: text,
   });
 
@@ -78,7 +78,7 @@ export const useIdentityComitment = () => {
 
 export const getIdentity = () => async (dispatch: Dispatch) => {
   // this will post a message to background and invoke the controller handler
-  const identityCommitment = await postMessage({ type: 'GET_IDENTITY' });
+  const identityCommitment = await postMessage({ method: 'GET_IDENTITY' });
   dispatch({
     type: ActionType.SET_IDENTITIES,
     payload: identityCommitment,

@@ -8,7 +8,7 @@ import Icon from "@src/ui/components/Icon";
 import Modal from "@src/ui/components/Modal";
 import Input from "@src/ui/components/Input";
 import Dropdown from "@src/ui/components/Dropdown";
-import {createIdentity, fetchIdentities, useIdentities} from "@src/ui/ducks/identities";
+import {createIdentity, fetchIdentities, setActiveIdentity, useIdentities} from "@src/ui/ducks/identities";
 
 export default function Home (): ReactElement {
     const dispatch = useDispatch();
@@ -25,7 +25,7 @@ export default function Home (): ReactElement {
     }, []);
 
     const connectMetamask = useCallback(async () => {
-        await postMessage({ type: RPCAction.CONNECT_METAMASK });
+        await postMessage({ method: RPCAction.CONNECT_METAMASK });
     }, []);
 
     return (
@@ -62,18 +62,21 @@ export default function Home (): ReactElement {
             </div>
             <div className="text-2xl py-2">
                 {
-                    identities.map((identity) => {
-                        const {
-                            type,
-                            data: { web2Provider, idCommitment },
-                        } = identity;
+                    identities.map((identityCommitment) => {
                         return (
-                            <div className="border rounded p-2 my-2">
-                                <div className="font-bold text-xs text-gray-500">
+                            <div 
+                                className="border rounded p-2 my-2"
+                                onClick={
+                                    async () => {
+                                        await dispatch(setActiveIdentity(identityCommitment))
+                                    }
+                                }
+                            >
+                                {/* <div className="font-bold text-xs text-gray-500">
                                     {`${type} (${web2Provider})`}
-                                </div>
+                                </div> */}
                                 <div className="text-lg">
-                                    {`${idCommitment.slice(0, 8)}...${idCommitment.slice(-6)}`}
+                                    {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
                                 </div>
                             </div>
                         )
@@ -90,7 +93,8 @@ function CreateIdentityModal(props: {onClose: () => void}): ReactElement {
     const dispatch = useDispatch();
 
     const create = useCallback(async () => {
-        await dispatch(createIdentity('interrep', {
+        //TODO add radnom strategy while metamask issue is not resolved
+        await dispatch(createIdentity('random', {
             nonce,
             web2Provider,
             sign: () => Promise.resolve(''),

@@ -5,7 +5,10 @@
     "main": "index.js",
     "scripts": {
         "build": "NODE_ENV=production webpack --config webpack.prod.js",
-        "dev": "webpack -w --config webpack.dev.js"
+        "dev": "NODE_ENV=development webpack -w --config webpack.dev.js",
+        "dapp": "parcel test/index.html",
+        "serve": "./scripts/serve.sh",
+        "merkle": "node scripts/mock-merkle-proof.js"
     },
     "repository": {
         "type": "git",
@@ -48,10 +51,11 @@
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
         "eslint-plugin-react": "^7.21.4",
+        "express": "^4.17.1",
         "file-loader": "^6.2.0",
         "image-webpack-loader": "^7.0.1",
-        "node-sass": "^4.14.1",
         "npm-force-resolutions": "0.0.10",
+        "parcel": "^2.0.1",
         "path-browserify": "^1.0.1",
         "react-docgen-typescript-loader": "^3.7.2",
         "react-docgen-typescript-webpack-plugin": "^1.1.0",
@@ -68,12 +72,19 @@
     },
     "dependencies": {
         "@dimensiondev/metamask-extension-provider": "https://github.com/DimensionDev/extension-provider/tarball/master",
+        "@interrep/semethid": "^0.10.0",
+        "@libsem/identity": "^1.0.17",
+        "@libsem/protocols": "^1.0.24",
         "@types/classnames": "^2.2.11",
+        "axios": "^0.24.0",
         "bigint-conversion": "^2.1.12",
         "browserify": "^17.0.0",
         "classnames": "^2.2.6",
+        "crypto-js": "^4.1.1",
         "eventemitter2": "^6.4.4",
+        "extensionizer": "^1.0.1",
         "fast-deep-equal": "^3.1.3",
+        "node-sass": "^6.0.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "react-redux": "^7.2.3",
@@ -82,8 +93,6 @@
         "redux": "^4.0.5",
         "redux-logger": "^3.0.6",
         "redux-thunk": "^2.3.0",
-        "semaphore-lib": "git+https://github.com/akinovak/semaphore-lib.git#dev",
-        "@interrep/semethid": "^0.8.1",
         "web3": "^1.5.3"
     }
 }

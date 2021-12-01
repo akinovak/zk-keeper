@@ -1,51 +1,38 @@
-import {browser, WebRequest} from "webextension-polyfill-ts";
-import {MessageAction} from "@src/util/postMessage";
-import {AppService} from "@src/util/svc";
-import controllers from "@src/background/controllers";
-import Metamask from "@src/background/services/metamask";
-import Identity from "@src/background/services/identity";
+import { browser } from "webextension-polyfill-ts";
+import LockService from './services/lock';
+import App from './controllers/app';
+import { IRequest } from "./interfaces";
 
-(async function() {
-    let app: AppService;
+//TODO consider adding inTest env
 
-    browser.runtime.onMessage.addListener(async (request: any, sender: any) => {
-        await waitForStartApp();
+const app: App = new App();
 
+app.initialize()
+.then(async (app: App) => {
+    browser.runtime.onMessage.addListener(async (request: IRequest, _) => {
         try {
-            const res = await handleMessage(app, request);
+            const res = await app.handle(request);
             return [null, res];
         } catch (e: any) {
             return [e.message, null];
         }
-    });
+    })
+});
 
-    const startedApp = new AppService();
-    startedApp.add('metamask', new Metamask());
-    startedApp.add('identity', new Identity());
-    await startedApp.start();
-    app = startedApp;
+browser.runtime.onInstalled.addListener(async ({ reason }) => {
+  console.log('Reason: ', reason);
+  if(reason === 'install') {
+    //TODO open html where password will be interested
+    // browser.tabs.create({
+    //   url: 'popup.html'
+    // });
 
-    async function waitForStartApp() {
-        return new Promise((resolve) => {
-           if (app) {
-               resolve(true);
-               return;
-           }
-
-           setTimeout(async () => {
-               await waitForStartApp();
-               resolve(true);
-           }, 500);
-        });
-    }
-})();
-
-function handleMessage(app: AppService, message: MessageAction) {
-    const controller = controllers[message.type];
-
-    if (controller) {
-        return controller(app, message);
-    }
-}
+    await LockService.setupPassword('password123');
+  }
+    /**
+     * TODO: This is necessary before proper password flow is implemented
+     */
+  await LockService.setupPassword('password123');
+});
 
 

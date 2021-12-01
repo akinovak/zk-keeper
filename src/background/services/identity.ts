@@ -1,98 +1,96 @@
-import {GenericService} from "@src/util/svc";
-import {get, set} from "@src/background/services/storage";
-import {FullIdentity} from "@src/util/idTypes";
-import * as interrep from "@src/util/idTypes/interrep";
-import deepEqual from "fast-deep-equal";
+import {ZkIdentity} from "@libsem/identity";
+import { bigintToHex } from "bigint-conversion";
+import SimpleStorage from "./simple-storage";
+import LockService from "./lock";
 import pushMessage from "@src/util/pushMessage";
-import {setIdentities, setIdentityRequestPending} from "@src/ui/ducks/identities";
+import {setIdentities} from "@src/ui/ducks/identities";
 
 const DB_KEY = '@@identities@@';
 
-export default class Identity extends GenericService {
-    identities: FullIdentity[];
-    requestPending: boolean;
+export default class IdentityService extends SimpleStorage {
+    identities: Map<string, ZkIdentity>;
+    activeIdentity?: ZkIdentity;
 
     constructor() {
-        super();
-        this.identities = [];
-        this.requestPending = false;
+        super(DB_KEY);
+        this.identities = new Map();
+        this.activeIdentity = undefined;
     }
 
-    refreshIdentities = async () => {
-        const content = await get(DB_KEY);
-        this.identities = Object.entries(content || {}).map(([key, value]) => value as FullIdentity);
+    unlock = async (_: any) => {
+        const encryptedContent = await this.get();
+        if(!encryptedContent) return true;
+
+        const decrypted: any = await LockService.decrypt(encryptedContent);
+        await this.loadInMemory(JSON.parse(decrypted));
+        await this.setDefaultIdentity();
+
+        pushMessage(setIdentities(await this.getIdentityCommitments()));
+        return true;
     }
 
-    getRequestPendingStatus = async () => {
-        return this.requestPending;
-    }
+    refresh = async () => {
+        const encryptedContent = await this.get();
+        if(!encryptedContent) return;
 
-    getIdentities = async (dangerous = false) => {
-        await this.refreshIdentities();
-        if (dangerous) return this.identities;
-        return this.identities.map(({ data, hasher, idProvider, type }) => ({
-            data,
-            hasher,
-            idProvider,
-            type,
-        }));
-    }
-
-    requestIdentities = async () => {
-        this.requestPending = true;
-        return pushMessage(setIdentityRequestPending(true));
-    }
-
-    confirmRequest = async () => {
-        const identities = await this.getIdentities();
-        this.emit('accepted', identities);
-        this.requestPending = false;
-        return pushMessage(setIdentityRequestPending(false));
-    }
-
-    rejectRequest = async () => {
-        this.emit('rejected');
-        this.requestPending = false;
-        return pushMessage(setIdentityRequestPending(false));
-    }
-
-    addIdentity = async (newIdentity: FullIdentity) => {
-        const existing = await this.getIdentities();
-
-        for (const identity of existing) {
-            if (deepEqual(identity, newIdentity)) {
-                return;
-            }
+        const decrypted: any = await LockService.decrypt(encryptedContent);
+        await this.loadInMemory(JSON.parse(decrypted));
+        //if the first identity just added, set it to active
+        if(this.identities.size === 1) {
+            await this.setDefaultIdentity();
         }
 
-        const newIdentities = [...existing, newIdentity];
-
-        await pushMessage(setIdentities(newIdentities));
-
-        return set(DB_KEY, newIdentities);
+        pushMessage(setIdentities(await this.getIdentityCommitments()));
     }
 
-    createIdentity = async (providerId: string, option: interrep.CreateIdentityOption) => {
-        const web3 = await this.exec('metamask', 'getWeb3');
-        const data = await this.exec('metamask', 'getWalletInfo');
-        let identity: FullIdentity;
+    loadInMemory = async (decrypted: any) => {
+        Object.entries(decrypted || {}).map(([_, value]) => {
+            const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string);
+            const identityCommitment: bigint = identity.genIdentityCommitment();
+            this.identities.set(bigintToHex(identityCommitment), identity);
+        })
+    }
 
-        switch (providerId) {
-            case interrep.providerId:
-                identity = await interrep.createIdentity({
-                    ...option,
-                    sign: (message: string) => web3.eth.personal.sign(message, data?.account),
-                    account: data?.account,
-                });
+    setDefaultIdentity = async () => {
+        if(!this.identities.size) return;
 
-                await this.addIdentity(identity);
-                return identity;
-            default:
-                throw new Error(`unknown providerId - ${providerId}`);
+        const firstKey: string = this.identities.keys().next().value;
+        this.activeIdentity = this.identities.get(firstKey);
+    }
+
+    setActiveIdentity = async (identityCommitment: string) => {
+        if(this.identities.has(identityCommitment)) {
+            this.activeIdentity = this.identities.get(identityCommitment);
         }
     }
 
-    async start() {
-        this.refreshIdentities();
+    getActiveidentity = async (): Promise<ZkIdentity | undefined> => {
+        return this.activeIdentity;
+    }
+
+    getIdentityCommitments = async () => {
+        const commitments: string[] = [];
+        for (let key of this.identities.keys()) {
+            commitments.push(key);
+        }
+        return commitments;
+    }
+
+    addIdentity = async (newIdentity: ZkIdentity): Promise<boolean> => {
+        const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment());
+        const existing: boolean = this.identities.has(identityCommitment);
+
+        if(existing) return false;
+
+        const existingIdentites: string[] = [];
+        for (let identity of this.identities.values()) {
+            existingIdentites.push(identity.serializeIdentity());
+        }
+
+        const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
+        const ciphertext = await LockService.encrypt(JSON.stringify(newValue));
+        await this.set(ciphertext);
+        await this.refresh();
+        return true;
     }
 }

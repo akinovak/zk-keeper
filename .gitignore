@@ -6,3 +6,5 @@ dist/js
 dist.zip
 test/dist
 test/.parcel-cache
+zkeyFiles
+.parcel-cache/
