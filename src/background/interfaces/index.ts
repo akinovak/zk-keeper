@@ -19,7 +19,7 @@ export type CreateIdentityOption = {
 
 //TODO add more options
 export type NewIdentityRequest = {
-    providerId: string, 
+    id: string,
     option: CreateIdentityOption
 }
 
@@ -30,7 +30,7 @@ export type ZkInputs = {
 }
 
 //TODO here we can add different types, sign for example...
-export type PendingRequestType = 'proof';
+export type PendingRequestType = 'proof' | 'dummy';
 
 export type PendingRequest = {
     id: string, 

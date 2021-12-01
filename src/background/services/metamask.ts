@@ -8,7 +8,7 @@ export default class MetamaskService {
     provider?: any;
     web3?: Web3;
 
-    ensure = async (_: any = null) => {
+    ensure = async (payload: any = null) => {
         if (!this.provider) {
             this.provider = await createMetaMaskProvider();
         }
@@ -27,6 +27,8 @@ export default class MetamaskService {
                 pushMessage(setNetwork(networkType as string));
             });
         }
+
+        return payload;
     }
 
     getWeb3 = async (): Promise<Web3> => {

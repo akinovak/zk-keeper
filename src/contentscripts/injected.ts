@@ -33,6 +33,12 @@ async function getIdentityCommitments() {
   });
 }
 
+async function createDummyRequest() {
+  return post({
+    method: RPCAction.DUMMY_REQUEST,
+  });
+}
+
 async function semaphoreProof(
   externalNullifier: string, 
   signal: string, 
@@ -83,6 +89,7 @@ async function openPopup() {
 const client = {
   openPopup,
   getIdentityCommitments,
+  createDummyRequest,
   semaphoreProof,
   unlock,
   logout
@@ -106,7 +113,10 @@ async function post(message: IRequest) {
     const messageNonce = nonce++;
     window.postMessage({
       target: 'injected-contentscript',
-      message,
+      message: {
+        ...message,
+        type: message.method,
+      },
       nonce: messageNonce,
     }, '*');
 

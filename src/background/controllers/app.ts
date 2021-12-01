@@ -13,6 +13,7 @@ import SemaphoreService from "../services/protocols/semaphore";
 import { ISafeProof, ISemaphoreProofRequest } from "../services/protocols/interfaces";
 
 const PROOF = 'proof';
+const DUMMY = 'dummy';
 
 export default class App extends Handler {
     private identityService: IdentityService;
@@ -36,7 +37,7 @@ export default class App extends Handler {
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask);
 
         this.add(RPCAction.CREATE_IDENTITY, LockService.ensure, this.metamaskService.ensure, async (payload: NewIdentityRequest) => {
-            const { providerId } = payload;
+            const { id: providerId } = payload;
             if(!providerId) throw new Error("Provider required");
 
             const web3: Web3 = await this.metamaskService.getWeb3();
@@ -67,6 +68,10 @@ export default class App extends Handler {
 
         this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
         this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
+        this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
+        this.add(RPCAction.DUMMY_REQUEST, async () => {
+            return this.requestManager.newRequest('', DUMMY);
+        });
 
         this.add(RPCAction.SEMAPHORE_PROOF, LockService.ensure, this.zkValidator.validateZkInputs, async (payload: ISemaphoreProofRequest) => {
             const identity: ZkIdentity | undefined = await this.identityService.getActiveidentity();

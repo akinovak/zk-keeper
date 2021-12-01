@@ -21,6 +21,7 @@ class LockService extends SimpleStorage {
     setupPassword = async (password: string) => {
         const ciphertext: string = CryptoJS.AES.encrypt(this.passwordChecker, password).toString();
         await this.set(ciphertext);
+        await this.unlock({ password });
     }
 
     unlock = async (payload: any): Promise<boolean> => {

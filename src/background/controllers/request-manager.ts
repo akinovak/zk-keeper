@@ -3,6 +3,9 @@ import { randomUUID } from "crypto";
 import { EventEmitter2 } from "eventemitter2";
 import { FinalizedRequest, PendingRequest, PendingRequestType, RequestResolutionAction } from "../interfaces";
 import BrowserUtils from "./browser-utils";
+import {setPendingRequest} from "@src/ui/ducks/requests";
+
+let nonce = 0;
 
 export default class RequestManager extends EventEmitter2 {
     private pendingRequests: Array<PendingRequest>;
@@ -12,8 +15,8 @@ export default class RequestManager extends EventEmitter2 {
         this.pendingRequests = new Array();
     }
 
-    getRequests = (): string => {
-        return JSON.stringify(this.pendingRequests);
+    getRequests = (): PendingRequest[] => {
+        return this.pendingRequests;
     }
 
     finalizeRequest = async (payload: FinalizedRequest): Promise<boolean> => {
@@ -25,13 +28,15 @@ export default class RequestManager extends EventEmitter2 {
             return pendingRequest.id !== id;
         });
         this.emit(`${id}:finalized`, action);
+        await pushMessage(setPendingRequest(this.pendingRequests));
         return true;
     }
 
     addToQueue = async (type: PendingRequestType): Promise<string> => {
-        const id: string = randomUUID();
+        const id: string = '' + nonce++;
         this.pendingRequests.push({ id, type });
-        await await BrowserUtils.openPopup();
+        await pushMessage(setPendingRequest(this.pendingRequests));
+        await BrowserUtils.openPopup();
         return id;
     }
 
@@ -45,6 +50,7 @@ export default class RequestManager extends EventEmitter2 {
                         return;
                     case 'reject':
                         reject(data);
+                        return;
                     default:
                         throw new Error(`action: ${action} not supproted`);
                 }
