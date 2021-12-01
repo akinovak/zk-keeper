@@ -29,6 +29,10 @@ browser.runtime.onInstalled.addListener(async ({ reason }) => {
 
     await LockService.setupPassword('password123');
   }
+    /**
+     * TODO: This is necessary before proper password flow is implemented
+     */
+  await LockService.setupPassword('password123');
 });
 
 

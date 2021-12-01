@@ -8,4 +8,5 @@ export enum RPCAction {
     FINALIZE_REQUEST = 'rpc/requests/finalize',
     GET_PENDING_REQUESTS = 'rpc/requests/get',
     SEMAPHORE_PROOF = 'rpc/protocols/semaphore/genProof',
+    DUMMY_REQUEST = 'rpc/protocols/semaphore/dummyReuqest',
 }
