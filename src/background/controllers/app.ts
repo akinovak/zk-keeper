@@ -37,6 +37,7 @@ export default class App extends Handler {
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask);
 
         this.add(RPCAction.CREATE_IDENTITY, LockService.ensure, this.metamaskService.ensure, async (payload: NewIdentityRequest) => {
+            //TODO wrapp this in try catch if something wrong happens on metamask side
             const { id: providerId } = payload;
             if(!providerId) throw new Error("Provider required");
 
@@ -55,11 +56,13 @@ export default class App extends Handler {
                     sign: (message: string) => web3.eth.sign(message, walletInfo?.account),
                     account: walletInfo?.account,
                 });
-
+            } else if (providerId === 'random') {
+                identity = new ZkIdentity();
             } else {
                 throw new Error(`Provider: ${providerId} is not supported`);
             }
 
+            console.log('Debug: Identity is created: ', identity);
             await this.identityService.addIdentity(identity);
             return true;
         });
@@ -69,6 +72,7 @@ export default class App extends Handler {
         this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
         this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
         this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
+        //For testing purposes
         this.add(RPCAction.DUMMY_REQUEST, async () => {
             return this.requestManager.newRequest('hello from dummy', DUMMY);
         });

@@ -29,7 +29,7 @@ async function connect() {
 
 async function getIdentityCommitments() {
   return post({
-    method: 'getIdentityCommitments',
+    method: RPCAction.GET_COMMITMENTS,
   });
 }
 

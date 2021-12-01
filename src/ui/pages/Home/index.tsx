@@ -93,7 +93,8 @@ function CreateIdentityModal(props: {onClose: () => void}): ReactElement {
     const dispatch = useDispatch();
 
     const create = useCallback(async () => {
-        await dispatch(createIdentity('interrep', {
+        //TODO add radnom strategy while metamask issue is not resolved
+        await dispatch(createIdentity('random', {
             nonce,
             web2Provider,
             sign: () => Promise.resolve(''),

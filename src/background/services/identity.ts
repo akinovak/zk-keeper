@@ -63,7 +63,7 @@ export default class IdentityService extends SimpleStorage {
         const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment());
         const existing: boolean = this.identities.has(identityCommitment);
 
-        if(!existing) return false;
+        if(existing) return false;
 
         const existingIdentites: string[] = [];
         for (let identity of this.identities.values()) {
