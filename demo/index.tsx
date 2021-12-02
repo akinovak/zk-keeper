@@ -9,7 +9,8 @@ const merkleStorageAddress = 'http://localhost:5000/merkle'
 function App() {
     React.useEffect(() => {
         ;(async function IIFE() {
-            const client = await window.injected.connect()
+            const { injected } = window as any
+            const client = await injected.connect()
             const externalNullifier = genExternalNullifier('voting-1')
             const signal = '0x111'
 
