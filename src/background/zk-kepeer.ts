@@ -96,7 +96,7 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove);
 
         // DEV
-        this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.clear);
+        this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.empty);
         this.add(RPCAction.DUMMY_REQUEST, async () => this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY));
 
         return this;

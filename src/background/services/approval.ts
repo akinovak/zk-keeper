@@ -26,8 +26,11 @@ export default class ApprovalService extends SimpleStorage {
     }
 
     refresh = async () => {
-        const encrypedArray: Array<string> = await this.get()
-        if (!encrypedArray) return
+        const encrypedArray: Array<string> = await this.get();
+        if (!encrypedArray) {
+            this.allowedHosts = [];
+            return;
+        }
 
         const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => LockService.decrypt(cipertext))
 
@@ -68,9 +71,9 @@ export default class ApprovalService extends SimpleStorage {
     }
 
     /** dev only */
-    clear = async (): Promise<any> => {
-        if(!(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'TEST')) return;
-        // eslint-disable-next-line consistent-return
-        return this.clear();
+    empty = async (): Promise<any> => {
+        if(!(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) return;
+        await this.clear();
+        await this.refresh();
     }
 }
