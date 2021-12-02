@@ -30,7 +30,10 @@ export type ZkInputs = {
 }
 
 //TODO here we can add different types, sign for example...
-export type PendingRequestType = 'proof' | 'dummy';
+export const PROOF = 'proof';
+export const DUMMY = 'dummy';
+export const APPROVE = 'approve';
+export type PendingRequestType = 'proof' | 'approve' | 'dummy';
 
 export type PendingRequest = {
     id: string, 
@@ -42,4 +45,9 @@ export type RequestResolutionAction = 'accept' | 'reject';
 export type FinalizedRequest = {
     id: string, 
     action: RequestResolutionAction
+}
+
+export type ApprovalAction = {
+    host: string, 
+    action: 'add' | 'remove'
 }

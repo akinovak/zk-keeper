@@ -1,14 +1,13 @@
 import { browser } from "webextension-polyfill-ts";
 import LockService from './services/lock';
-import App from './controllers/app';
+import ZkKepperController from './zk-kepeer';
 import { Request } from "@src/types";
 
 //TODO consider adding inTest env
-
-const app: App = new App();
+const app: ZkKepperController = new ZkKepperController();
 
 app.initialize()
-.then(async (app: App) => {
+.then(async (app: ZkKepperController) => {
     browser.runtime.onMessage.addListener(async (request: Request, _) => {
         try {
             const res = await app.handle(request);
