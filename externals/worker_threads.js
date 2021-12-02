@@ -1,1 +1,1 @@
-module.exports = window.worker_threads;
+module.exports = window.worker_threads

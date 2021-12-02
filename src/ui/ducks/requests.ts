@@ -1,40 +1,40 @@
-import {useSelector} from "react-redux";
-import {AppRootState} from "@src/ui/store/configureAppStore";
-import deepEqual from "fast-deep-equal";
-import { PendingRequest } from "@src/types";
-import {Dispatch} from "redux";
-import { RPCAction } from "@src/util/constants";
-import postMessage from "@src/util/postMessage";
+import { useSelector } from 'react-redux'
+import { AppRootState } from '@src/ui/store/configureAppStore'
+import deepEqual from 'fast-deep-equal'
+import { PendingRequest } from '@src/types'
+import { Dispatch } from 'redux'
+import { RPCAction } from '@src/util/constants'
+import postMessage from '@src/util/postMessage'
 
 enum ActionType {
-    SET_PENDING_REQUESTS = 'request/setPendingRequests',
+    SET_PENDING_REQUESTS = 'request/setPendingRequests'
 }
 
 type Action<payload> = {
-    type: ActionType;
-    payload?: payload;
-    meta?: any;
-    error?: boolean;
+    type: ActionType
+    payload?: payload
+    meta?: any
+    error?: boolean
 }
 
 type State = {
-    pendingRequests: PendingRequest[];
+    pendingRequests: PendingRequest[]
 }
 
 const initialState: State = {
     pendingRequests: []
-};
+}
 
 export const setPendingRequest = (pendingRequests: PendingRequest[]): Action<PendingRequest[]> => {
-    return { 
+    return {
         type: ActionType.SET_PENDING_REQUESTS,
-        payload: pendingRequests,
-    };
+        payload: pendingRequests
+    }
 }
 
 export const fetchRequestPendingStatus = () => async (dispatch: Dispatch) => {
-    const pendingRequests = await postMessage({ method: RPCAction.GET_PENDING_REQUESTS });
-    dispatch(setPendingRequest(pendingRequests));
+    const pendingRequests = await postMessage({ method: RPCAction.GET_PENDING_REQUESTS })
+    dispatch(setPendingRequest(pendingRequests))
 }
 
 /**
@@ -59,15 +59,15 @@ export default function requests(state = initialState, action: Action<any>): Sta
         case ActionType.SET_PENDING_REQUESTS:
             return {
                 ...state,
-                pendingRequests: action.payload,
-            };
+                pendingRequests: action.payload
+            }
         default:
-            return state;
+            return state
     }
 }
 
 export const useRequestsPending = () => {
     return useSelector((state: AppRootState) => {
-        return state.requests.pendingRequests;
-    }, deepEqual);
+        return state.requests.pendingRequests
+    }, deepEqual)
 }

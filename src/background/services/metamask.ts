@@ -1,87 +1,87 @@
-import pushMessage from "@src/util/pushMessage";
-import createMetaMaskProvider from "@dimensiondev/metamask-extension-provider";
-import Web3 from "web3";
-import {setAccount, setNetwork, setWeb3Connecting} from "@src/ui/ducks/web3";
-import { WalletInfo } from "@src/types";
+import pushMessage from '@src/util/pushMessage'
+import createMetaMaskProvider from '@dimensiondev/metamask-extension-provider'
+import Web3 from 'web3'
+import { setAccount, setNetwork, setWeb3Connecting } from '@src/ui/ducks/web3'
+import { WalletInfo } from '@src/types'
 
 export default class MetamaskService {
-    provider?: any;
-    web3?: Web3;
+    provider?: any
+    web3?: Web3
 
     ensure = async (payload: any = null) => {
         if (!this.provider) {
-            this.provider = await createMetaMaskProvider();
+            this.provider = await createMetaMaskProvider()
         }
 
         if (this.provider) {
             if (!this.web3) {
-                this.web3 = new Web3(this.provider);
+                this.web3 = new Web3(this.provider)
             }
 
             this.provider.on('accountsChanged', ([account]) => {
-                pushMessage(setAccount(account));
-            });
+                pushMessage(setAccount(account))
+            })
 
             this.provider.on('chainChanged', async () => {
-                const networkType = await this.web3?.eth.net.getNetworkType();
-                pushMessage(setNetwork(networkType as string));
-            });
+                const networkType = await this.web3?.eth.net.getNetworkType()
+                pushMessage(setNetwork(networkType as string))
+            })
         }
 
-        return payload;
+        return payload
     }
 
     getWeb3 = async (): Promise<Web3> => {
-        if (!this.web3) throw new Error(`web3 is not initialized`);
-        return this.web3;
+        if (!this.web3) throw new Error(`web3 is not initialized`)
+        return this.web3
     }
 
     getWalletInfo = async (): Promise<WalletInfo | null> => {
-        await this.ensure();
+        await this.ensure()
 
         if (!this.web3) {
-            return null;
+            return null
         }
 
         if (this.provider?.selectedAddress) {
-            const accounts = await this.web3.eth.requestAccounts();
-            const networkType = await this.web3.eth.net.getNetworkType();
+            const accounts = await this.web3.eth.requestAccounts()
+            const networkType = await this.web3.eth.net.getNetworkType()
 
             if (!accounts.length) {
-                throw new Error('No accounts found');
+                throw new Error('No accounts found')
             }
 
             return {
                 account: accounts[0],
-                networkType: networkType,
-            };
+                networkType: networkType
+            }
         }
 
-        return null;
+        return null
     }
 
     connectMetamask = async () => {
-        await pushMessage(setWeb3Connecting(true));
+        await pushMessage(setWeb3Connecting(true))
 
         try {
-            await this.ensure();
+            await this.ensure()
 
             if (this.web3) {
-                const accounts = await this.web3.eth.requestAccounts();
-                const networkType = await this.web3.eth.net.getNetworkType();
+                const accounts = await this.web3.eth.requestAccounts()
+                const networkType = await this.web3.eth.net.getNetworkType()
 
                 if (!accounts.length) {
-                    throw new Error('No accounts found');
+                    throw new Error('No accounts found')
                 }
 
-                await pushMessage(setAccount(accounts[0]));
-                await pushMessage(setNetwork(networkType));
+                await pushMessage(setAccount(accounts[0]))
+                await pushMessage(setNetwork(networkType))
             }
 
-            await pushMessage(setWeb3Connecting(false));
+            await pushMessage(setWeb3Connecting(false))
         } catch (e) {
-            await pushMessage(setWeb3Connecting(false));
-            throw e;
+            await pushMessage(setWeb3Connecting(false))
+            throw e
         }
     }
 }
