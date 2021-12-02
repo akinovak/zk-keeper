@@ -13,7 +13,6 @@ export enum RPCAction {
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',
     REMOVE_HOST = 'rpc/hosts/remove',
-
     //DEV RPCS
     CLEAR_APPROVED_HOSTS = 'rpc/hosts/clear'
 }

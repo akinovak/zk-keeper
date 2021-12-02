@@ -1,60 +1,168 @@
-export type Request = {
-    method: string;
-    payload?: any;
-    error?: boolean;
-    meta?: any;
+import {RPCAction} from "@src/util/constants";
+
+//TODO wtich to Reuest from types
+export type IRequest = {
+  method: string;
+  payload?: any;
+  error?: boolean;
+  meta?: any;
 };
 
-export type WalletInfo = {
-    account: string,
-    networkType: string,
+
+const promises: {
+  [k: string]: {
+    resolve: Function;
+    reject: Function;
+  };
+} = {};
+
+let nonce = 0;
+
+
+async function getIdentityCommitments() {
+  return post({
+    method: RPCAction.GET_COMMITMENTS,
+  });
 }
 
-export type CreateIdentityOption = {
-    web2Provider: 'Twitter' | 'Reddit' | 'Github';
-    nonce?: number;
-    sign: (message: string) => Promise<string>,
-    account: string;
+async function createDummyRequest() {
+  return post({
+    method: RPCAction.DUMMY_REQUEST,
+  });
 }
 
-//TODO add more options
-export type NewIdentityRequest = {
-    id: string,
-    option: CreateIdentityOption
+async function semaphoreProof(
+  externalNullifier: string,
+  signal: string,
+  merkleStorageAddress: string,
+  circuitFilePath: string,
+  zkeyFilePath: string
+  ) {
+  return post({
+    method: RPCAction.SEMAPHORE_PROOF,
+    payload: {
+      externalNullifier,
+      signal,
+      merkleStorageAddress,
+      circuitFilePath,
+      zkeyFilePath,
+    }
+  })
 }
 
-export type ZkInputs = {
-    circuitFilePath: string,
-    zkeyFilePath: string,
-    merkleStorageAddress: string
+async function unlock() {
+  return post({
+    method: 'unlock',
+    payload: { password: 'password123' }
+  })
 }
 
-export enum PendingRequestType {
-    PROOF,
-    DUMMY,
-    APPROVE,
-    INJECT,
+async function logout() {
+  return post({
+    method: 'logout',
+    payload: { }
+  })
+}
+
+
+/**
+ * Open Popup
+ */
+async function openPopup() {
+  return post({
+    method: 'OPEN_POPUP',
+  });
+}
+
+async function tryInject(origin: string) {
+    return post({
+        method: RPCAction.TRY_INJECT,
+        payload: { origin }
+    });
+}
+
+async function addHost(host: string) {
+    return post({
+        method: RPCAction.APPROVE_HOST,
+        payload: { host }
+    });
+}
+
+/**
+ * Injected Client
+ */
+ const client = {
+    openPopup,
+    getIdentityCommitments,
+    createDummyRequest,
+    semaphoreProof,
+    unlock,
+    logout
+  };
+
+
+/**
+ * Connect to Extension
+ * @returns injected client
+ */
+ async function connect() {
+    try {
+        const approved = await tryInject(window.location.origin);
+        const isApproved = approved as string === 'approved';
+        if(isApproved) {
+            await addHost(window.location.origin);
+            return client;
+        }
+    } catch(err) {
+        console.log("Rejected");
+    }
+}
+
+declare global {
+  interface Window {
+    injected: {
+      connect: () => any;
+    };
   }
-//TODO refactor to enum
-// export const PROOF = 'proof';
-// export const DUMMY = 'dummy';
-// export const APPROVE = 'approve';
-// export const INJECT = 'inject'
-// export type PendingRequestType = 'proof' | 'approve' | 'dummy' | 'inje';
+}
 
-export type PendingRequest = {
-    id: string,
-    type: PendingRequestType
+
+window.injected = {
+  connect,
 };
 
-export type RequestResolutionAction = 'accept' | 'reject';
 
-export type FinalizedRequest = {
-    id: string,
-    action: RequestResolutionAction
+// Connect injected script messages with content script messages
+async function post(message: IRequest) {
+  return new Promise((resolve, reject) => {
+    const messageNonce = nonce++;
+    window.postMessage({
+      target: 'injected-contentscript',
+      message: {
+        ...message,
+        type: message.method,
+      },
+      nonce: messageNonce,
+    }, '*');
+
+    promises[messageNonce] = { resolve, reject };
+  });
 }
 
-export type ApprovalAction = {
-    host: string,
-    action: 'add' | 'remove'
-}
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (data && data.target === 'injected-injectedscript') {
+    if (!promises[data.nonce]) return;
+
+    const [err, res] = data.payload;
+    const {resolve, reject} = promises[data.nonce];
+
+    if (err) {
+      return reject(new Error(err));
+    }
+
+    resolve(res);
+
+    delete promises[data.nonce];
+  }
+});

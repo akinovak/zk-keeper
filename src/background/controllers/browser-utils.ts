@@ -1,17 +1,16 @@
-import { browser } from "webextension-polyfill-ts";
+import { browser } from 'webextension-polyfill-ts'
 
 class BrowserUtils {
-
     createTab = async (options: any) => {
-        return browser.tabs.create(options);
+        return browser.tabs.create(options)
     }
 
     createWindow = async (options: any) => {
-        return browser.windows.create(options);
+        return browser.windows.create(options)
     }
 
     openPopup = async () => {
-        const tab = await this.createTab({ url: 'popup.html', active: false });
+        const tab = await this.createTab({ url: 'popup.html', active: false })
 
         //TODO add this in config/constants...
         const popup = await this.createWindow({
@@ -19,19 +18,19 @@ class BrowserUtils {
             type: 'popup',
             focused: true,
             width: 357,
-            height: 600,
+            height: 600
         })
 
-        return popup;
+        return popup
     }
 
     focusWindow = (windowId) => {
-        return browser.windows.update(windowId, { focused: true });
+        return browser.windows.update(windowId, { focused: true })
     }
 
     getAllWindows = () => {
-        return browser.windows.getAll();
+        return browser.windows.getAll()
     }
 }
 
-export default new BrowserUtils();
+export default new BrowserUtils()
