@@ -1,7 +1,7 @@
 import {browser} from "webextension-polyfill-ts";
 
 export default class SimpleStorage {
-    private key: string; 
+    private key: string;
 
     constructor(key) {
         this.key = key;
@@ -14,5 +14,9 @@ export default class SimpleStorage {
 
     set = async (value) => {
         return browser.storage.sync.set({[this.key]: value});
+    }
+
+    clear = async () => {
+        return browser.storage.sync.remove(this.key);
     }
 }

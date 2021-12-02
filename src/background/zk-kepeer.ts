@@ -4,7 +4,7 @@ import IdentityService from "./services/identity";
 import MetamaskService from "./services/metamask";
 import { ZkIdentity } from "@libsem/identity";
 import { RPCAction } from "@src/util/constants";
-import { ApprovalAction, APPROVE, DUMMY, NewIdentityRequest, PROOF, WalletInfo } from "@src/types";
+import { ApprovalAction, PendingRequestType, NewIdentityRequest, WalletInfo } from "@src/types";
 import * as interrep from "../util/interrep";
 import Web3 from "web3";
 import ZkValidator from "./services/whitelisted";
@@ -12,6 +12,7 @@ import RequestManager from "./controllers/request-manager";
 import SemaphoreService from "./services/protocols/semaphore";
 import { ISafeProof, ISemaphoreProofRequest } from "./services/protocols/interfaces";
 import ApprovalService from "./services/approval";
+import app from "@src/ui/ducks/app";
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService;
@@ -33,6 +34,8 @@ export default class ZkKepperController extends Handler {
     initialize = async (): Promise<ZkKepperController> => {
         this.add('unlock', LockService.unlock, this.metamaskService.ensure, this.identityService.unlock, this.approvalService.unlock);
         this.add('logout', LockService.logout);
+
+        this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
 
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask);
 
@@ -70,7 +73,6 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments);
 
         this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
-        this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
         this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
 
         this.add(RPCAction.SEMAPHORE_PROOF, LockService.ensure, this.zkValidator.validateZkInputs, async (payload: ISemaphoreProofRequest) => {
@@ -78,30 +80,28 @@ export default class ZkKepperController extends Handler {
             if(!identity) throw new Error("active identity not found");
 
             const safeProof: ISafeProof = await this.semaphoreService.genProof(identity, payload);
-            return this.requestManager.newRequest(JSON.stringify(safeProof), PROOF);
+            return this.requestManager.newRequest(JSON.stringify(safeProof), PendingRequestType.PROOF);
         });
 
-        this.add(RPCAction.REQUEST_ADD_REMOVE_APPROVAL, LockService.ensure, async (payload: ApprovalAction) => {
-            const { host, action } = payload;
-            if(!host) throw new Error("host not provided");
-            if(!action) throw new Error("action not provided");
+        //APPROVED HOSTS
+        this.add(RPCAction.TRY_INJECT, LockService.ensure, (payload: any) => {
+            const { origin }: { origin: string } = payload;
+            if(!origin) throw new Error("Origin not provided");
 
-            try {
-                const resolvedAction = await this.requestManager.newRequest(action, APPROVE);
-
-                if(resolvedAction === 'add') {
-                    await this.approvalService.add(host);
-                } else if(resolvedAction === 'remove') {
-                    await this.approvalService.remove(host);
-                } else {
-                    throw new Error('unrecognized action')
-                }
-
-            } catch(err: any) {
-                throw new Error(err.message);
-            }
+            const includes: boolean = this.approvalService.isApproved(origin);
+            if(includes) return 'approved';
+            return this.requestManager.newRequest('approved', PendingRequestType.INJECT);
         });
-        
+
+        this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add);
+        this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove);
+
+        //DEV
+        this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.clear);
+        this.add(RPCAction.DUMMY_REQUEST, async () => {
+            return this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY);
+        });
+
         return this;
     }
 

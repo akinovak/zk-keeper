@@ -25,29 +25,36 @@ export type NewIdentityRequest = {
 
 export type ZkInputs = {
     circuitFilePath: string,
-    zkeyFilePath: string, 
+    zkeyFilePath: string,
     merkleStorageAddress: string
 }
 
-//TODO here we can add different types, sign for example...
-export const PROOF = 'proof';
-export const DUMMY = 'dummy';
-export const APPROVE = 'approve';
-export type PendingRequestType = 'proof' | 'approve' | 'dummy';
+export enum PendingRequestType {
+    PROOF,
+    DUMMY,
+    APPROVE,
+    INJECT,
+  }
+//TODO refactor to enum
+// export const PROOF = 'proof';
+// export const DUMMY = 'dummy';
+// export const APPROVE = 'approve';
+// export const INJECT = 'inject'
+// export type PendingRequestType = 'proof' | 'approve' | 'dummy' | 'inje';
 
 export type PendingRequest = {
-    id: string, 
+    id: string,
     type: PendingRequestType
 };
 
 export type RequestResolutionAction = 'accept' | 'reject';
 
 export type FinalizedRequest = {
-    id: string, 
+    id: string,
     action: RequestResolutionAction
 }
 
 export type ApprovalAction = {
-    host: string, 
+    host: string,
     action: 'add' | 'remove'
 }

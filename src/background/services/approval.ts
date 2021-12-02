@@ -15,6 +15,10 @@ export default class ApprovalService extends SimpleStorage {
         return this.allowedHosts;
     }
 
+    isApproved = (origin: string): boolean => {
+        return this.allowedHosts.includes(origin);
+    }
+
     unlock = async () => {
         const encrypedArray: Array<string> = await this.get();
         if(!encrypedArray) return true;
@@ -37,19 +41,28 @@ export default class ApprovalService extends SimpleStorage {
         this.allowedHosts = await Promise.all(promises);
     }
 
-    add = async (host: string) => {
-        if(!host) throw new Error("No address provided");
+    add = async (payload: any) => {
+        const { host }: { host: string } = payload;
+        if(!host) throw new Error("No host provided");
 
         if(this.allowedHosts.includes(host)) return;
 
-        const newValue: Array<string> = [...this.allowedHosts, host];
-        await this.set(newValue);
+        this.allowedHosts.push(host);
 
+        const promises: Array<Promise<string>> = this.allowedHosts.map((host: string) => {
+            return LockService.encrypt(host);
+        });
+
+        const newValue: Array<string> = await Promise.all(promises);
+
+        await this.set(newValue);
         await this.refresh();
+        console.log(this.allowedHosts);
         return;
     }
 
-    remove = async (host: string) => {
+    remove = async (payload: any) => {
+        const { host }: { host: string } = payload;
         if(!host) throw new Error("No address provided");
 
         const index: number = this.allowedHosts.indexOf(host);
@@ -64,6 +77,12 @@ export default class ApprovalService extends SimpleStorage {
         const newValue: Array<string> = await Promise.all(promises);
         await this.set(newValue);
         await this.refresh();
+    }
+
+    /** dev only */
+    clear = async () => {
+        if(!(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'DEVELOPMENT')) return;
+        return this.clear();
     }
 
 }
