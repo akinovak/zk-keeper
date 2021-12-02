@@ -6,9 +6,12 @@
     "scripts": {
         "build": "NODE_ENV=production webpack --config webpack.prod.js",
         "dev": "NODE_ENV=development webpack -w --config webpack.dev.js",
-        "dapp": "parcel test/index.html",
         "serve": "./scripts/serve.sh",
-        "merkle": "node scripts/mock-merkle-proof.js"
+        "merkle": "node scripts/mock-merkle-proof.js",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+        "prettier": "prettier -c .",
+        "prettier:fix": "prettier -w ."
     },
     "repository": {
         "type": "git",
@@ -39,7 +42,7 @@
         "@types/react-dom": "^16.9.8",
         "@types/react-router-dom": "^5.1.7",
         "@types/redux-logger": "^3.0.8",
-        "@typescript-eslint/eslint-plugin": "^4.4.1",
+        "@typescript-eslint/eslint-plugin": "^5.5.0",
         "@typescript-eslint/parser": "^4.4.1",
         "awesome-typescript-loader": "^5.2.1",
         "babel-core": "^6.26.3",
@@ -47,16 +50,22 @@
         "babel-loader": "^8.2.2",
         "copy-webpack-plugin": "^6.4.1",
         "css-loader": "^4.3.0",
-        "eslint": "^7.11.0",
-        "eslint-config-prettier": "^6.12.0",
+        "eslint": "^8.3.0",
+        "eslint-config-airbnb": "^19.0.1",
+        "eslint-config-airbnb-typescript": "^16.1.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-import": "^2.25.3",
+        "eslint-plugin-jest": "^25.3.0",
+        "eslint-plugin-jsx-a11y": "^6.5.1",
         "eslint-plugin-prettier": "^3.1.4",
-        "eslint-plugin-react": "^7.21.4",
+        "eslint-plugin-react": "^7.27.1",
+        "eslint-plugin-react-hooks": "^4.3.0",
         "express": "^4.17.1",
         "file-loader": "^6.2.0",
         "image-webpack-loader": "^7.0.1",
         "npm-force-resolutions": "0.0.10",
-        "parcel": "^2.0.1",
         "path-browserify": "^1.0.1",
+        "prettier": "^2.5.0",
         "react-docgen-typescript-loader": "^3.7.2",
         "react-docgen-typescript-webpack-plugin": "^1.1.0",
         "sass-loader": "^10.0.3",
@@ -64,8 +73,7 @@
         "stream-http": "^3.2.0",
         "style-loader": "^2.0.0",
         "ts-loader": "^8.0.5",
-        "typescript": "^4.0.3",
-        "webextension-polyfill-ts": "^0.20.0",
+        "typescript": "^4.5.0",
         "webpack": "^5.52.0",
         "webpack-cli": "^3.3.10",
         "webpack-merge": "^4.2.2"
@@ -93,6 +101,7 @@
         "redux": "^4.0.5",
         "redux-logger": "^3.0.6",
         "redux-thunk": "^2.3.0",
-        "web3": "^1.5.3"
+        "web3": "^1.5.3",
+        "webextension-polyfill-ts": "^0.20.0"
     }
 }

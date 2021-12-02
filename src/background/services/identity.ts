@@ -1,96 +1,96 @@
-import {ZkIdentity} from "@libsem/identity";
-import { bigintToHex } from "bigint-conversion";
-import SimpleStorage from "./simple-storage";
-import LockService from "./lock";
-import pushMessage from "@src/util/pushMessage";
-import {setIdentities} from "@src/ui/ducks/identities";
+import { ZkIdentity } from '@libsem/identity'
+import { bigintToHex } from 'bigint-conversion'
+import pushMessage from '@src/util/pushMessage'
+import { setIdentities } from '@src/ui/ducks/identities'
+import SimpleStorage from './simple-storage'
+import LockService from './lock'
 
-const DB_KEY = '@@identities@@';
+const DB_KEY = '@@identities@@'
 
 export default class IdentityService extends SimpleStorage {
-    identities: Map<string, ZkIdentity>;
-    activeIdentity?: ZkIdentity;
+    identities: Map<string, ZkIdentity>
+    activeIdentity?: ZkIdentity
 
     constructor() {
-        super(DB_KEY);
-        this.identities = new Map();
-        this.activeIdentity = undefined;
+        super(DB_KEY)
+        this.identities = new Map()
+        this.activeIdentity = undefined
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock = async (_: any) => {
-        const encryptedContent = await this.get();
-        if(!encryptedContent) return true;
+        const encryptedContent = await this.get()
+        if (!encryptedContent) return true
 
-        const decrypted: any = await LockService.decrypt(encryptedContent);
-        await this.loadInMemory(JSON.parse(decrypted));
-        await this.setDefaultIdentity();
+        const decrypted: any = await LockService.decrypt(encryptedContent)
+        await this.loadInMemory(JSON.parse(decrypted))
+        await this.setDefaultIdentity()
 
-        pushMessage(setIdentities(await this.getIdentityCommitments()));
-        return true;
+        pushMessage(setIdentities(await this.getIdentityCommitments()))
+        return true
     }
 
     refresh = async () => {
-        const encryptedContent = await this.get();
-        if(!encryptedContent) return;
+        const encryptedContent = await this.get()
+        if (!encryptedContent) return
 
-        const decrypted: any = await LockService.decrypt(encryptedContent);
-        await this.loadInMemory(JSON.parse(decrypted));
-        //if the first identity just added, set it to active
-        if(this.identities.size === 1) {
-            await this.setDefaultIdentity();
+        const decrypted: any = await LockService.decrypt(encryptedContent)
+        await this.loadInMemory(JSON.parse(decrypted))
+        // if the first identity just added, set it to active
+        if (this.identities.size === 1) {
+            await this.setDefaultIdentity()
         }
 
-        pushMessage(setIdentities(await this.getIdentityCommitments()));
+        pushMessage(setIdentities(await this.getIdentityCommitments()))
     }
 
     loadInMemory = async (decrypted: any) => {
-        Object.entries(decrypted || {}).map(([_, value]) => {
-            const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string);
-            const identityCommitment: bigint = identity.genIdentityCommitment();
-            this.identities.set(bigintToHex(identityCommitment), identity);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(decrypted || {}).forEach(([_, value]) => {
+            const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string)
+            const identityCommitment: bigint = identity.genIdentityCommitment()
+            this.identities.set(bigintToHex(identityCommitment), identity)
         })
     }
 
     setDefaultIdentity = async () => {
-        if(!this.identities.size) return;
+        if (!this.identities.size) return
 
-        const firstKey: string = this.identities.keys().next().value;
-        this.activeIdentity = this.identities.get(firstKey);
+        const firstKey: string = this.identities.keys().next().value
+        this.activeIdentity = this.identities.get(firstKey)
     }
 
     setActiveIdentity = async (identityCommitment: string) => {
-        if(this.identities.has(identityCommitment)) {
-            this.activeIdentity = this.identities.get(identityCommitment);
+        if (this.identities.has(identityCommitment)) {
+            this.activeIdentity = this.identities.get(identityCommitment)
         }
     }
 
-    getActiveidentity = async (): Promise<ZkIdentity | undefined> => {
-        return this.activeIdentity;
-    }
+    getActiveidentity = async (): Promise<ZkIdentity | undefined> => this.activeIdentity
 
     getIdentityCommitments = async () => {
-        const commitments: string[] = [];
-        for (let key of this.identities.keys()) {
-            commitments.push(key);
+        const commitments: string[] = []
+        for (const key of this.identities.keys()) {
+            commitments.push(key)
         }
-        return commitments;
+        return commitments
     }
 
     addIdentity = async (newIdentity: ZkIdentity): Promise<boolean> => {
-        const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment());
-        const existing: boolean = this.identities.has(identityCommitment);
+        const identityCommitment: string = bigintToHex(newIdentity.genIdentityCommitment())
+        const existing: boolean = this.identities.has(identityCommitment)
 
-        if(existing) return false;
+        if (existing) return false
 
-        const existingIdentites: string[] = [];
-        for (let identity of this.identities.values()) {
-            existingIdentites.push(identity.serializeIdentity());
+        const existingIdentites: string[] = []
+        for (const identity of this.identities.values()) {
+            existingIdentites.push(identity.serializeIdentity())
         }
 
         const newValue: string[] = [...existingIdentites, newIdentity.serializeIdentity()]
-        const ciphertext = await LockService.encrypt(JSON.stringify(newValue));
-        await this.set(ciphertext);
-        await this.refresh();
-        return true;
+        const ciphertext = await LockService.encrypt(JSON.stringify(newValue))
+        await this.set(ciphertext)
+        await this.refresh()
+        return true
     }
 }

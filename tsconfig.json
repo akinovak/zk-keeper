@@ -18,5 +18,6 @@
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "noImplicitAny": false
-    }
+    },
+    "include": ["src"]
 }

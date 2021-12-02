@@ -1,5 +1,6 @@
-import {MessageAction} from "@src/util/postMessage";
-import {RPCAction} from "@src/util/constants";
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
+import RPCAction from "@src/util/constants";
 
 export type IRequest = {
   method: string;
@@ -19,14 +20,6 @@ const promises: {
 let nonce = 0;
 
 
-/**
- * Connect to Extension
- * @returns injected client
- */
-async function connect() {
-  return client;
-}
-
 async function getIdentityCommitments() {
   return post({
     method: RPCAction.GET_COMMITMENTS,
@@ -40,8 +33,8 @@ async function createDummyRequest() {
 }
 
 async function semaphoreProof(
-  externalNullifier: string, 
-  signal: string, 
+  externalNullifier: string,
+  signal: string,
   merkleStorageAddress: string,
   circuitFilePath: string,
   zkeyFilePath: string
@@ -51,9 +44,9 @@ async function semaphoreProof(
     payload: {
       externalNullifier,
       signal,
-      merkleStorageAddress, 
-      circuitFilePath, 
-      zkeyFilePath, 
+      merkleStorageAddress,
+      circuitFilePath,
+      zkeyFilePath,
     }
   })
 }
@@ -82,34 +75,69 @@ async function openPopup() {
   });
 }
 
+async function tryInject(origin: string) {
+    return post({
+        method: RPCAction.TRY_INJECT,
+        payload: { origin }
+    });
+}
+
+async function addHost(host: string) {
+    return post({
+        method: RPCAction.APPROVE_HOST,
+        payload: { host }
+    });
+}
 
 /**
  * Injected Client
  */
-const client = {
-  openPopup,
-  getIdentityCommitments,
-  createDummyRequest,
-  semaphoreProof,
-  unlock,
-  logout
-};
+ const client = {
+    openPopup,
+    getIdentityCommitments,
+    createDummyRequest,
+    semaphoreProof,
+    unlock,
+    logout
+  };
+
+
+/**
+ * Connect to Extension
+ * @returns injected client
+ */
+ // eslint-disable-next-line consistent-return
+ async function connect() {
+    try {
+        const approved = await tryInject(window.location.origin);
+        const isApproved = approved as string === 'approved';
+        if(isApproved) {
+            await addHost(window.location.origin);
+            return client;
+        }
+    } catch(err) {
+        console.log("Rejected");
+    }
+}
+
+declare global {
+  interface Window {
+    injected: {
+      connect: () => any;
+    };
+  }
+}
+
 
 window.injected = {
   connect,
 };
 
-declare global {
-  interface Window {
-    injected: {
-      connect: () => Promise<typeof client>;
-    };
-  }
-}
 
 // Connect injected script messages with content script messages
 async function post(message: IRequest) {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-plusplus
     const messageNonce = nonce++;
     window.postMessage({
       target: 'injected-contentscript',
@@ -125,7 +153,7 @@ async function post(message: IRequest) {
 }
 
 window.addEventListener('message', (event) => {
-  const data = event.data;
+  const {data} = event;
   if (data && data.target === 'injected-injectedscript') {
     if (!promises[data.nonce]) return;
 
@@ -133,6 +161,7 @@ window.addEventListener('message', (event) => {
     const {resolve, reject} = promises[data.nonce];
 
     if (err) {
+      // eslint-disable-next-line consistent-return
       return reject(new Error(err));
     }
 
