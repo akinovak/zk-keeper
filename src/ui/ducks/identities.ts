@@ -1,4 +1,4 @@
-import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/background/interfaces";
+import {CreateIdentityOption as CreateInterrepIdentityOption} from "@src/types";
 import {Dispatch} from "redux";
 import postMessage from "@src/util/postMessage";
 import {RPCAction} from "@src/util/constants";

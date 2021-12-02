@@ -1,7 +1,7 @@
 import pushMessage from "@src/util/pushMessage";
 import { randomUUID } from "crypto";
 import { EventEmitter2 } from "eventemitter2";
-import { FinalizedRequest, PendingRequest, PendingRequestType, RequestResolutionAction } from "../interfaces";
+import { FinalizedRequest, PendingRequest, PendingRequestType, RequestResolutionAction } from "@src/types";
 import BrowserUtils from "./browser-utils";
 import {setPendingRequest} from "@src/ui/ducks/requests";
 

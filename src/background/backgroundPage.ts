@@ -1,7 +1,7 @@
 import { browser } from "webextension-polyfill-ts";
 import LockService from './services/lock';
 import App from './controllers/app';
-import { IRequest } from "./interfaces";
+import { Request } from "@src/types";
 
 //TODO consider adding inTest env
 
@@ -9,7 +9,7 @@ const app: App = new App();
 
 app.initialize()
 .then(async (app: App) => {
-    browser.runtime.onMessage.addListener(async (request: IRequest, _) => {
+    browser.runtime.onMessage.addListener(async (request: Request, _) => {
         try {
             const res = await app.handle(request);
             return [null, res];

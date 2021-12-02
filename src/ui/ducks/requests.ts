@@ -1,7 +1,7 @@
 import {useSelector} from "react-redux";
 import {AppRootState} from "@src/ui/store/configureAppStore";
 import deepEqual from "fast-deep-equal";
-import { PendingRequest, RequestResolutionAction } from "@src/background/interfaces";
+import { PendingRequest } from "@src/types";
 import {Dispatch} from "redux";
 import { RPCAction } from "@src/util/constants";
 import postMessage from "@src/util/postMessage";

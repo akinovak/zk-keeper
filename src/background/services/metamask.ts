@@ -2,7 +2,7 @@ import pushMessage from "@src/util/pushMessage";
 import createMetaMaskProvider from "@dimensiondev/metamask-extension-provider";
 import Web3 from "web3";
 import {setAccount, setNetwork, setWeb3Connecting} from "@src/ui/ducks/web3";
-import { WalletInfo } from "../interfaces";
+import { WalletInfo } from "@src/types";
 
 export default class MetamaskService {
     provider?: any;

@@ -1,4 +1,4 @@
-export type IRequest = {
+export type Request = {
     method: string;
     payload?: any;
     error?: boolean;

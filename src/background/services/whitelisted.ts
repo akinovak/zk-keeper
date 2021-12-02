@@ -1,4 +1,4 @@
-import { ZkInputs } from "../interfaces";
+import { ZkInputs } from "@src/types";
 
 const whitelistedCircuitPaths: Array<string> = [
     'http://localhost:8000/circuit.wasm',

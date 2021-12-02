@@ -1,4 +1,4 @@
-import { IRequest } from "../interfaces";
+import { IRequest } from "@src/types";
 
 type Chain = {
     middlewares: Array<(payload: any) => Promise<any>>,
@@ -24,7 +24,7 @@ export default class Handler {
         if(!handler) throw new Error(`method: ${method} not detected`);
 
         let { payload } = request;
-        
+
         for(let middleware of handler.middlewares) {
             payload = await middleware(payload);
         }

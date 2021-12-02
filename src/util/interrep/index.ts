@@ -1,6 +1,6 @@
 import semethid from "@interrep/semethid"
 import { ZkIdentity } from "@libsem/identity"
-import { CreateIdentityOption } from "@src/background/interfaces";
+import { CreateIdentityOption } from "@src/types";
 
 export const providerId = 'interrep';
 

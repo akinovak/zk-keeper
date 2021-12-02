@@ -4,7 +4,7 @@ import IdentityService from "../services/identity";
 import MetamaskService from "../services/metamask";
 import { ZkIdentity } from "@libsem/identity";
 import { RPCAction } from "@src/util/constants";
-import { FinalizedRequest, NewIdentityRequest, WalletInfo, ZkInputs } from "../interfaces";
+import { NewIdentityRequest, WalletInfo } from "@src/types";
 import * as interrep from "../../util/interrep";
 import Web3 from "web3";
 import ZkValidator from "../services/whitelisted";
