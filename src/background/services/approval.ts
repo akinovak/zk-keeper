@@ -69,7 +69,7 @@ export default class ApprovalService extends SimpleStorage {
 
     /** dev only */
     clear = async (): Promise<any> => {
-        if(!(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'DEVELOPMENT')) return;
+        if(!(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'TEST')) return;
         // eslint-disable-next-line consistent-return
         return this.clear();
     }

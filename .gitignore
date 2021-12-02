@@ -43,7 +43,8 @@ node_modules/
 
 # Generate output
 dist.zip
-dist
+dist/js
+demo/dist
 docs
 zkeyFiles
 
