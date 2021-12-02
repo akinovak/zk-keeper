@@ -65,6 +65,12 @@ async function logout() {
   })
 }
 
+// dev-only
+async function clearApproved() {
+    return post({
+      method: RPCAction.CLEAR_APPROVED_HOSTS,
+    })
+  }
 
 /**
  * Open Popup
@@ -98,7 +104,9 @@ async function addHost(host: string) {
     createDummyRequest,
     semaphoreProof,
     unlock,
-    logout
+    logout,
+    // dev-only
+    clearApproved
   };
 
 
@@ -116,7 +124,7 @@ async function addHost(host: string) {
             return client;
         }
     } catch(err) {
-        console.log("Rejected");
+        throw new Error("user rejected");
     }
 }
 
