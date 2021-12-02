@@ -1,4 +1,4 @@
-import { IRequest } from "@src/types";
+import { Request } from "@src/types";
 
 type Chain = {
     middlewares: Array<(payload: any) => Promise<any>>,
@@ -18,7 +18,7 @@ export default class Handler {
         this.handlers.set(method, { middlewares, handler })
     }
 
-    handle = async (request: IRequest): Promise<any> => {
+    handle = async (request: Request): Promise<any> => {
         const { method } = request; 
         const handler: Chain | undefined = this.handlers.get(method);
         if(!handler) throw new Error(`method: ${method} not detected`);
