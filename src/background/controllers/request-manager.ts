@@ -42,19 +42,17 @@ export default class RequestManager extends EventEmitter2 {
         return id
     }
 
-    newRequest = async (data: string, type: PendingRequestType) => {
-        const id: string = await this.addToQueue(type)
+    newRequest = async (data: any, type: PendingRequestType) => {
+        const id: string = await this.addToQueue(type);
         return new Promise((resolve, reject) => {
             this.once(`${id}:finalized`, (action: RequestResolutionAction) => {
-                console.log('Im inside resolution with action: ', action)
                 switch (action) {
                     case 'accept':
-                        console.log('Resolving: ', data)
-                        resolve(data)
-                        return
+                        resolve(data);
+                        return;
                     case 'reject':
-                        reject(data)
-                        return
+                        reject(null);
+                        return;
                     default:
                         throw new Error(`action: ${action} not supproted`)
                 }

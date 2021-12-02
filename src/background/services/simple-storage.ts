@@ -15,4 +15,8 @@ export default class SimpleStorage {
     set = async (value) => {
         return browser.storage.sync.set({ [this.key]: value })
     }
+
+    clear = async () => {
+        return browser.storage.sync.remove(this.key);
+    }
 }
