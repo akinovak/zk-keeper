@@ -1,0 +1,37 @@
+{
+    "env": {
+        "es6": true
+    },
+    "extends": [
+        "airbnb",
+        "airbnb/hooks",
+        "airbnb-typescript",
+        "plugin:jest/recommended",
+        "plugin:jest/style",
+        "prettier"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "plugins": ["@typescript-eslint", "jest"],
+    "ignorePatterns": ["node_modules", "dist", "build", "types"],
+    "rules": {
+        "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
+        "no-restricted-syntax": "off",
+        "no-underscore-dangle": "off",
+        "no-param-reassign": "off",
+        "import/no-cycle": "off",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "variable",
+                "format": ["camelCase", "PascalCase", "UPPER_CASE", "snake_case"],
+                "leadingUnderscore": "allow"
+            }
+        ],
+        "@typescript-eslint/lines-between-class-members": "off"
+    }
+}
