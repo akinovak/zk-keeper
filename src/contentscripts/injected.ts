@@ -124,7 +124,9 @@ async function addHost(host: string) {
             return client;
         }
     } catch(err) {
-        throw new Error("user rejected");
+        // eslint-disable-next-line no-console
+        console.log('Err: ', err);
+        return null;
     }
 }
 
