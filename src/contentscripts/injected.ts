@@ -53,15 +53,14 @@ async function semaphoreProof(
 
 async function unlock() {
   return post({
-    method: 'unlock',
+    method: RPCAction.UNLOCL,
     payload: { password: 'password123' }
   })
 }
 
-async function logout() {
+async function lock() {
   return post({
-    method: 'logout',
-    payload: { }
+    method: RPCAction.LOCK,
   })
 }
 
@@ -104,7 +103,7 @@ async function addHost(host: string) {
     createDummyRequest,
     semaphoreProof,
     unlock,
-    logout,
+    lock,
     // dev-only
     clearApproved
   };

@@ -31,8 +31,8 @@ export default class ZkKepperController extends Handler {
     }
 
     initialize = async (): Promise<ZkKepperController> => {
-        this.add('unlock', LockService.unlock, this.metamaskService.ensure, this.identityService.unlock, this.approvalService.unlock);
-        this.add('logout', LockService.logout);
+        this.add(RPCAction.UNLOCL, LockService.unlock, this.metamaskService.ensure, this.identityService.unlock, this.approvalService.unlock);
+        this.add(RPCAction.LOCK, LockService.logout);
 
         this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
 

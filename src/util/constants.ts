@@ -1,4 +1,6 @@
 enum RPCAction {
+    UNLOCL = 'rpc/unlock',
+    LOCK = 'rpc/lock',
     TRY_INJECT = 'rpc/inject',
     CONNECT_METAMASK = 'rpc/metamask/connectMetamask',
     GET_WALLET_INFO = 'rpc/metamask/getWalletInfo',
