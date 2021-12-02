@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CreateIdentityOption as CreateInterrepIdentityOption } from '@src/types'
+import { CreateInterrepIdentityMetadata as CreateInterrepIdentityOption } from '@src/types'
 import { Dispatch } from 'redux'
 import postMessage from '@src/util/postMessage'
 import RPCAction from '@src/util/constants'

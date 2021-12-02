@@ -10,17 +10,22 @@ export type WalletInfo = {
     networkType: string,
 }
 
-export type CreateIdentityOption = {
+export type CreateInterrepIdentityMetadata = {
     web2Provider: 'Twitter' | 'Reddit' | 'Github';
     nonce?: number;
-    sign: (message: string) => Promise<string>,
-    account: string;
+    name?: string;
 }
 
-//TODO add more options
+export type CreateRandomIdentityMetadata = {
+    name?: string;
+}
+
+export type CreateIdentityMetadata = CreateInterrepIdentityMetadata | CreateRandomIdentityMetadata
+export type CreateIdentityStrategy = 'interrep' | 'random'
+
 export type NewIdentityRequest = {
-    id: string,
-    option: CreateIdentityOption
+    strategy: CreateIdentityStrategy,
+    metadata: any
 }
 
 export type ZkInputs = {
@@ -34,13 +39,13 @@ export enum PendingRequestType {
     DUMMY,
     APPROVE,
     INJECT,
-  }
-
+}
 
 export type PendingRequest = {
     id: string,
     type: PendingRequestType
 };
+
 
 export type RequestResolutionAction = 'accept' | 'reject';
 
@@ -52,4 +57,15 @@ export type FinalizedRequest = {
 export type ApprovalAction = {
     host: string,
     action: 'add' | 'remove'
+}
+
+export type IdentityMetadata = {
+    account: string,
+    name: string,
+    provider: string,
+}
+
+export type SerializedIdentity = {
+    metadata: IdentityMetadata,
+    secret: string,
 }

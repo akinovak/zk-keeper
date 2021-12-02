@@ -100,8 +100,6 @@ var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement
             createIdentity('random', {
                 nonce,
                 web2Provider,
-                sign: () => Promise.resolve(''),
-                account: ''
             })
         )
         props.onClose()
@@ -115,7 +113,6 @@ var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement
                 label="Web2 Provider"
                 options={[{ value: 'Twitter' }, { value: 'Reddit' }, { value: 'Github' }]}
                 onChange={(e) => {
-                    console.log(e)
                     setWeb2Provider(e.target.value as any)
                 }}
                 value={web2Provider}
