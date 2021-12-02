@@ -1,5 +1,4 @@
 import { browser } from 'webextension-polyfill-ts'
-
 ;(async function () {
     const url = browser.runtime.getURL('js/injected.js')
     const container = document.head || document.documentElement
