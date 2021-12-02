@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable no-var */
+/* eslint-disable vars-on-top */
+/* eslint-disable react/function-component-definition */
 import React, { ReactElement, useCallback, useEffect, useState } from 'react'
 import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
 import postMessage from '@src/util/postMessage'
-import { RPCAction } from '@src/util/constants'
+import RPCAction from '@src/util/constants'
 import { fetchWalletInfo, useAccount, useNetwork, useWeb3Connecting } from '@src/ui/ducks/web3'
 import Icon from '@src/ui/components/Icon'
 import Modal from '@src/ui/components/Modal'
@@ -61,8 +69,7 @@ export default function Home(): ReactElement {
                 Unlock
             </Button>
             <div className="text-2xl py-2">
-                {identities.map((identityCommitment) => {
-                    return (
+                {identities.map((identityCommitment) => (
                         <div
                             className="border rounded p-2 my-2"
                             onClick={async () => {
@@ -76,20 +83,19 @@ export default function Home(): ReactElement {
                                 {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
                             </div>
                         </div>
-                    )
-                })}
+                    ))}
             </div>
         </div>
     )
 }
 
-function CreateIdentityModal(props: { onClose: () => void }): ReactElement {
+var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0)
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
     const dispatch = useDispatch()
 
     const create = useCallback(async () => {
-        //TODO add radnom strategy while metamask issue is not resolved
+        // TODO add radnom strategy while metamask issue is not resolved
         await dispatch(
             createIdentity('random', {
                 nonce,

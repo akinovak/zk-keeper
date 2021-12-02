@@ -1,12 +1,12 @@
-import { GenericService } from '@src/util/svc'
 import { Semaphore, MerkleProof, FullProof, genSignalHash } from '@libsem/protocols'
 import { ZkIdentity } from '@libsem/identity'
 import { bigintToHex } from 'bigint-conversion'
-import { ISafeProof, ISemaphoreProofRequest } from './interfaces'
 import axios, { AxiosResponse } from 'axios'
+import { ISafeProof, ISemaphoreProofRequest } from './interfaces'
 import { deserializeMerkleProof } from './utils'
 
-export default class SemaphoreService extends GenericService {
+export default class SemaphoreService {
+    // eslint-disable-next-line class-methods-use-this
     async genProof(identity: ZkIdentity, request: ISemaphoreProofRequest): Promise<ISafeProof> {
         const { circuitFilePath, zkeyFilePath, merkleStorageAddress, externalNullifier, signal } = request
         const response: AxiosResponse = await axios.post(merkleStorageAddress, {

@@ -1,12 +1,13 @@
 import { browser } from 'webextension-polyfill-ts'
+import { Request } from '@src/types'
 import LockService from './services/lock'
 import ZkKepperController from './zk-kepeer'
-import { Request } from '@src/types'
 
-//TODO consider adding inTest env
+// TODO consider adding inTest env
 const app: ZkKepperController = new ZkKepperController()
 
-app.initialize().then(async (app: ZkKepperController) => {
+app.initialize().then(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     browser.runtime.onMessage.addListener(async (request: Request, _) => {
         try {
             const res = await app.handle(request)
@@ -18,9 +19,8 @@ app.initialize().then(async (app: ZkKepperController) => {
 })
 
 browser.runtime.onInstalled.addListener(async ({ reason }) => {
-    console.log('Reason: ', reason)
     if (reason === 'install') {
-        //TODO open html where password will be interested
+        // TODO open html where password will be interested
         // browser.tabs.create({
         //   url: 'popup.html'
         // });

@@ -1,9 +1,9 @@
 import { ZkIdentity } from '@libsem/identity'
 import { bigintToHex } from 'bigint-conversion'
-import SimpleStorage from './simple-storage'
-import LockService from './lock'
 import pushMessage from '@src/util/pushMessage'
 import { setIdentities } from '@src/ui/ducks/identities'
+import SimpleStorage from './simple-storage'
+import LockService from './lock'
 
 const DB_KEY = '@@identities@@'
 
@@ -17,6 +17,7 @@ export default class IdentityService extends SimpleStorage {
         this.activeIdentity = undefined
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock = async (_: any) => {
         const encryptedContent = await this.get()
         if (!encryptedContent) return true
@@ -35,7 +36,7 @@ export default class IdentityService extends SimpleStorage {
 
         const decrypted: any = await LockService.decrypt(encryptedContent)
         await this.loadInMemory(JSON.parse(decrypted))
-        //if the first identity just added, set it to active
+        // if the first identity just added, set it to active
         if (this.identities.size === 1) {
             await this.setDefaultIdentity()
         }
@@ -44,7 +45,8 @@ export default class IdentityService extends SimpleStorage {
     }
 
     loadInMemory = async (decrypted: any) => {
-        Object.entries(decrypted || {}).map(([_, value]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(decrypted || {}).forEach(([_, value]) => {
             const identity: ZkIdentity = ZkIdentity.genFromSerialized(value as string)
             const identityCommitment: bigint = identity.genIdentityCommitment()
             this.identities.set(bigintToHex(identityCommitment), identity)
@@ -64,13 +66,11 @@ export default class IdentityService extends SimpleStorage {
         }
     }
 
-    getActiveidentity = async (): Promise<ZkIdentity | undefined> => {
-        return this.activeIdentity
-    }
+    getActiveidentity = async (): Promise<ZkIdentity | undefined> => this.activeIdentity
 
     getIdentityCommitments = async () => {
         const commitments: string[] = []
-        for (let key of this.identities.keys()) {
+        for (const key of this.identities.keys()) {
             commitments.push(key)
         }
         return commitments
@@ -83,7 +83,7 @@ export default class IdentityService extends SimpleStorage {
         if (existing) return false
 
         const existingIdentites: string[] = []
-        for (let identity of this.identities.values()) {
+        for (const identity of this.identities.values()) {
             existingIdentites.push(identity.serializeIdentity())
         }
 

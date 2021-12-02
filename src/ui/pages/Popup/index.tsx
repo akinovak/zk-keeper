@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/function-component-definition */
 import React, { ReactElement, useCallback, useEffect } from 'react'
 import './popup.scss'
 import { Redirect, Route, Switch } from 'react-router'
@@ -5,7 +7,7 @@ import Home from '@src/ui/pages/Home'
 import { useRequestsPending, fetchRequestPendingStatus } from '@src/ui/ducks/requests'
 import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
-import { RPCAction } from '@src/util/constants'
+import RPCAction from '@src/util/constants'
 import postMessage from '@src/util/postMessage'
 
 export default function Popup(): ReactElement {
@@ -16,15 +18,13 @@ export default function Popup(): ReactElement {
         dispatch(fetchRequestPendingStatus())
     }, [])
 
-    const finalizeRequest = useCallback((id: string, action: string) => {
-        return postMessage({
+    const finalizeRequest = useCallback((id: string, action: string) => postMessage({
             method: RPCAction.FINALIZE_REQUEST,
             payload: {
                 id,
                 action
             }
-        })
-    }, [])
+        }), [])
 
     if (pendingRequests.length) {
         const [pendingRequest] = pendingRequests

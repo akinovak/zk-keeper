@@ -1,8 +1,11 @@
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/function-component-definition */
+/* eslint-disable react/require-default-props */
 import React, { InputHTMLAttributes, MouseEventHandler } from 'react'
 
 import './index.scss'
-import Icon from '../Icon'
 import classNames from 'classnames'
+import Icon from '../Icon'
 
 type Props = {
     label?: string

@@ -1,3 +1,6 @@
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable react/function-component-definition */
+/* eslint-disable react/require-default-props */
 import React, { ChangeEventHandler, ReactElement } from 'react'
 import './switch-button.scss'
 import classNames from 'classnames'

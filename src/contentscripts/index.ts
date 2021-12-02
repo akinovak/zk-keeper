@@ -1,6 +1,8 @@
 import { browser } from 'webextension-polyfill-ts'
 
-;(async function () {
+;
+
+(async function () {
     const url = browser.runtime.getURL('js/injected.js')
     const container = document.head || document.documentElement
     const scriptTag = document.createElement('script')
@@ -10,7 +12,7 @@ import { browser } from 'webextension-polyfill-ts'
     container.removeChild(scriptTag)
 
     window.addEventListener('message', async (event) => {
-        const data = event.data
+        const {data} = event
         if (data && data.target === 'injected-contentscript') {
             const res = await browser.runtime.sendMessage(data.message)
             window.postMessage(

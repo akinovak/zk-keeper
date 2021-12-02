@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CreateIdentityOption as CreateInterrepIdentityOption } from '@src/types'
 import { Dispatch } from 'redux'
 import postMessage from '@src/util/postMessage'
-import { RPCAction } from '@src/util/constants'
-// import {SafeIdentity} from "@src/util/idTypes";
+import RPCAction from '@src/util/constants'
 import { useSelector } from 'react-redux'
 import { AppRootState } from '@src/ui/store/configureAppStore'
 import deepEqual from 'fast-deep-equal'
@@ -29,15 +30,13 @@ const initialState: State = {
     requestPending: false
 }
 
-export const createIdentity = (id: string, option: CreateInterrepIdentityOption) => async (dispatch: Dispatch) => {
-    return postMessage({
+export const createIdentity = (id: string, option: CreateInterrepIdentityOption) => async (dispatch: Dispatch) => postMessage({
         method: RPCAction.CREATE_IDENTITY,
         payload: {
             id,
             option
         }
     })
-}
 
 export const setActiveIdentity = (identityCommitment: string) => async (dispatch: Dispatch) => {
     if (!identityCommitment) {
@@ -66,6 +65,7 @@ export const fetchIdentities = () => async (dispatch: Dispatch) => {
     dispatch(setIdentities(identities))
 }
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 export default function identities(state = initialState, action: Action<any>): State {
     switch (action.type) {
         case ActionType.SET_COMMITMENTS:
@@ -83,14 +83,6 @@ export default function identities(state = initialState, action: Action<any>): S
     }
 }
 
-export const useIdentities = () => {
-    return useSelector((state: AppRootState) => {
-        return state.identities.identityCommitments
-    }, deepEqual)
-}
+export const useIdentities = () => useSelector((state: AppRootState) => state.identities.identityCommitments, deepEqual)
 
-export const useIdentityRequestPending = () => {
-    return useSelector((state: AppRootState) => {
-        return state.identities.requestPending
-    }, deepEqual)
-}
+export const useIdentityRequestPending = () => useSelector((state: AppRootState) => state.identities.requestPending, deepEqual)

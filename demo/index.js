@@ -1,4 +1,3 @@
-const bigintConversion = require('bigint-conversion')
 const { genExternalNullifier } = require('@libsem/protocols')
 
 const circuitFilePath = 'http://localhost:8000/semaphore.wasm'
@@ -6,7 +5,9 @@ const zkeyFilePath = 'http://localhost:8000/semaphore_final.zkey'
 const merkleStorageAddress = 'http://localhost:5000/merkle'
 
 ;(async () => {
-    window.addEventListener('load', async (event) => {
+    // eslint-disable-next-line no-undef
+    window.addEventListener('load', async () => {
+        // eslint-disable-next-line no-undef
         const client = await injected.connect()
         const externalNullifier = genExternalNullifier('voting-1')
         const signal = '0x111'
@@ -19,6 +20,7 @@ const merkleStorageAddress = 'http://localhost:5000/merkle'
             zkeyFilePath
         )
 
+        // eslint-disable-next-line no-console
         console.log(safeProof)
     })
 })()

@@ -1,3 +1,7 @@
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable react/function-component-definition */
 import React, { MouseEventHandler, ReactElement, ReactNode } from 'react'
 import ReactDOM from 'react-dom'
 import './modal.scss'

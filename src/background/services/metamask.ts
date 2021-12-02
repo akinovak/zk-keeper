@@ -53,7 +53,7 @@ export default class MetamaskService {
 
             return {
                 account: accounts[0],
-                networkType: networkType
+                networkType
             }
         }
 

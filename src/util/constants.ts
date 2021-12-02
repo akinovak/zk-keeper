@@ -1,4 +1,4 @@
-export enum RPCAction {
+enum RPCAction {
     TRY_INJECT = 'rpc/inject',
     CONNECT_METAMASK = 'rpc/metamask/connectMetamask',
     GET_WALLET_INFO = 'rpc/metamask/getWalletInfo',
@@ -13,6 +13,7 @@ export enum RPCAction {
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',
     REMOVE_HOST = 'rpc/hosts/remove',
-    //DEV RPCS
+    // DEV RPCS
     CLEAR_APPROVED_HOSTS = 'rpc/hosts/clear'
-}
+} export default RPCAction;
+

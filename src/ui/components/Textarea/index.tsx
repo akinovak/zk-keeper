@@ -1,4 +1,7 @@
-import React, { InputHTMLAttributes, MouseEventHandler, TextareaHTMLAttributes } from 'react'
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/require-default-props */
+/* eslint-disable react/function-component-definition */
+import React, { MouseEventHandler, TextareaHTMLAttributes } from 'react'
 
 import './textarea.scss'
 import classNames from 'classnames'

@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable react/prefer-stateless-function */
 import React, { Component, MouseEventHandler } from 'react'
 import c from 'classnames'
 import './icon.scss'
@@ -29,7 +32,7 @@ export default class Icon extends Component<Props> {
                 }}
                 onClick={onClick}
             >
-                {fontAwesome && <i className={`fas ${fontAwesome}`}></i>}
+                {fontAwesome && <i className={`fas ${fontAwesome}`} />}
             </div>
         )
     }

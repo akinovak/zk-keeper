@@ -25,7 +25,8 @@ export default class Handler {
 
         let { payload } = request
 
-        for (let middleware of handler.middlewares) {
+        for (const middleware of handler.middlewares) {
+            // eslint-disable-next-line no-await-in-loop
             payload = await middleware(payload)
         }
 

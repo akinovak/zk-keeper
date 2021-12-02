@@ -1,18 +1,17 @@
+import { ZkIdentity } from "@libsem/identity";
+import RPCAction from "@src/util/constants";
+import { PendingRequestType, NewIdentityRequest, WalletInfo } from "@src/types";
+import Web3 from "web3";
 import Handler from "./controllers/handler";
 import LockService from "./services/lock";
 import IdentityService from "./services/identity";
 import MetamaskService from "./services/metamask";
-import { ZkIdentity } from "@libsem/identity";
-import { RPCAction } from "@src/util/constants";
-import { ApprovalAction, PendingRequestType, NewIdentityRequest, WalletInfo } from "@src/types";
 import * as interrep from "../util/interrep";
-import Web3 from "web3";
 import ZkValidator from "./services/whitelisted";
 import RequestManager from "./controllers/request-manager";
 import SemaphoreService from "./services/protocols/semaphore";
 import { ISafeProof, ISemaphoreProofRequest } from "./services/protocols/interfaces";
 import ApprovalService from "./services/approval";
-import app from "@src/ui/ducks/app";
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService;
@@ -40,7 +39,7 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask);
 
         this.add(RPCAction.CREATE_IDENTITY, LockService.ensure, this.metamaskService.ensure, async (payload: NewIdentityRequest) => {
-            //TODO wrapp this in try catch if something wrong happens on metamask side
+            // TODO wrapp this in try catch if something wrong happens on metamask side
             const { id: providerId } = payload;
             if(!providerId) throw new Error("Provider required");
 
@@ -52,7 +51,7 @@ export default class ZkKepperController extends Handler {
 
             let identity: ZkIdentity;
 
-            //TODO abstract this with multiple strategies
+            // TODO abstract this with multiple strategies
             if(providerId === interrep.providerId) {
                 const { option } = payload;
                 identity = await interrep.createIdentity({
@@ -83,7 +82,7 @@ export default class ZkKepperController extends Handler {
             return this.requestManager.newRequest(JSON.stringify(safeProof), PendingRequestType.PROOF);
         });
 
-        //APPROVED HOSTS
+        // APPROVED HOSTS
         this.add(RPCAction.TRY_INJECT, LockService.ensure, (payload: any) => {
             const { origin }: { origin: string } = payload;
             if(!origin) throw new Error("Origin not provided");
@@ -96,11 +95,9 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add);
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove);
 
-        //DEV
+        // DEV
         this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.clear);
-        this.add(RPCAction.DUMMY_REQUEST, async () => {
-            return this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY);
-        });
+        this.add(RPCAction.DUMMY_REQUEST, async () => this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY));
 
         return this;
     }

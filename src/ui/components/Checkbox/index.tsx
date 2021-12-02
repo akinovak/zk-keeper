@@ -1,3 +1,5 @@
+/* eslint-disable react/require-default-props */
+/* eslint-disable react/function-component-definition */
 import React, { ChangeEventHandler, ReactElement } from 'react'
 import c from 'classnames'
 import './index.scss'

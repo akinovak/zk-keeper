@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 const express = require('express')
 const { generateMerkleProof } = require('@libsem/protocols')
 const { ZkIdentity } = require('@libsem/identity')
@@ -10,9 +11,7 @@ const NUMBER_OF_LEAVES = 2
 const serializeMerkleProof = (merkleProof) => {
     const serialized = {}
     serialized.root = bigintToHex(merkleProof.root)
-    serialized.pathElements = merkleProof.pathElements.map((siblings) => {
-        return siblings.map((element) => bigintToHex(element))
-    })
+    serialized.pathElements = merkleProof.pathElements.map((siblings) => siblings.map((element) => bigintToHex(element)))
     serialized.indices = merkleProof.indices
     return serialized
 }
@@ -20,6 +19,7 @@ const serializeMerkleProof = (merkleProof) => {
 const numberOfLeaves = 5
 const identityCommitments = []
 
+// eslint-disable-next-line no-plusplus
 for (let i = 0; i < numberOfLeaves; i++) {
     const mockIdentity = new ZkIdentity()
     identityCommitments.push(mockIdentity.genIdentityCommitment())
@@ -32,7 +32,7 @@ app.post('/merkle', (req, res) => {
     let { identityCommitment } = req.body
     identityCommitment = hexToBigint(identityCommitment)
 
-    //For testing purposes, if commitment is not in set, add it to obtain valid proof
+    // For testing purposes, if commitment is not in set, add it to obtain valid proof
     if (!identityCommitments.includes(identityCommitment)) {
         identityCommitments.push(identityCommitment)
     }

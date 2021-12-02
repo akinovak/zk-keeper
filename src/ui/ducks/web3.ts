@@ -3,7 +3,7 @@ import deepEqual from 'fast-deep-equal'
 import { AppRootState } from '@src/ui/store/configureAppStore'
 import { Dispatch } from 'redux'
 import postMessage from '@src/util/postMessage'
-import { RPCAction } from '@src/util/constants'
+import RPCAction from '@src/util/constants'
 
 enum ActionTypes {
     SET_LOADING = 'web3/setLoading',
@@ -57,6 +57,7 @@ export const fetchWalletInfo = () => async (dispatch: Dispatch) => {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 export default function web3(state = initialState, action: Action<any>): State {
     switch (action.type) {
         case ActionTypes.SET_ACCOUNT:
@@ -79,20 +80,8 @@ export default function web3(state = initialState, action: Action<any>): State {
     }
 }
 
-export const useWeb3Connecting = () => {
-    return useSelector((state: AppRootState) => {
-        return state.web3.connecting
-    }, deepEqual)
-}
+export const useWeb3Connecting = () => useSelector((state: AppRootState) => state.web3.connecting, deepEqual)
 
-export const useAccount = () => {
-    return useSelector((state: AppRootState) => {
-        return state.web3.account
-    }, deepEqual)
-}
+export const useAccount = () => useSelector((state: AppRootState) => state.web3.account, deepEqual)
 
-export const useNetwork = () => {
-    return useSelector((state: AppRootState) => {
-        return state.web3.networkType
-    }, deepEqual)
-}
+export const useNetwork = () => useSelector((state: AppRootState) => state.web3.networkType, deepEqual)

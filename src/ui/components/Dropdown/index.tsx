@@ -1,4 +1,9 @@
-import React, { Component, InputHTMLAttributes, MouseEventHandler, ReactElement } from 'react'
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/function-component-definition */
+/* eslint-disable react/require-default-props */
+import React, {InputHTMLAttributes, ReactElement } from 'react'
 import './dropdown.scss'
 import classNames from 'classnames'
 

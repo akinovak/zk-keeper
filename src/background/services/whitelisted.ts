@@ -13,6 +13,7 @@ const whitelistedKeyPaths: Array<string> = [
 const whitelistedMerkleStorages: Array<string> = ['http://localhost:5000/merkle']
 
 export default class ZkValidator {
+    // eslint-disable-next-line class-methods-use-this
     validateZkInputs(payload: Required<ZkInputs>) {
         const { circuitFilePath, zkeyFilePath, merkleStorageAddress } = payload
 

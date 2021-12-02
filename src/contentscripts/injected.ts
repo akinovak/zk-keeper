@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 
-import {RPCAction} from "@src/util/constants";
+import RPCAction from "@src/util/constants";
 
 export type IRequest = {
   method: string;
@@ -105,6 +106,7 @@ async function addHost(host: string) {
  * Connect to Extension
  * @returns injected client
  */
+ // eslint-disable-next-line consistent-return
  async function connect() {
     try {
         const approved = await tryInject(window.location.origin);
@@ -135,6 +137,7 @@ window.injected = {
 // Connect injected script messages with content script messages
 async function post(message: IRequest) {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-plusplus
     const messageNonce = nonce++;
     window.postMessage({
       target: 'injected-contentscript',
@@ -150,7 +153,7 @@ async function post(message: IRequest) {
 }
 
 window.addEventListener('message', (event) => {
-  const data = event.data;
+  const {data} = event;
   if (data && data.target === 'injected-injectedscript') {
     if (!promises[data.nonce]) return;
 
@@ -158,6 +161,7 @@ window.addEventListener('message', (event) => {
     const {resolve, reject} = promises[data.nonce];
 
     if (err) {
+      // eslint-disable-next-line consistent-return
       return reject(new Error(err));
     }
 

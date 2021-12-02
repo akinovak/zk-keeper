@@ -8,35 +8,28 @@ export default class ApprovalService extends SimpleStorage {
 
     constructor() {
         super(DB_KEY)
-        this.allowedHosts = new Array()
+        this.allowedHosts = []
     }
 
-    getAllowedHosts = () => {
-        return this.allowedHosts
-    }
+    getAllowedHosts = () => this.allowedHosts
 
-    isApproved = (origin: string): boolean => {
-        return this.allowedHosts.includes(origin);
-    }
+    isApproved = (origin: string): boolean => this.allowedHosts.includes(origin)
 
-    unlock = async () => {
+    unlock = async (): Promise<boolean> => {
         const encrypedArray: Array<string> = await this.get()
         if (!encrypedArray) return true
 
-        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => {
-            return LockService.decrypt(cipertext)
-        })
+        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => LockService.decrypt(cipertext))
 
-        this.allowedHosts = await Promise.all(promises)
+        this.allowedHosts = await Promise.all(promises);
+        return true;
     }
 
     refresh = async () => {
         const encrypedArray: Array<string> = await this.get()
         if (!encrypedArray) return
 
-        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => {
-            return LockService.decrypt(cipertext)
-        })
+        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => LockService.decrypt(cipertext))
 
         this.allowedHosts = await Promise.all(promises)
     }
@@ -49,16 +42,12 @@ export default class ApprovalService extends SimpleStorage {
 
         this.allowedHosts.push(host);
 
-        const promises: Array<Promise<string>> = this.allowedHosts.map((host: string) => {
-            return LockService.encrypt(host);
-        });
+        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) => LockService.encrypt(allowedHost));
 
         const newValue: Array<string> = await Promise.all(promises);
 
         await this.set(newValue);
         await this.refresh();
-        console.log(this.allowedHosts);
-        return;
     }
 
 
@@ -71,9 +60,7 @@ export default class ApprovalService extends SimpleStorage {
 
         this.allowedHosts = [...this.allowedHosts.slice(0, index), ...this.allowedHosts.slice(index + 1)]
 
-        const promises: Array<Promise<string>> = this.allowedHosts.map((host: string) => {
-            return LockService.encrypt(host)
-        })
+        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) => LockService.encrypt(allowedHost))
 
         const newValue: Array<string> = await Promise.all(promises)
         await this.set(newValue)
@@ -81,8 +68,9 @@ export default class ApprovalService extends SimpleStorage {
     }
 
     /** dev only */
-    clear = async () => {
+    clear = async (): Promise<any> => {
         if(!(process.env.NODE_ENV === 'DEVELOPMENT' || process.env.NODE_ENV === 'DEVELOPMENT')) return;
+        // eslint-disable-next-line consistent-return
         return this.clear();
     }
 }

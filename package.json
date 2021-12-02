@@ -10,7 +10,7 @@
         "serve": "./scripts/serve.sh",
         "merkle": "node scripts/mock-merkle-proof.js",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
         "prettier": "prettier -c .",
         "prettier:fix": "prettier -w ."
     },
@@ -76,7 +76,6 @@
         "style-loader": "^2.0.0",
         "ts-loader": "^8.0.5",
         "typescript": "^4.5.0",
-        "webextension-polyfill-ts": "^0.20.0",
         "webpack": "^5.52.0",
         "webpack-cli": "^3.3.10",
         "webpack-merge": "^4.2.2"
@@ -104,6 +103,7 @@
         "redux": "^4.0.5",
         "redux-logger": "^3.0.6",
         "redux-thunk": "^2.3.0",
-        "web3": "^1.5.3"
+        "web3": "^1.5.3",
+        "webextension-polyfill-ts": "^0.20.0"
     }
 }

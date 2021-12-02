@@ -1,3 +1,6 @@
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/button-has-type */
+/* eslint-disable react/function-component-definition */
 import React, { ButtonHTMLAttributes, ReactElement } from 'react'
 import classNames from 'classnames'
 import './button.scss'
