@@ -61,7 +61,7 @@ export default function Home(): ReactElement {
                 btnType={ButtonType.primary}
                 onClick={() => {
                     postMessage({
-                        method: 'unlock',
+                        method: RPCAction.UNLOCL,
                         payload: 'password123'
                     })
                 }}
@@ -89,6 +89,7 @@ export default function Home(): ReactElement {
     )
 }
 
+// eslint-disable-next-line func-names
 var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0)
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
@@ -100,8 +101,6 @@ var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement
             createIdentity('random', {
                 nonce,
                 web2Provider,
-                sign: () => Promise.resolve(''),
-                account: ''
             })
         )
         props.onClose()
@@ -115,7 +114,6 @@ var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement
                 label="Web2 Provider"
                 options={[{ value: 'Twitter' }, { value: 'Reddit' }, { value: 'Github' }]}
                 onChange={(e) => {
-                    console.log(e)
                     setWeb2Provider(e.target.value as any)
                 }}
                 value={web2Provider}

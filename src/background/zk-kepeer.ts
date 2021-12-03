@@ -1,4 +1,3 @@
-import { ZkIdentity } from "@libsem/identity";
 import RPCAction from "@src/util/constants";
 import { PendingRequestType, NewIdentityRequest, WalletInfo } from "@src/types";
 import Web3 from "web3";
@@ -6,12 +5,13 @@ import Handler from "./controllers/handler";
 import LockService from "./services/lock";
 import IdentityService from "./services/identity";
 import MetamaskService from "./services/metamask";
-import * as interrep from "../util/interrep";
 import ZkValidator from "./services/whitelisted";
 import RequestManager from "./controllers/request-manager";
 import SemaphoreService from "./services/protocols/semaphore";
 import { ISafeProof, ISemaphoreProofRequest } from "./services/protocols/interfaces";
 import ApprovalService from "./services/approval";
+import ZkIdentityWrapper from "./identity-decorater";
+import identityFactory from "./identity-factory";
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService;
@@ -31,58 +31,57 @@ export default class ZkKepperController extends Handler {
     }
 
     initialize = async (): Promise<ZkKepperController> => {
+        // common
         this.add(RPCAction.UNLOCL, LockService.unlock, this.metamaskService.ensure, this.identityService.unlock, this.approvalService.unlock);
         this.add(RPCAction.LOCK, LockService.logout);
 
+        // requests
+        this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
         this.add(RPCAction.FINALIZE_REQUEST, LockService.ensure, this.requestManager.finalizeRequest);
 
+        // web3
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask);
+        this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
 
+        // identites
         this.add(RPCAction.CREATE_IDENTITY, LockService.ensure, this.metamaskService.ensure, async (payload: NewIdentityRequest) => {
-            // TODO wrapp this in try catch if something wrong happens on metamask side
-            const { id: providerId } = payload;
-            if(!providerId) throw new Error("Provider required");
+            try {
+                const { strategy, options } = payload;
+                if(!strategy) throw new Error("strategy not provided");
 
-            const web3: Web3 = await this.metamaskService.getWeb3();
-            const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
+                const web3: Web3 = await this.metamaskService.getWeb3();
+                const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
 
-            if(!web3) throw new Error("Web3 not found");
-            if(!walletInfo) throw new Error("Wallet info not fould");
+                const numOfIdentites = this.identityService.getNumOfIdentites();
 
-            let identity: ZkIdentity;
+                const config: any = {
+                    ...options,
+                    web3,
+                    walletInfo,
+                    name: options?.name || `Account${numOfIdentites}`
+                }
 
-            // TODO abstract this with multiple strategies
-            if(providerId === interrep.providerId) {
-                const { option } = payload;
-                identity = await interrep.createIdentity({
-                    ...option,
-                    sign: (message: string) => web3.eth.sign(message, walletInfo?.account),
-                    account: walletInfo?.account,
-                });
-            } else if (providerId === 'random') {
-                identity = new ZkIdentity();
-            } else {
-                throw new Error(`Provider: ${providerId} is not supported`);
+                const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config);
+                if(!identity) throw new Error("Identity not created, make sure to check strategy");
+                await this.identityService.insert(identity);
+                return true;
+            } catch(error: any) {
+                throw new Error(error.message);
             }
-
-            await this.identityService.addIdentity(identity);
-            return true;
         });
 
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments);
 
-        this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests);
-        this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo);
-
+        // protocols
         this.add(RPCAction.SEMAPHORE_PROOF, LockService.ensure, this.zkValidator.validateZkInputs, async (payload: ISemaphoreProofRequest) => {
-            const identity: ZkIdentity | undefined = await this.identityService.getActiveidentity();
+            const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity();
             if(!identity) throw new Error("active identity not found");
 
-            const safeProof: ISafeProof = await this.semaphoreService.genProof(identity, payload);
+            const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.getZkIdentity(), payload);
             return this.requestManager.newRequest(JSON.stringify(safeProof), PendingRequestType.PROOF);
         });
 
-        // INJECT
+        // injecting
         this.add(RPCAction.TRY_INJECT, LockService.ensure, (payload: any) => {
             const { origin }: { origin: string } = payload;
             if(!origin) throw new Error("Origin not provided");
@@ -94,7 +93,7 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add);
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove);
 
-        // DEV
+        // dev
         this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.empty);
         this.add(RPCAction.DUMMY_REQUEST, async () => this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY));
 
@@ -102,4 +101,3 @@ export default class ZkKepperController extends Handler {
     }
 
 }
-
