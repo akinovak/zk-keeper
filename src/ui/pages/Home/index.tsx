@@ -89,6 +89,7 @@ export default function Home(): ReactElement {
     )
 }
 
+// eslint-disable-next-line func-names
 var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0)
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
