@@ -17,5 +17,5 @@ enum RPCAction {
     REMOVE_HOST = 'rpc/hosts/remove',
     // DEV RPCS
     CLEAR_APPROVED_HOSTS = 'rpc/hosts/clear'
-} export default RPCAction;
-
+}
+export default RPCAction

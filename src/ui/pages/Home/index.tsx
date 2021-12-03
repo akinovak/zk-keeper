@@ -70,27 +70,27 @@ export default function Home(): ReactElement {
             </Button>
             <div className="text-2xl py-2">
                 {identities.map((identityCommitment) => (
-                        <div
-                            className="border rounded p-2 my-2"
-                            onClick={async () => {
-                                await dispatch(setActiveIdentity(identityCommitment))
-                            }}
-                        >
-                            {/* <div className="font-bold text-xs text-gray-500">
+                    <div
+                        className="border rounded p-2 my-2"
+                        onClick={async () => {
+                            await dispatch(setActiveIdentity(identityCommitment))
+                        }}
+                    >
+                        {/* <div className="font-bold text-xs text-gray-500">
                                     {`${type} (${web2Provider})`}
                                 </div> */}
-                            <div className="text-lg">
-                                {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
-                            </div>
+                        <div className="text-lg">
+                            {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
                         </div>
-                    ))}
+                    </div>
+                ))}
             </div>
         </div>
     )
 }
 
 // eslint-disable-next-line func-names
-var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement {
+var CreateIdentityModal = function (props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0)
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
     const dispatch = useDispatch()
@@ -100,7 +100,7 @@ var CreateIdentityModal = function(props: { onClose: () => void }): ReactElement
         await dispatch(
             createIdentity('random', {
                 nonce,
-                web2Provider,
+                web2Provider
             })
         )
         props.onClose()

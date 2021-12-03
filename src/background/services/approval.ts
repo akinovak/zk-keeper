@@ -19,51 +19,58 @@ export default class ApprovalService extends SimpleStorage {
         const encrypedArray: Array<string> = await this.get()
         if (!encrypedArray) return true
 
-        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => LockService.decrypt(cipertext))
+        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) =>
+            LockService.decrypt(cipertext)
+        )
 
-        this.allowedHosts = await Promise.all(promises);
-        return true;
+        this.allowedHosts = await Promise.all(promises)
+        return true
     }
 
     refresh = async () => {
-        const encrypedArray: Array<string> = await this.get();
+        const encrypedArray: Array<string> = await this.get()
         if (!encrypedArray) {
-            this.allowedHosts = [];
-            return;
+            this.allowedHosts = []
+            return
         }
 
-        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) => LockService.decrypt(cipertext))
+        const promises: Array<Promise<string>> = encrypedArray.map((cipertext: string) =>
+            LockService.decrypt(cipertext)
+        )
 
         this.allowedHosts = await Promise.all(promises)
     }
 
     add = async (payload: any) => {
-        const { host }: { host: string } = payload;
-        if(!host) throw new Error("No host provided");
+        const { host }: { host: string } = payload
+        if (!host) throw new Error('No host provided')
 
-        if(this.allowedHosts.includes(host)) return;
+        if (this.allowedHosts.includes(host)) return
 
-        this.allowedHosts.push(host);
+        this.allowedHosts.push(host)
 
-        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) => LockService.encrypt(allowedHost));
+        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) =>
+            LockService.encrypt(allowedHost)
+        )
 
-        const newValue: Array<string> = await Promise.all(promises);
+        const newValue: Array<string> = await Promise.all(promises)
 
-        await this.set(newValue);
-        await this.refresh();
+        await this.set(newValue)
+        await this.refresh()
     }
 
-
     remove = async (payload: any) => {
-        const { host }: { host: string } = payload;
-        if(!host) throw new Error("No address provided");
+        const { host }: { host: string } = payload
+        if (!host) throw new Error('No address provided')
 
         const index: number = this.allowedHosts.indexOf(host)
         if (index === -1) return
 
         this.allowedHosts = [...this.allowedHosts.slice(0, index), ...this.allowedHosts.slice(index + 1)]
 
-        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) => LockService.encrypt(allowedHost))
+        const promises: Array<Promise<string>> = this.allowedHosts.map((allowedHost: string) =>
+            LockService.encrypt(allowedHost)
+        )
 
         const newValue: Array<string> = await Promise.all(promises)
         await this.set(newValue)
@@ -72,8 +79,8 @@ export default class ApprovalService extends SimpleStorage {
 
     /** dev only */
     empty = async (): Promise<any> => {
-        if(!(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) return;
-        await this.clear();
-        await this.refresh();
+        if (!(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) return
+        await this.clear()
+        await this.refresh()
     }
 }

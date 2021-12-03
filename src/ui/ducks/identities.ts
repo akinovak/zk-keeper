@@ -30,7 +30,8 @@ const initialState: State = {
     requestPending: false
 }
 
-export const createIdentity = (strategy: string, options: any) => async (dispatch: Dispatch) => postMessage({
+export const createIdentity = (strategy: string, options: any) => async (dispatch: Dispatch) =>
+    postMessage({
         method: RPCAction.CREATE_IDENTITY,
         payload: {
             strategy,
@@ -85,4 +86,5 @@ export default function identities(state = initialState, action: Action<any>): S
 
 export const useIdentities = () => useSelector((state: AppRootState) => state.identities.identityCommitments, deepEqual)
 
-export const useIdentityRequestPending = () => useSelector((state: AppRootState) => state.identities.requestPending, deepEqual)
+export const useIdentityRequestPending = () =>
+    useSelector((state: AppRootState) => state.identities.requestPending, deepEqual)

@@ -26,9 +26,9 @@ const initialState: State = {
 }
 
 export const setPendingRequest = (pendingRequests: PendingRequest[]): Action<PendingRequest[]> => ({
-        type: ActionType.SET_PENDING_REQUESTS,
-        payload: pendingRequests
-    })
+    type: ActionType.SET_PENDING_REQUESTS,
+    payload: pendingRequests
+})
 
 export const fetchRequestPendingStatus = () => async (dispatch: Dispatch) => {
     const pendingRequests = await postMessage({ method: RPCAction.GET_PENDING_REQUESTS })

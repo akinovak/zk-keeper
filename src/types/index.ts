@@ -1,36 +1,36 @@
 export type Request = {
-    method: string;
-    payload?: any;
-    error?: boolean;
-    meta?: any;
-};
+    method: string
+    payload?: any
+    error?: boolean
+    meta?: any
+}
 
 export type WalletInfo = {
-    account: string,
-    networkType: string,
+    account: string
+    networkType: string
 }
 
 export type CreateInterrepIdentityMetadata = {
-    web2Provider: 'Twitter' | 'Reddit' | 'Github';
-    nonce?: number;
-    name?: string;
+    web2Provider: 'Twitter' | 'Reddit' | 'Github'
+    nonce?: number
+    name?: string
 }
 
 export type CreateRandomIdentityMetadata = {
-    name?: string;
+    name?: string
 }
 
 export type CreateIdentityMetadata = CreateInterrepIdentityMetadata | CreateRandomIdentityMetadata
 export type CreateIdentityStrategy = 'interrep' | 'random'
 
 export type NewIdentityRequest = {
-    strategy: CreateIdentityStrategy,
+    strategy: CreateIdentityStrategy
     options: any
 }
 
 export type ZkInputs = {
-    circuitFilePath: string,
-    zkeyFilePath: string,
+    circuitFilePath: string
+    zkeyFilePath: string
     merkleStorageAddress: string
 }
 
@@ -38,34 +38,33 @@ export enum PendingRequestType {
     PROOF,
     DUMMY,
     APPROVE,
-    INJECT,
+    INJECT
 }
 
 export type PendingRequest = {
-    id: string,
+    id: string
     type: PendingRequestType
-};
+}
 
-
-export type RequestResolutionAction = 'accept' | 'reject';
+export type RequestResolutionAction = 'accept' | 'reject'
 
 export type FinalizedRequest = {
-    id: string,
+    id: string
     action: RequestResolutionAction
 }
 
 export type ApprovalAction = {
-    host: string,
+    host: string
     action: 'add' | 'remove'
 }
 
 export type IdentityMetadata = {
-    account: string,
-    name: string,
-    provider: string,
+    account: string
+    name: string
+    provider: string
 }
 
 export type SerializedIdentity = {
-    metadata: IdentityMetadata,
-    secret: string,
+    metadata: IdentityMetadata
+    secret: string
 }

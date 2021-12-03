@@ -18,13 +18,17 @@ export default function Popup(): ReactElement {
         dispatch(fetchRequestPendingStatus())
     }, [])
 
-    const finalizeRequest = useCallback((id: string, action: string) => postMessage({
-            method: RPCAction.FINALIZE_REQUEST,
-            payload: {
-                id,
-                action
-            }
-        }), [])
+    const finalizeRequest = useCallback(
+        (id: string, action: string) =>
+            postMessage({
+                method: RPCAction.FINALIZE_REQUEST,
+                payload: {
+                    id,
+                    action
+                }
+            }),
+        []
+    )
 
     if (pendingRequests.length) {
         const [pendingRequest] = pendingRequests

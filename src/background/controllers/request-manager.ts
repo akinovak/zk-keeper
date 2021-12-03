@@ -31,7 +31,7 @@ export default class RequestManager extends EventEmitter2 {
 
     addToQueue = async (type: PendingRequestType): Promise<string> => {
         // eslint-disable-next-line no-plusplus
-        const id: string = `${  nonce++}`
+        const id: string = `${nonce++}`
         this.pendingRequests.push({ id, type })
         await pushMessage(setPendingRequest(this.pendingRequests))
         await this.handlePopup()
@@ -39,17 +39,17 @@ export default class RequestManager extends EventEmitter2 {
     }
 
     newRequest = async (data: any, type: PendingRequestType) => {
-        const id: string = await this.addToQueue(type);
+        const id: string = await this.addToQueue(type)
         return new Promise((resolve, reject) => {
             this.once(`${id}:finalized`, (action: RequestResolutionAction) => {
                 switch (action) {
                     case 'accept':
-                        resolve(data);
-                        return;
+                        resolve(data)
+                        return
                     case 'reject':
                         // eslint-disable-next-line prefer-promise-reject-errors
-                        reject(null);
-                        return;
+                        reject(null)
+                        return
                     default:
                         throw new Error(`action: ${action} not supproted`)
                 }
