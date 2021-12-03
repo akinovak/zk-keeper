@@ -30,11 +30,11 @@ const initialState: State = {
     requestPending: false
 }
 
-export const createIdentity = (id: string, option: CreateInterrepIdentityOption) => async (dispatch: Dispatch) => postMessage({
+export const createIdentity = (strategy: string, options: any) => async (dispatch: Dispatch) => postMessage({
         method: RPCAction.CREATE_IDENTITY,
         payload: {
-            id,
-            option
+            strategy,
+            options
         }
     })
 

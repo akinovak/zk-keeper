@@ -46,7 +46,7 @@ export default class ZkKepperController extends Handler {
         // identites
         this.add(RPCAction.CREATE_IDENTITY, LockService.ensure, this.metamaskService.ensure, async (payload: NewIdentityRequest) => {
             try {
-                const { strategy, metadata } = payload;
+                const { strategy, options } = payload;
                 if(!strategy) throw new Error("strategy not provided");
 
                 const web3: Web3 = await this.metamaskService.getWeb3();
@@ -54,13 +54,14 @@ export default class ZkKepperController extends Handler {
 
                 const numOfIdentites = this.identityService.getNumOfIdentites();
 
-                const data: any = {
+                const config: any = {
+                    ...options,
                     web3,
                     walletInfo,
-                    name: metadata?.name || `Account${numOfIdentites}`
+                    name: options?.name || `Account${numOfIdentites}`
                 }
 
-                const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, data);
+                const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config);
                 if(!identity) throw new Error("Identity not created, make sure to check strategy");
                 await this.identityService.insert(identity);
                 return true;

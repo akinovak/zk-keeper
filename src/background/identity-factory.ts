@@ -4,8 +4,8 @@ import semethid from '@interrep/semethid'
 import ZkIdentityDecorater from './identity-decorater'
 
 
-const createInterrepIdentity = async (option: any): Promise<ZkIdentityDecorater> => {
-    const { web2Provider, nonce = 0, name, web3Info } = option
+const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
+    const { web2Provider, nonce = 0, name, web3Info } = config
 
     if (typeof web2Provider === 'undefined') throw new Error('no web2Provider')
     if (typeof nonce === 'undefined') throw new Error('no nonce')
@@ -27,11 +27,11 @@ const createInterrepIdentity = async (option: any): Promise<ZkIdentityDecorater>
     return new ZkIdentityDecorater(identity, metadata);
 }
 
-const createRandomIdentity = async (data: any): Promise<ZkIdentityDecorater> => {
+const createRandomIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
     const identity: ZkIdentity = new ZkIdentity();
     const metadata: IdentityMetadata = {
         account: '',
-        name: data.name,
+        name: config.name,
         provider: 'random',
     }
 

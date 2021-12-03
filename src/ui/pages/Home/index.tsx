@@ -61,7 +61,7 @@ export default function Home(): ReactElement {
                 btnType={ButtonType.primary}
                 onClick={() => {
                     postMessage({
-                        method: 'unlock',
+                        method: RPCAction.UNLOCL,
                         payload: 'password123'
                     })
                 }}

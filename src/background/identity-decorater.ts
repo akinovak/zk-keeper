@@ -29,7 +29,7 @@ export default class ZkIdentityDecorater {
         if(!data.secret) throw new Error("Secret missing");
 
         // TODO overload zkIdentity function to work both with array and string
-        const zkIdentity = ZkIdentity.genFromSerialized(JSON.stringify(data.secret));
+        const zkIdentity = ZkIdentity.genFromSerialized(data.secret);
         return new ZkIdentityDecorater(zkIdentity, data.metadata);
     }
 }

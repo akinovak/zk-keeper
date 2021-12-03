@@ -25,7 +25,7 @@ export type CreateIdentityStrategy = 'interrep' | 'random'
 
 export type NewIdentityRequest = {
     strategy: CreateIdentityStrategy,
-    metadata: any
+    options: any
 }
 
 export type ZkInputs = {

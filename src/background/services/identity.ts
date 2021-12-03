@@ -5,7 +5,7 @@ import SimpleStorage from './simple-storage'
 import LockService from './lock'
 import ZkIdentityDecorater from '../identity-decorater'
 
-const DB_KEY = '@@identities@@'
+const DB_KEY = '@@IDS-t1@@'
 
 export default class IdentityService extends SimpleStorage {
     identities: Map<string, ZkIdentityDecorater>
@@ -88,7 +88,8 @@ export default class IdentityService extends SimpleStorage {
         }
 
         const newValue: string[] = [...existingIdentites, newIdentity.serialize()]
-        const ciphertext = await LockService.encrypt(JSON.stringify(newValue))
+        const ciphertext: string = await LockService.encrypt(JSON.stringify(newValue))
+
         await this.set(ciphertext)
         await this.refresh()
         return true
