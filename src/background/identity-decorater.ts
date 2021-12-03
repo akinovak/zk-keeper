@@ -2,15 +2,14 @@ import { ZkIdentity } from '@libsem/identity'
 import { SerializedIdentity, IdentityMetadata } from '@src/types'
 
 export default class ZkIdentityDecorater {
-    private zkIdentity: ZkIdentity
+    public zkIdentity: ZkIdentity
+
     private metadata: IdentityMetadata
 
     constructor(zkIdentity: ZkIdentity, metadata: IdentityMetadata) {
         this.zkIdentity = zkIdentity
         this.metadata = metadata
     }
-
-    getZkIdentity = (): ZkIdentity => this.zkIdentity
 
     genIdentityCommitment = (): bigint => this.zkIdentity.genIdentityCommitment()
 

@@ -92,7 +92,7 @@ export default class ZkKepperController extends Handler {
                 const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
                 if (!identity) throw new Error('active identity not found')
 
-                const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.getZkIdentity(), payload)
+                const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
                 return this.requestManager.newRequest(JSON.stringify(safeProof), PendingRequestType.PROOF)
             }
         )

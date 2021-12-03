@@ -2,21 +2,25 @@ import { IdentityMetadata } from '@src/types'
 import { ZkIdentity } from '@libsem/identity'
 import semethid from '@interrep/semethid'
 import ZkIdentityDecorater from './identity-decorater'
+import checkParameter from '@src/util/checkParameter'
 
 const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
-    const { web2Provider, nonce = 0, name, web3Info } = config
+    checkParameter(config, 'config', 'object')
 
-    if (typeof web2Provider === 'undefined') throw new Error('no web2Provider')
-    if (typeof nonce === 'undefined') throw new Error('no nonce')
+    const { provider, nonce = 0, name, web3Info } = config
+
+    checkParameter(name, 'name', 'string')
+    checkParameter(web3Info, 'web3Info', 'object')
+    checkParameter(provider, 'provider', 'string')
 
     const { web3, walletInfo } = web3Info
 
-    if (!web3) throw new Error('Web3 not found')
-    if (!walletInfo) throw new Error('Wallet info not fould')
+    checkParameter(web3, 'web3', 'object')
+    checkParameter(walletInfo, 'walletInfo', 'object')
 
     const sign = (message: string) => web3.eth.sign(message, walletInfo?.account)
 
-    const identity: ZkIdentity = await semethid(sign, web2Provider, nonce)
+    const identity: ZkIdentity = await semethid(sign, provider, nonce)
     const metadata: IdentityMetadata = {
         account: walletInfo.account,
         name,
@@ -26,7 +30,10 @@ const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater>
     return new ZkIdentityDecorater(identity, metadata)
 }
 
-const createRandomIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
+const createRandomIdentity = (config: any): ZkIdentityDecorater => {
+    checkParameter(config, 'config', 'object')
+    checkParameter(config.name, 'name', 'string')
+
     const identity: ZkIdentity = new ZkIdentity()
     const metadata: IdentityMetadata = {
         account: '',
@@ -42,7 +49,7 @@ const strategiesMap = {
     interrep: createInterrepIdentity
 }
 
-const identityFactory = async (strategy: string, options: any): Promise<ZkIdentityDecorater> =>
-    strategiesMap[strategy](options)
+const identityFactory = async (strategy: keyof typeof strategiesMap, config: any): Promise<ZkIdentityDecorater> =>
+    strategiesMap[strategy](config)
 
 export default identityFactory
