@@ -84,7 +84,7 @@
     },
     "dependencies": {
         "@dimensiondev/metamask-extension-provider": "https://github.com/DimensionDev/extension-provider/tarball/master",
-        "@interrep/semethid": "^0.10.0",
+        "@interrep/identity": "^0.10.0",
         "@libsem/identity": "^1.0.17",
         "@libsem/protocols": "^1.0.24",
         "@types/classnames": "^2.2.11",

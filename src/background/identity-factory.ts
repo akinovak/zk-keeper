@@ -1,6 +1,6 @@
 import { IdentityMetadata } from '@src/types'
 import { ZkIdentity } from '@libsem/identity'
-import semethid from '@interrep/semethid'
+import createIdentity from '@interrep/identity'
 import ZkIdentityDecorater from './identity-decorater'
 import checkParameter from '@src/util/checkParameter'
 
@@ -20,7 +20,7 @@ const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater>
 
     const sign = (message: string) => web3.eth.sign(message, walletInfo?.account)
 
-    const identity: ZkIdentity = await semethid(sign, provider, nonce)
+    const identity: ZkIdentity = await createIdentity(sign, provider, nonce)
     const metadata: IdentityMetadata = {
         account: walletInfo.account,
         name,
