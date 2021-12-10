@@ -4,11 +4,13 @@ import thunk from 'redux-thunk'
 import web3 from '@src/ui/ducks/web3'
 import identities from '@src/ui/ducks/identities'
 import requests from '@src/ui/ducks/requests'
+import app from '@src/ui/ducks/app'
 
 const rootReducer = combineReducers({
     web3,
     identities,
-    requests
+    requests,
+    app,
 })
 
 export type AppRootState = ReturnType<typeof rootReducer>

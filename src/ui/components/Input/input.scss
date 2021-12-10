@@ -37,13 +37,13 @@
 
     &__group {
         @extend %row-nowrap;
-        background-color: rgba($black, 0.025);
+        background-color: lighten($black, 15);
         border-bottom: 1px solid transparent;
         border-radius: 0.125rem;
 
         &:focus-within {
-            background-color: rgba($black, 0.035);
-            border-bottom: 1px solid $primary-blue;
+            background-color: $gray-900;
+            border-bottom: 1px solid $primary-green;
         }
 
         .icon {

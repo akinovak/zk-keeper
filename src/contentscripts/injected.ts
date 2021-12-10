@@ -49,19 +49,6 @@ async function semaphoreProof(
     })
 }
 
-async function unlock() {
-    return post({
-        method: RPCAction.UNLOCL,
-        payload: { password: 'password123' }
-    })
-}
-
-async function lock() {
-    return post({
-        method: RPCAction.LOCK
-    })
-}
-
 // dev-only
 async function clearApproved() {
     return post({
@@ -100,8 +87,6 @@ const client = {
     getIdentityCommitments,
     createDummyRequest,
     semaphoreProof,
-    unlock,
-    lock,
     // dev-only
     clearApproved
 }

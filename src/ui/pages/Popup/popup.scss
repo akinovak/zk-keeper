@@ -4,7 +4,7 @@ body {
     font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: white;
+    background-color: $bg-black;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -16,6 +16,7 @@ body {
     font-size: 16px;
     width: 357px;
     height: 600px;
+    cursor: default;
 }
 
 a {
@@ -47,9 +48,8 @@ a {
     .popup {
         width: 36rem;
         height: 40rem;
-        border: 1px solid $border-gray;
+        border: 1px solid $gray-700;
         margin: 3rem auto;
-        background-color: $white;
         box-shadow: 0 2px 4px 0px $header-gray;
     }
 }

@@ -25,10 +25,13 @@ browser.runtime.onInstalled.addListener(async ({ reason }) => {
         //   url: 'popup.html'
         // });
 
-        await LockService.setupPassword('password123')
+        // await LockService.setupPassword('password123')
     }
     /**
      * TODO: This is necessary before proper password page is implemented
      */
-    await LockService.setupPassword('password123')
+    // await LockService.setupPassword('password123')
+    if (process.env.NODE_ENV === 'development') {
+        browser.tabs.create({ url: 'popup.html' });
+    }
 })

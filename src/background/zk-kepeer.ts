@@ -33,13 +33,28 @@ export default class ZkKepperController extends Handler {
     initialize = async (): Promise<ZkKepperController> => {
         // common
         this.add(
-            RPCAction.UNLOCL,
+            RPCAction.UNLOCK,
             LockService.unlock,
             this.metamaskService.ensure,
             this.identityService.unlock,
             this.approvalService.unlock
-        )
-        this.add(RPCAction.LOCK, LockService.logout)
+        );
+
+        this.add(RPCAction.LOCK, LockService.logout);
+
+        /**
+         *  Return status of background process
+         *  @returns {Object} status Background process status
+         *  @returns {boolean} status.initialized has background process been initialized
+         *  @returns {boolean} status.unlocked is background process unlocked
+         */
+        this.add(RPCAction.GET_STATUS, async () => {
+            const { initialized, unlocked } = await LockService.getStatus();
+            return {
+                initialized,
+                unlocked,
+            };
+        });
 
         // requests
         this.add(RPCAction.GET_PENDING_REQUESTS, LockService.ensure, this.requestManager.getRequests)
@@ -48,6 +63,11 @@ export default class ZkKepperController extends Handler {
         // web3
         this.add(RPCAction.CONNECT_METAMASK, LockService.ensure, this.metamaskService.connectMetamask)
         this.add(RPCAction.GET_WALLET_INFO, this.metamaskService.getWalletInfo)
+
+        // lock
+        this.add(RPCAction.SETUP_PASSWORD, (payload: string) => {
+           return LockService.setupPassword(payload);
+        });
 
         // identites
         this.add(

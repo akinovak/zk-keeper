@@ -1,9 +1,6 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/function-component-definition */
-/* eslint-disable react/require-default-props */
 import React, { InputHTMLAttributes, MouseEventHandler } from 'react'
 
-import './index.scss'
+import './input.scss'
 import classNames from 'classnames'
 import Icon from '../Icon'
 
