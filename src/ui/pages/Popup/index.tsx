@@ -5,10 +5,7 @@ import './popup.scss'
 import { Redirect, Route, Switch } from 'react-router'
 import Home from '@src/ui/pages/Home'
 import { useRequestsPending, fetchRequestPendingStatus } from '@src/ui/ducks/requests'
-import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
-import RPCAction from '@src/util/constants'
-import postMessage from '@src/util/postMessage'
 import {fetchStatus, useAppStatus} from "@src/ui/ducks/app";
 import Onboarding from "@src/ui/pages/Onboarding";
 import Login from "@src/ui/pages/Login";

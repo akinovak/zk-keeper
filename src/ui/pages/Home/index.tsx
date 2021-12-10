@@ -1,11 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/destructuring-assignment */
-/* eslint-disable no-var */
-/* eslint-disable vars-on-top */
-/* eslint-disable react/function-component-definition */
 import React, { ReactElement, useCallback, useEffect, useState } from 'react'
 import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
@@ -17,12 +9,13 @@ import Modal from '@src/ui/components/Modal'
 import Input from '@src/ui/components/Input'
 import Dropdown from '@src/ui/components/Dropdown'
 import { createIdentity, fetchIdentities, setActiveIdentity, useIdentities } from '@src/ui/ducks/identities'
+import Header from "@src/ui/components/Header";
+import classNames from "classnames";
+import { browser } from 'webextension-polyfill-ts';
+import "./home.scss";
 
 export default function Home(): ReactElement {
     const dispatch = useDispatch()
-    const web3Connecting = useWeb3Connecting()
-    const account = useAccount()
-    const networkType = useNetwork()
     const identities = useIdentities()
     const [showingModal, showModal] = useState(false)
 
@@ -30,67 +23,87 @@ export default function Home(): ReactElement {
         // dispatch here
         dispatch(fetchIdentities())
         dispatch(fetchWalletInfo())
-    }, [])
+    }, []);
 
-    const connectMetamask = useCallback(async () => {
-        await postMessage({ method: RPCAction.CONNECT_METAMASK })
-    }, [])
+    console.log(identities);
+    return (
+        <div className="w-full h-full flex flex-col">
+            <Header />
+            <HomeInfo />
+        </div>
+    )
+
+    // return (
+    //     <div className="p-4">
+    //         {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
+    //         <div className="text-2xl py-2">
+    //             {identities.map((identityCommitment) => (
+    //                 <div
+    //                     className="border rounded p-2 my-2"
+    //                     onClick={async () => {
+    //                         await dispatch(setActiveIdentity(identityCommitment))
+    //                     }}
+    //                 >
+    //                     {/* <div className="font-bold text-xs text-gray-500">
+    //                                 {`${type} (${web2Provider})`}
+    //                             </div> */}
+    //                     <div className="text-lg">
+    //                         {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
+    //                     </div>
+    //                 </div>
+    //             ))}
+    //         </div>
+    //     </div>
+    // )
+}
+
+function HomeInfo(): ReactElement {
+    const network = useNetwork();
+    const [connected, setConnected] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
+                const [tab] = tabs || [];
+
+                if (tab?.url) {
+                    const {origin} = new URL(tab.url);
+                    const isHostApproved = await postMessage({
+                        method: RPCAction.IS_HOST_APPROVED,
+                        payload: origin,
+                    });
+                    setConnected(isHostApproved);
+                }
+            } catch(e) {
+                setConnected(false);
+            }
+        })();
+
+    }, []);
 
     return (
-        <div className="p-4">
-            {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
-            <div className="text-xs font-bold mb-1">{account ? `Account (${networkType})` : 'Connect to Metamask'}</div>
-            <div className="text-lg mb-2">
-                {account ? (
-                    `${account.slice(0, 6)}...${account.slice(-4)}`
-                ) : (
-                    <Button btnType={ButtonType.primary} onClick={connectMetamask} loading={web3Connecting}>
-                        Connect to Metamask
-                    </Button>
-                )}
-            </div>
-            <div className="flex flex-row flex-nowrap items-center text-xs font-bold">
-                <div className="flex-grow">Identities</div>
-                <Icon
-                    className="rounded-full border-2 p-1 text-gray-400 border-gray-400 hover:border-gray-900 hover:text-gray-900"
-                    fontAwesome="fas fa-plus"
-                    onClick={() => showModal(true)}
+        <div className="home__info">
+            <div className="home__connection-button">
+                <div
+                    className={classNames('home__connection-button__icon', {
+                        'home__connection-button__icon--connected': connected,
+                    })}
                 />
+                <div className="text-xs home__connection-button__text">
+                    { connected ? 'Connected' : 'Not Connected'}
+                </div>
             </div>
-            <Button
-                btnType={ButtonType.primary}
-                onClick={() => {
-                    postMessage({
-                        method: RPCAction.UNLOCK,
-                        payload: 'password123'
-                    })
-                }}
-            >
-                Unlock
-            </Button>
-            <div className="text-2xl py-2">
-                {identities.map((identityCommitment) => (
-                    <div
-                        className="border rounded p-2 my-2"
-                        onClick={async () => {
-                            await dispatch(setActiveIdentity(identityCommitment))
-                        }}
-                    >
-                        {/* <div className="font-bold text-xs text-gray-500">
-                                    {`${type} (${web2Provider})`}
-                                </div> */}
-                        <div className="text-lg">
-                            {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
-                        </div>
-                    </div>
-                ))}
+            <div>
+                <div className="text-3xl font-semibold">
+                    { network ? `0.0000 ${network.nativeCurrency.symbol}` : '-'}
+                </div>
             </div>
         </div>
     )
 }
 
-// eslint-disable-next-line func-names
-var CreateIdentityModal = function (props: { onClose: () => void }): ReactElement {
+const CreateIdentityModal = function (props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0)
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
     const dispatch = useDispatch()

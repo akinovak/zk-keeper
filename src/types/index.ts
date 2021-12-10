@@ -6,8 +6,9 @@ export type Request = {
 }
 
 export type WalletInfo = {
-    account: string
-    networkType: string
+    account: string;
+    networkType: string;
+    chainId: number;
 }
 
 export type CreateInterrepIdentityMetadata = {

@@ -16,6 +16,7 @@ enum RPCAction {
     DUMMY_REQUEST = 'rpc/protocols/semaphore/dummyReuqest',
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',
+    IS_HOST_APPROVED = 'rpc/hosts/isHostApprove',
     REMOVE_HOST = 'rpc/hosts/remove',
     // DEV RPCS
     CLEAR_APPROVED_HOSTS = 'rpc/hosts/clear'

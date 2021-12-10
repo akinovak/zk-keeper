@@ -127,6 +127,7 @@ export default class ZkKepperController extends Handler {
             return this.requestManager.newRequest('approved', PendingRequestType.INJECT)
         })
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add)
+        this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove)
 
         // dev

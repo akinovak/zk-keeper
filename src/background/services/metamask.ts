@@ -1,12 +1,16 @@
 import pushMessage from '@src/util/pushMessage'
 import createMetaMaskProvider from '@dimensiondev/metamask-extension-provider'
 import Web3 from 'web3'
-import { setAccount, setNetwork, setWeb3Connecting } from '@src/ui/ducks/web3'
+import {setAccount, setChainId, setNetwork, setWeb3Connecting} from '@src/ui/ducks/web3'
 import { WalletInfo } from '@src/types'
 
 export default class MetamaskService {
     provider?: any
     web3?: Web3
+
+    constructor() {
+        this.ensure();
+    }
 
     ensure = async (payload: any = null) => {
         if (!this.provider) {
@@ -24,7 +28,10 @@ export default class MetamaskService {
 
             this.provider.on('chainChanged', async () => {
                 const networkType = await this.web3?.eth.net.getNetworkType()
-                pushMessage(setNetwork(networkType as string))
+                const chainId = await this.web3?.eth.getChainId();
+
+                if (networkType) pushMessage(setNetwork(networkType));
+                if (chainId) pushMessage(setChainId(chainId))
             })
         }
 
@@ -46,6 +53,7 @@ export default class MetamaskService {
         if (this.provider?.selectedAddress) {
             const accounts = await this.web3.eth.requestAccounts()
             const networkType = await this.web3.eth.net.getNetworkType()
+            const chainId = await this.web3.eth.getChainId();
 
             if (!accounts.length) {
                 throw new Error('No accounts found')
@@ -53,8 +61,9 @@ export default class MetamaskService {
 
             return {
                 account: accounts[0],
-                networkType
-            }
+                networkType,
+                chainId,
+            };
         }
 
         return null
@@ -69,6 +78,7 @@ export default class MetamaskService {
             if (this.web3) {
                 const accounts = await this.web3.eth.requestAccounts()
                 const networkType = await this.web3.eth.net.getNetworkType()
+                const chainId = await this.web3.eth.getChainId();
 
                 if (!accounts.length) {
                     throw new Error('No accounts found')
@@ -76,6 +86,7 @@ export default class MetamaskService {
 
                 await pushMessage(setAccount(accounts[0]))
                 await pushMessage(setNetwork(networkType))
+                await pushMessage(setChainId(chainId))
             }
 
             await pushMessage(setWeb3Connecting(false))
