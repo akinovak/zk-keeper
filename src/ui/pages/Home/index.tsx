@@ -25,36 +25,15 @@ export default function Home(): ReactElement {
         dispatch(fetchWalletInfo())
     }, []);
 
-    console.log(identities);
     return (
         <div className="w-full h-full flex flex-col">
             <Header />
-            <HomeInfo />
+            <div className="flex flex-col flex-grow flex-shrink overflow-y-auto home__scroller">
+                <HomeInfo />
+                <HomeList />
+            </div>
         </div>
-    )
-
-    // return (
-    //     <div className="p-4">
-    //         {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
-    //         <div className="text-2xl py-2">
-    //             {identities.map((identityCommitment) => (
-    //                 <div
-    //                     className="border rounded p-2 my-2"
-    //                     onClick={async () => {
-    //                         await dispatch(setActiveIdentity(identityCommitment))
-    //                     }}
-    //                 >
-    //                     {/* <div className="font-bold text-xs text-gray-500">
-    //                                 {`${type} (${web2Provider})`}
-    //                             </div> */}
-    //                     <div className="text-lg">
-    //                         {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
-    //                     </div>
-    //                 </div>
-    //             ))}
-    //         </div>
-    //     </div>
-    // )
+    );
 }
 
 function HomeInfo(): ReactElement {
@@ -99,6 +78,81 @@ function HomeInfo(): ReactElement {
                     { network ? `0.0000 ${network.nativeCurrency.symbol}` : '-'}
                 </div>
             </div>
+        </div>
+    )
+}
+
+function HomeList(): ReactElement {
+    const [selectedTab, selectTab] = useState<'identities'|'activity'>("identities");
+
+    return (
+        <div className="home__list">
+            <div className="home__list__header">
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'identities',
+                    })}
+                    onClick={() => selectTab('identities')}
+                >
+                    Identities
+                </div>
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'activity',
+                    })}
+                    onClick={() => selectTab('activity')}
+                >
+                    Activity
+                </div>
+            </div>
+            <div className="home__list__content">
+                { selectedTab === 'identities' ? <IdentityList /> : null }
+                { selectedTab === 'activity' ? <ActivityList /> : null }
+            </div>
+        </div>
+    )
+}
+
+function IdentityList(): ReactElement {
+    const identities = useIdentities();
+    const dispatch = useDispatch();
+
+    return (
+        <>
+            {Array(50).fill('7725aec454d5ff5c5a385d48e9b62f1a81e5310a2588c09993a6431f6bfe123').map((identityCommitment, i) => (
+                <div
+                    className="p-4 identity-row"
+                    key={`${identityCommitment}${i}`}
+                    onClick={async () => {
+                        await dispatch(setActiveIdentity(identityCommitment))
+                    }}
+                >
+                    <Icon
+                        className="identity-row__select-icon"
+                        fontAwesome="fas fa-check"
+                    />
+                    <div className="flex flex-col flex-grow">
+                        <div className="text-lg font-semibold">
+                            {`Identity # ${i}`}
+                        </div>
+                        <div className="text-base text-gray-500">
+                            {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
+                        </div>
+                    </div>
+                    <Icon
+                        className="identity-row__menu-icon"
+                        fontAwesome="fas fa-ellipsis-h"
+                    />
+                </div>
+            ))}
+        </>
+    )
+}
+
+function ActivityList(): ReactElement {
+    return (
+        <div>
+
         </div>
     )
 }

@@ -6,6 +6,12 @@
         padding: .5rem 1rem;
     }
 
+    &__scroller {
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
     &__connection-button {
         @extend %row-nowrap;
         align-items: center;
@@ -34,6 +40,70 @@
         &__text {
             color: $gray-300;
             margin-right: .5rem;
+        }
+    }
+
+    &__list {
+        @extend %col-nowrap;
+        flex: 1 1 auto;
+
+        &__header {
+            @extend %row-nowrap;
+
+            &__tab {
+                @extend %row-nowrap;
+                justify-content: center;
+                align-items: center;
+                flex: 1 1 auto;
+                cursor: pointer;
+                padding: 1rem;
+                border-bottom: 2px solid $gray-800;
+
+                &--selected {
+                    border-color: $primary-green;
+                }
+            }
+        }
+
+        &__content {
+            flex: 1 1 auto;
+            background-color: $black;
+        }
+    }
+}
+
+.identity-row {
+    @extend %row-nowrap;
+    align-items: center;
+    border-bottom: 1px solid $gray-900;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $gray-900;
+    }
+
+    &__select-icon {
+        font-size: .8125rem !important;
+        border: 2px solid $gray-500;
+        color: $gray-500;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        margin-right: 1rem;
+        padding: .25rem;
+
+        &:hover {
+            color: $primary-green;
+            border-color: $primary-green;
+        }
+    }
+
+    &__menu-icon {
+        font-size: .8125rem !important;
+        color: $gray-600;
+
+        &:hover {
+            color: $gray-300;
         }
     }
 }
