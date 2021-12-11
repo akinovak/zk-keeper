@@ -9,7 +9,9 @@ import { HashRouter } from 'react-router-dom'
 const store = configureAppStore()
 
 browser.runtime.onMessage.addListener((action) => {
-    store.dispatch(action)
+    if (action?.type) {
+        store.dispatch(action);
+    }
 })
 
 browser.tabs.query({ active: true, currentWindow: true }).then(() => {

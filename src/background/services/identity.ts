@@ -1,9 +1,10 @@
 import { bigintToHex } from 'bigint-conversion'
 import pushMessage from '@src/util/pushMessage'
-import { setIdentities } from '@src/ui/ducks/identities'
+import {setIdentities, setSelected} from '@src/ui/ducks/identities'
 import SimpleStorage from './simple-storage'
 import LockService from './lock'
 import ZkIdentityDecorater from '../identity-decorater'
+import {IdentityMetadata} from "@src/types";
 
 const DB_KEY = '@@IDS-t1@@'
 
@@ -26,7 +27,7 @@ export default class IdentityService extends SimpleStorage {
         await this.loadInMemory(JSON.parse(decrypted))
         await this.setDefaultIdentity()
 
-        pushMessage(setIdentities(await this.getIdentityCommitments()))
+        pushMessage(setIdentities(await this.getIdentities()));
         return true
     }
 
@@ -41,7 +42,7 @@ export default class IdentityService extends SimpleStorage {
             await this.setDefaultIdentity()
         }
 
-        pushMessage(setIdentities(await this.getIdentityCommitments()))
+        pushMessage(setIdentities(await this.getIdentities()));
     }
 
     loadInMemory = async (decrypted: any) => {
@@ -62,11 +63,14 @@ export default class IdentityService extends SimpleStorage {
 
     setActiveIdentity = async (identityCommitment: string) => {
         if (this.identities.has(identityCommitment)) {
-            this.activeIdentity = this.identities.get(identityCommitment)
+            this.activeIdentity = this.identities.get(identityCommitment);
+            pushMessage(setSelected(identityCommitment));
         }
     }
 
-    getActiveidentity = async (): Promise<ZkIdentityDecorater | undefined> => this.activeIdentity
+    getActiveidentity = async (): Promise<ZkIdentityDecorater | undefined> => {
+        return this.activeIdentity;
+    }
 
     getIdentityCommitments = async () => {
         const commitments: string[] = []
@@ -74,6 +78,17 @@ export default class IdentityService extends SimpleStorage {
             commitments.push(key)
         }
         return commitments
+    }
+
+    getIdentities = async (): Promise<{commitment: string; metadata: IdentityMetadata}[]> => {
+        const commitments = await this.getIdentityCommitments();
+        return commitments.map(commitment => {
+            const id = this.identities.get(commitment);
+            return {
+                commitment: commitment,
+                metadata: id!.metadata,
+            };
+        });
     }
 
     insert = async (newIdentity: ZkIdentityDecorater): Promise<boolean> => {
@@ -92,6 +107,7 @@ export default class IdentityService extends SimpleStorage {
 
         await this.set(ciphertext)
         await this.refresh()
+        await this.setActiveIdentity(identityCommitment)
         return true
     }
 

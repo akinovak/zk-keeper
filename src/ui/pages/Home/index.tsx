@@ -1,12 +1,4 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/destructuring-assignment */
-/* eslint-disable no-var */
-/* eslint-disable vars-on-top */
-/* eslint-disable react/function-component-definition */
-import React, { ReactElement, useCallback, useEffect, useState } from 'react'
+import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react'
 import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
 import postMessage from '@src/util/postMessage'
@@ -16,119 +8,206 @@ import Icon from '@src/ui/components/Icon'
 import Modal from '@src/ui/components/Modal'
 import Input from '@src/ui/components/Input'
 import Dropdown from '@src/ui/components/Dropdown'
-import { createIdentity, fetchIdentities, setActiveIdentity, useIdentities } from '@src/ui/ducks/identities'
+import {
+    createIdentity,
+    fetchIdentities,
+    setActiveIdentity,
+    useIdentities,
+    useSelectedIdentity
+} from '@src/ui/ducks/identities'
+import Header from "@src/ui/components/Header";
+import classNames from "classnames";
+import { browser } from 'webextension-polyfill-ts';
+import "./home.scss";
+import {ellipsify} from "@src/util/account";
+import FullModal, {FullModalContent, FullModalHeader} from "@src/ui/components/FullModal";
+import CreateIdentityModal from "@src/ui/components/CreateIdentityModal";
 
 export default function Home(): ReactElement {
     const dispatch = useDispatch()
-    const web3Connecting = useWeb3Connecting()
-    const account = useAccount()
-    const networkType = useNetwork()
-    const identities = useIdentities()
-    const [showingModal, showModal] = useState(false)
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [fixedTabs, fixTabs] = useState(false);
 
     useEffect(() => {
-        // dispatch here
         dispatch(fetchIdentities())
         dispatch(fetchWalletInfo())
-    }, [])
+    }, []);
 
-    const connectMetamask = useCallback(async () => {
-        await postMessage({ method: RPCAction.CONNECT_METAMASK })
-    }, [])
+    const onScroll = useCallback(async () => {
+        if (!scrollRef.current) return;
+
+        const scrollTop = scrollRef.current?.scrollTop;
+
+        fixTabs(scrollTop > 92);
+    }, [scrollRef]);
 
     return (
-        <div className="p-4">
-            {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
-            <div className="text-xs font-bold mb-1">{account ? `Account (${networkType})` : 'Connect to Metamask'}</div>
-            <div className="text-lg mb-2">
-                {account ? (
-                    `${account.slice(0, 6)}...${account.slice(-4)}`
-                ) : (
-                    <Button btnType={ButtonType.primary} onClick={connectMetamask} loading={web3Connecting}>
-                        Connect to Metamask
-                    </Button>
-                )}
-            </div>
-            <div className="flex flex-row flex-nowrap items-center text-xs font-bold">
-                <div className="flex-grow">Identities</div>
-                <Icon
-                    className="rounded-full border-2 p-1 text-gray-400 border-gray-400 hover:border-gray-900 hover:text-gray-900"
-                    fontAwesome="fas fa-plus"
-                    onClick={() => showModal(true)}
-                />
-            </div>
-            <Button
-                btnType={ButtonType.primary}
-                onClick={() => {
-                    postMessage({
-                        method: RPCAction.UNLOCL,
-                        payload: 'password123'
-                    })
-                }}
+        <div className="w-full h-full flex flex-col home">
+            <Header />
+            <div
+                ref={scrollRef}
+                className={classNames("flex flex-col flex-grow flex-shrink overflow-y-auto home__scroller", {
+                    'home__scroller--fixed-menu': fixedTabs,
+                })}
+                onScroll={onScroll}
             >
-                Unlock
-            </Button>
-            <div className="text-2xl py-2">
-                {identities.map((identityCommitment) => (
-                    <div
-                        className="border rounded p-2 my-2"
-                        onClick={async () => {
-                            await dispatch(setActiveIdentity(identityCommitment))
-                        }}
-                    >
-                        {/* <div className="font-bold text-xs text-gray-500">
-                                    {`${type} (${web2Provider})`}
-                                </div> */}
-                        <div className="text-lg">
-                            {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
-                        </div>
-                    </div>
-                ))}
+                <HomeInfo />
+                <HomeList />
+            </div>
+        </div>
+    );
+}
+
+function HomeInfo(): ReactElement {
+    const network = useNetwork();
+    const [connected, setConnected] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
+                const [tab] = tabs || [];
+
+                if (tab?.url) {
+                    const {origin} = new URL(tab.url);
+                    const isHostApproved = await postMessage({
+                        method: RPCAction.IS_HOST_APPROVED,
+                        payload: origin,
+                    });
+                    setConnected(isHostApproved);
+                }
+            } catch(e) {
+                setConnected(false);
+            }
+        })();
+
+    }, []);
+
+    return (
+        <div className="home__info">
+            <div className="home__connection-button">
+                <div
+                    className={classNames('home__connection-button__icon', {
+                        'home__connection-button__icon--connected': connected,
+                    })}
+                />
+                <div className="text-xs home__connection-button__text">
+                    { connected ? 'Connected' : 'Not Connected'}
+                </div>
+            </div>
+            <div>
+                <div className="text-3xl font-semibold">
+                    { network ? `0.0000 ${network.nativeCurrency.symbol}` : '-'}
+                </div>
             </div>
         </div>
     )
 }
 
-// eslint-disable-next-line func-names
-var CreateIdentityModal = function (props: { onClose: () => void }): ReactElement {
-    const [nonce, setNonce] = useState(0)
-    const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
-    const dispatch = useDispatch()
-
-    const create = useCallback(async () => {
-        // TODO add radnom strategy while metamask issue is not resolved
-        await dispatch(
-            createIdentity('random', {
-                nonce,
-                web2Provider
-            })
-        )
-        props.onClose()
-    }, [nonce, web2Provider])
+function HomeList(): ReactElement {
+    const [selectedTab, selectTab] = useState<'identities'|'activity'>("identities");
 
     return (
-        <Modal className="py-2 px-4" onClose={props.onClose}>
-            <div className="font-semibold">Create Identity</div>
-            <Dropdown
-                className="my-2"
-                label="Web2 Provider"
-                options={[{ value: 'Twitter' }, { value: 'Reddit' }, { value: 'Github' }]}
-                onChange={(e) => {
-                    setWeb2Provider(e.target.value as any)
-                }}
-                value={web2Provider}
-            />
-            <Input
-                className="my-2"
-                type="number"
-                label="nonce"
-                step={1}
-                defaultValue={nonce}
-                onChange={(e) => setNonce(Number(e.target.value))}
-            />
-            <div className="py-2 flex flex-row flex-nowrap justify-end">
-                <Button onClick={create}>Create</Button>
+        <div className="home__list">
+            <div className="home__list__header">
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'identities',
+                    })}
+                    onClick={() => selectTab('identities')}
+                >
+                    Identities
+                </div>
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'activity',
+                    })}
+                    onClick={() => selectTab('activity')}
+                >
+                    Activity
+                </div>
             </div>
-        </Modal>
+            <div className="home__list__fix-header">
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'identities',
+                    })}
+                    onClick={() => selectTab('identities')}
+                >
+                    Identities
+                </div>
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'activity',
+                    })}
+                    onClick={() => selectTab('activity')}
+                >
+                    Activity
+                </div>
+            </div>
+            <div className="home__list__content">
+                { selectedTab === 'identities' ? <IdentityList /> : null }
+                { selectedTab === 'activity' ? <ActivityList /> : null }
+            </div>
+        </div>
+    )
+}
+
+function IdentityList(): ReactElement {
+    const identities = useIdentities();
+    const selected = useSelectedIdentity();
+    const dispatch = useDispatch();
+    const selectIdentity = useCallback(async (identityCommitment: string) => {
+        dispatch(setActiveIdentity(identityCommitment));
+    }, []);
+    const [showingModal, showModal] = useState(false)
+
+
+    return (
+        <>
+            {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
+            {identities.map(({commitment, metadata}, i) => (
+                <div
+                    className="p-4 identity-row"
+                    key={commitment}
+                >
+                    <Icon
+                        className={classNames("identity-row__select-icon", {
+                            'identity-row__select-icon--selected': selected.commitment === commitment,
+                        })}
+                        fontAwesome="fas fa-check"
+                        onClick={() => selectIdentity(commitment)}
+                    />
+                    <div className="flex flex-col flex-grow">
+                        <div className="flex flex-row items-center text-lg font-semibold">
+                            {`${metadata.name}`}
+                            <span className="text-xs py-1 px-2 ml-2 rounded-full bg-gray-500 text-gray-800">{metadata.provider}</span>
+                        </div>
+                        <div className="text-base text-gray-500">
+                            {ellipsify(commitment)}
+                        </div>
+                    </div>
+                    <Icon
+                        className="identity-row__menu-icon"
+                        fontAwesome="fas fa-ellipsis-h"
+                    />
+                </div>
+            ))}
+            <div
+                className="create-identity-row flex flex-row items-center justify-center p-4 cursor-pointer text-gray-600"
+                onClick={() => showModal(true)}
+            >
+                <Icon fontAwesome="fas fa-plus" size={1} className="mr-2" />
+                <div>Add Identity</div>
+            </div>
+        </>
+    )
+}
+
+function ActivityList(): ReactElement {
+    return (
+        <div>
+
+        </div>
     )
 }

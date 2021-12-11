@@ -11,10 +11,10 @@
     border-radius: 0.25rem;
     border: none;
     user-select: none;
-    font-weight: 400;
     outline: none;
     position: relative;
     height: 2.375rem;
+    font-weight: 600;
 
     .icon {
         margin-right: 0.5rem;
@@ -39,27 +39,27 @@
 }
 
 .button--primary {
-    background-color: $primary-blue;
-    color: $white;
-    border: 2px solid $primary-blue;
+    background-color: $primary-green;
+    color: $black;
+    border: 2px solid $primary-green;
     transition: background-color 150ms ease-in-out;
 
     &:hover {
-        background-color: lighten($primary-blue, 5);
-        border: 2px solid lighten($primary-blue, 5);
+        background-color: lighten($primary-green, 5);
+        border: 2px solid lighten($primary-green, 5);
     }
 
     &:active {
-        background-color: darken($primary-blue, 5);
-        border: 2px solid darken($primary-blue, 5);
+        background-color: darken($primary-green, 5);
+        border: 2px solid darken($primary-green, 5);
     }
 
     &:disabled {
         &:hover,
         &:active {
-            background-color: $primary-blue;
-            color: $white;
-            border: 2px solid $primary-blue;
+            background-color: $primary-green;
+            color: $black;
+            border: 2px solid $primary-green;
         }
     }
 }
@@ -67,17 +67,17 @@
 .button--secondary {
     box-sizing: border-box;
     background-color: transparent;
-    color: $primary-blue;
-    border: 2px solid $primary-blue;
+    color: $primary-green;
+    border: 2px solid $primary-green;
     transition: background-color 150ms ease-in-out, color 150ms ease-in-out;
 
     &:hover {
-        background-color: rgba($primary-blue, 0.5);
+        background-color: rgba($primary-green, 0.5);
         color: $white;
     }
 
     &:active {
-        background-color: rgba($primary-blue, 8);
+        background-color: rgba($primary-green, 8);
         color: $white;
     }
 
@@ -85,8 +85,8 @@
         &:hover,
         &:active {
             background-color: transparent;
-            color: $primary-blue;
-            border: 2px solid $primary-blue;
+            color: $primary-green;
+            border: 2px solid $primary-green;
         }
     }
 }

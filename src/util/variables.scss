@@ -1,13 +1,28 @@
 $white: #ffffff;
 $black: #000000;
 
+$bg-black: #000403;
 $primary-blue: #2580f8;
-$primary-text: rgba($black, 0.8);
-$secondary-text: rgba($black, 0.6);
-$label-text: rgba($black, 0.25);
+$primary-green: #94febf;
+
 
 $header-gray: rgba($black, 0.05);
 $border-gray: rgba($black, 0.1);
+$gray-950: lighten($black, 5);
+$gray-900: lighten($black, 10);
+$gray-800: lighten($black, 20);
+$gray-700: lighten($black, 30);
+$gray-600: lighten($black, 40);
+$gray-500: lighten($black, 50);
+$gray-400: lighten($black, 60);
+$gray-300: lighten($black, 70);
+$gray-200: lighten($black, 80);
+$gray-100: lighten($black, 90);
+
+$primary-text: $gray-200;
+$secondary-text: $gray-400;
+$label-text: lighten($black, 75);
+
 $error-red: #f52525;
 $success-green: #2ed272;
 $warning-orange: #ffa31a;

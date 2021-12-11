@@ -1,3 +1,5 @@
+import { MerkleProof } from '@libsem/protocols'
+
 export type Request = {
     method: string
     payload?: any
@@ -6,8 +8,9 @@ export type Request = {
 }
 
 export type WalletInfo = {
-    account: string
-    networkType: string
+    account: string;
+    networkType: string;
+    chainId: number;
 }
 
 export type CreateInterrepIdentityMetadata = {
@@ -31,7 +34,8 @@ export type NewIdentityRequest = {
 export type ZkInputs = {
     circuitFilePath: string
     zkeyFilePath: string
-    merkleStorageAddress: string
+    merkleStorageAddress?: string
+    merkleProof?: MerkleProof
 }
 
 export enum PendingRequestType {
@@ -44,6 +48,7 @@ export enum PendingRequestType {
 export type PendingRequest = {
     id: string
     type: PendingRequestType
+    payload?: any
 }
 
 export type RequestResolutionAction = 'accept' | 'reject'

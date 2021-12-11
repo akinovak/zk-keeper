@@ -33,32 +33,26 @@ async function createDummyRequest() {
 async function semaphoreProof(
     externalNullifier: string,
     signal: string,
-    merkleStorageAddress: string,
     circuitFilePath: string,
-    zkeyFilePath: string
+    zkeyFilePath: string,
+    merkleProofOrStorageAddress: string | {
+        root: string
+        indices: Array<any>
+        pathElements: Array<any>
+    },
 ) {
+    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
         payload: {
             externalNullifier,
             signal,
             merkleStorageAddress,
+            merkleProof,
             circuitFilePath,
             zkeyFilePath
         }
-    })
-}
-
-async function unlock() {
-    return post({
-        method: RPCAction.UNLOCL,
-        payload: { password: 'password123' }
-    })
-}
-
-async function lock() {
-    return post({
-        method: RPCAction.LOCK
     })
 }
 
@@ -100,8 +94,6 @@ const client = {
     getIdentityCommitments,
     createDummyRequest,
     semaphoreProof,
-    unlock,
-    lock,
     // dev-only
     clearApproved
 }

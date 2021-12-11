@@ -6,7 +6,7 @@
     background-color: transparent;
     border: none;
     width: 100%;
-    color: $primary-text;
+    color: $white;
     font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
 
     &__label {
@@ -18,7 +18,7 @@
 
     &__group {
         @extend %row-nowrap;
-        background-color: rgba($black, 0.025);
+        background-color: lighten($black, 15);
         border-bottom: 1px solid transparent;
         border-radius: 0.125rem;
         padding: 0.5rem 0.5rem;
