@@ -12,6 +12,7 @@ import { ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfa
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
+import {bigintToHex} from "bigint-conversion";
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService
@@ -76,32 +77,46 @@ export default class ZkKepperController extends Handler {
             this.metamaskService.ensure,
             async (payload: NewIdentityRequest) => {
                 try {
-                    const { strategy, options } = payload
-                    if (!strategy) throw new Error('strategy not provided')
+                    const { strategy, options } = payload;
+                    if (!strategy) throw new Error('strategy not provided');
 
-                    const web3: Web3 = await this.metamaskService.getWeb3()
-                    const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo()
+                    const web3: Web3 = await this.metamaskService.getWeb3();
+                    const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
 
-                    const numOfIdentites = this.identityService.getNumOfIdentites()
+                    const numOfIdentites = this.identityService.getNumOfIdentites();
 
                     const config: any = {
                         ...options,
                         web3,
                         walletInfo,
-                        name: options?.name || `Account${numOfIdentites}`
+                        name: options?.name || `Account # ${numOfIdentites}`
+                    };
+
+                    const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config);
+
+                    if (!identity) {
+                        throw new Error('Identity not created, make sure to check strategy');
                     }
 
-                    const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config)
-                    if (!identity) throw new Error('Identity not created, make sure to check strategy')
-                    await this.identityService.insert(identity)
-                    return true
+                    await this.identityService.insert(identity);
+
+                    return true;
                 } catch (error: any) {
-                    throw new Error(error.message)
+                    throw new Error(error.message);
                 }
             }
-        )
+        );
 
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments)
+        this.add(RPCAction.GET_IDENTITIES, LockService.ensure, this.identityService.getIdentities)
+        this.add(RPCAction.SET_ACTIVE_IDENTITY, LockService.ensure, this.identityService.setActiveIdentity)
+        this.add(RPCAction.GET_ACTIVE_IDENTITY, LockService.ensure, async () => {
+            const identity = await this.identityService.getActiveidentity();
+            if (!identity) {
+                return null;
+            }
+            return bigintToHex(identity?.genIdentityCommitment());
+        });
 
         // protocols
         this.add(

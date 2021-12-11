@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState } from 'react'
+import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react'
 import Button, { ButtonType } from '@src/ui/components/Button'
 import { useDispatch } from 'react-redux'
 import postMessage from '@src/util/postMessage'
@@ -8,27 +8,49 @@ import Icon from '@src/ui/components/Icon'
 import Modal from '@src/ui/components/Modal'
 import Input from '@src/ui/components/Input'
 import Dropdown from '@src/ui/components/Dropdown'
-import { createIdentity, fetchIdentities, setActiveIdentity, useIdentities } from '@src/ui/ducks/identities'
+import {
+    createIdentity,
+    fetchIdentities,
+    setActiveIdentity,
+    useIdentities,
+    useSelectedIdentity
+} from '@src/ui/ducks/identities'
 import Header from "@src/ui/components/Header";
 import classNames from "classnames";
 import { browser } from 'webextension-polyfill-ts';
 import "./home.scss";
+import {ellipsify} from "@src/util/account";
+import FullModal, {FullModalContent, FullModalHeader} from "@src/ui/components/FullModal";
+import CreateIdentityModal from "@src/ui/components/CreateIdentityModal";
 
 export default function Home(): ReactElement {
     const dispatch = useDispatch()
-    const identities = useIdentities()
-    const [showingModal, showModal] = useState(false)
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [fixedTabs, fixTabs] = useState(false);
 
     useEffect(() => {
-        // dispatch here
         dispatch(fetchIdentities())
         dispatch(fetchWalletInfo())
     }, []);
 
+    const onScroll = useCallback(async () => {
+        if (!scrollRef.current) return;
+
+        const scrollTop = scrollRef.current?.scrollTop;
+
+        fixTabs(scrollTop >= 92);
+    }, [scrollRef]);
+
     return (
-        <div className="w-full h-full flex flex-col">
+        <div className="w-full h-full flex flex-col home">
             <Header />
-            <div className="flex flex-col flex-grow flex-shrink overflow-y-auto home__scroller">
+            <div
+                ref={scrollRef}
+                className={classNames("flex flex-col flex-grow flex-shrink overflow-y-auto home__scroller", {
+                    'home__scroller--fixed-menu': fixedTabs,
+                })}
+                onScroll={onScroll}
+            >
                 <HomeInfo />
                 <HomeList />
             </div>
@@ -115,28 +137,36 @@ function HomeList(): ReactElement {
 
 function IdentityList(): ReactElement {
     const identities = useIdentities();
+    const selected = useSelectedIdentity();
     const dispatch = useDispatch();
+    const selectIdentity = useCallback(async (identityCommitment: string) => {
+        dispatch(setActiveIdentity(identityCommitment));
+    }, []);
+    const [showingModal, showModal] = useState(false)
+
 
     return (
         <>
-            {Array(50).fill('7725aec454d5ff5c5a385d48e9b62f1a81e5310a2588c09993a6431f6bfe123').map((identityCommitment, i) => (
+            {showingModal && <CreateIdentityModal onClose={() => showModal(false)} />}
+            {identities.map(({commitment, metadata}, i) => (
                 <div
                     className="p-4 identity-row"
-                    key={`${identityCommitment}${i}`}
-                    onClick={async () => {
-                        await dispatch(setActiveIdentity(identityCommitment))
-                    }}
+                    key={commitment}
                 >
                     <Icon
-                        className="identity-row__select-icon"
+                        className={classNames("identity-row__select-icon", {
+                            'identity-row__select-icon--selected': selected.commitment === commitment,
+                        })}
                         fontAwesome="fas fa-check"
+                        onClick={() => selectIdentity(commitment)}
                     />
                     <div className="flex flex-col flex-grow">
-                        <div className="text-lg font-semibold">
-                            {`Identity # ${i}`}
+                        <div className="flex flex-row items-center text-lg font-semibold">
+                            {`${metadata.name}`}
+                            <span className="text-xs py-1 px-2 ml-2 rounded-full bg-gray-500 text-gray-800">{metadata.provider}</span>
                         </div>
                         <div className="text-base text-gray-500">
-                            {`${identityCommitment.slice(0, 8)}...${identityCommitment.slice(-6)}`}
+                            {ellipsify(commitment)}
                         </div>
                     </div>
                     <Icon
@@ -145,6 +175,13 @@ function IdentityList(): ReactElement {
                     />
                 </div>
             ))}
+            <div
+                className="create-identity-row flex flex-row items-center justify-center p-4 cursor-pointer text-gray-600"
+                onClick={() => showModal(true)}
+            >
+                <Icon fontAwesome="fas fa-plus" size={1} className="mr-2" />
+                <div>Add Identity</div>
+            </div>
         </>
     )
 }
@@ -154,48 +191,5 @@ function ActivityList(): ReactElement {
         <div>
 
         </div>
-    )
-}
-
-const CreateIdentityModal = function (props: { onClose: () => void }): ReactElement {
-    const [nonce, setNonce] = useState(0)
-    const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
-    const dispatch = useDispatch()
-
-    const create = useCallback(async () => {
-        // TODO add radnom strategy while metamask issue is not resolved
-        await dispatch(
-            createIdentity('random', {
-                nonce,
-                web2Provider
-            })
-        )
-        props.onClose()
-    }, [nonce, web2Provider])
-
-    return (
-        <Modal className="py-2 px-4" onClose={props.onClose}>
-            <div className="font-semibold">Create Identity</div>
-            <Dropdown
-                className="my-2"
-                label="Web2 Provider"
-                options={[{ value: 'Twitter' }, { value: 'Reddit' }, { value: 'Github' }]}
-                onChange={(e) => {
-                    setWeb2Provider(e.target.value as any)
-                }}
-                value={web2Provider}
-            />
-            <Input
-                className="my-2"
-                type="number"
-                label="nonce"
-                step={1}
-                defaultValue={nonce}
-                onChange={(e) => setNonce(Number(e.target.value))}
-            />
-            <div className="py-2 flex flex-row flex-nowrap justify-end">
-                <Button onClick={create}>Create</Button>
-            </div>
-        </Modal>
     )
 }

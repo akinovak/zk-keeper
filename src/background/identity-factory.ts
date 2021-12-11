@@ -7,20 +7,16 @@ import checkParameter from '@src/util/checkParameter'
 const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
     checkParameter(config, 'config', 'object')
 
-    const { provider, nonce = 0, name, web3Info } = config
+    const { web2Provider, nonce = 0, name, web3, walletInfo } = config
 
     checkParameter(name, 'name', 'string')
-    checkParameter(web3Info, 'web3Info', 'object')
-    checkParameter(provider, 'provider', 'string')
-
-    const { web3, walletInfo } = web3Info
-
+    checkParameter(web2Provider, 'provider', 'string')
     checkParameter(web3, 'web3', 'object')
     checkParameter(walletInfo, 'walletInfo', 'object')
 
-    const sign = (message: string) => web3.eth.sign(message, walletInfo?.account)
+    const sign = (message: string) => web3.eth.personal.sign(message, walletInfo?.account);
 
-    const identity: ZkIdentity = await createIdentity(sign, provider, nonce)
+    const identity: ZkIdentity = await createIdentity(sign, web2Provider, nonce)
     const metadata: IdentityMetadata = {
         account: walletInfo.account,
         name,
@@ -46,7 +42,7 @@ const createRandomIdentity = (config: any): ZkIdentityDecorater => {
 
 const strategiesMap = {
     random: createRandomIdentity,
-    interrep: createInterrepIdentity
+    interrep: createInterrepIdentity,
 }
 
 const identityFactory = async (strategy: keyof typeof strategiesMap, config: any): Promise<ZkIdentityDecorater> =>
