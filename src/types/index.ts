@@ -45,6 +45,7 @@ export enum PendingRequestType {
 export type PendingRequest = {
     id: string
     type: PendingRequestType
+    payload?: any
 }
 
 export type RequestResolutionAction = 'accept' | 'reject'

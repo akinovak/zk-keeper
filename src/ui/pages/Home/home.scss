@@ -13,8 +13,17 @@
             display: none;
         }
 
+        .home__list__fix-header {
+            display: none;
+        }
+
         &--fixed-menu {
             .home__list__header {
+                //display: none;
+            }
+
+            .home__list__fix-header {
+                display: flex;
                 position: absolute;
                 top: 64px;
                 left: 0;

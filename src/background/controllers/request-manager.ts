@@ -29,17 +29,17 @@ export default class RequestManager extends EventEmitter2 {
         return true
     }
 
-    addToQueue = async (type: PendingRequestType): Promise<string> => {
+    addToQueue = async (type: PendingRequestType, payload?: any): Promise<string> => {
         // eslint-disable-next-line no-plusplus
         const id: string = `${nonce++}`
-        this.pendingRequests.push({ id, type })
+        this.pendingRequests.push({ id, type, payload })
         await pushMessage(setPendingRequest(this.pendingRequests))
         await this.handlePopup()
         return id
     }
 
-    newRequest = async (data: any, type: PendingRequestType) => {
-        const id: string = await this.addToQueue(type)
+    newRequest = async (data: any, type: PendingRequestType, payload?: any) => {
+        const id: string = await this.addToQueue(type, payload)
         return new Promise((resolve, reject) => {
             this.once(`${id}:finalized`, (action: RequestResolutionAction) => {
                 switch (action) {

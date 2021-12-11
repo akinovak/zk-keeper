@@ -38,7 +38,7 @@ export default function Home(): ReactElement {
 
         const scrollTop = scrollRef.current?.scrollTop;
 
-        fixTabs(scrollTop >= 92);
+        fixTabs(scrollTop > 92);
     }, [scrollRef]);
 
     return (
@@ -110,6 +110,24 @@ function HomeList(): ReactElement {
     return (
         <div className="home__list">
             <div className="home__list__header">
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'identities',
+                    })}
+                    onClick={() => selectTab('identities')}
+                >
+                    Identities
+                </div>
+                <div
+                    className={classNames("home__list__header__tab", {
+                        'home__list__header__tab--selected': selectedTab === 'activity',
+                    })}
+                    onClick={() => selectTab('activity')}
+                >
+                    Activity
+                </div>
+            </div>
+            <div className="home__list__fix-header">
                 <div
                     className={classNames("home__list__header__tab", {
                         'home__list__header__tab--selected': selectedTab === 'identities',

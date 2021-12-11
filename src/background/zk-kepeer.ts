@@ -134,12 +134,16 @@ export default class ZkKepperController extends Handler {
 
         // injecting
         this.add(RPCAction.TRY_INJECT, LockService.ensure, (payload: any) => {
-            const { origin }: { origin: string } = payload
-            if (!origin) throw new Error('Origin not provided')
+            const { origin }: { origin: string } = payload;
+            if (!origin) throw new Error('Origin not provided');
 
-            const includes: boolean = this.approvalService.isApproved(origin)
-            if (includes) return 'approved'
-            return this.requestManager.newRequest('approved', PendingRequestType.INJECT)
+            const includes: boolean = this.approvalService.isApproved(origin);
+            if (includes) return 'approved';
+            return this.requestManager.newRequest(
+                'approved',
+                PendingRequestType.INJECT,
+                { origin },
+            );
         })
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add)
         this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)

@@ -9,9 +9,10 @@ import { useDispatch } from 'react-redux'
 import {fetchStatus, useAppStatus} from "@src/ui/ducks/app";
 import Onboarding from "@src/ui/pages/Onboarding";
 import Login from "@src/ui/pages/Login";
+import ConfirmRequestModal from "@src/ui/components/ConfirmRequestModal";
 
 export default function Popup(): ReactElement {
-    // const pendingRequests = useRequestsPending()
+    const pendingRequests = useRequestsPending();
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(true);
     const { initialized, unlocked } = useAppStatus();
@@ -41,23 +42,10 @@ export default function Popup(): ReactElement {
     //     []
     // )
     //
-    // if (pendingRequests.length) {
-    //     const [pendingRequest] = pendingRequests
-    //     return (
-    //         <div className="popup">
-    //             <div className="p-4">
-    //                 <div>{`1 of ${pendingRequests.length} requests`}</div>
-    //                 <div>Do you want to allow proof</div>
-    //                 <Button btnType={ButtonType.secondary} onClick={() => finalizeRequest(pendingRequest.id, 'accept')}>
-    //                     Confirm
-    //                 </Button>
-    //                 <Button btnType={ButtonType.primary} onClick={() => finalizeRequest(pendingRequest.id, 'reject')}>
-    //                     Reject
-    //                 </Button>
-    //             </div>
-    //         </div>
-    //     )
-    // }
+    if (pendingRequests.length) {
+        const [pendingRequest] = pendingRequests
+        return <ConfirmRequestModal />;
+    }
 
     if (loading) {
         return <></>;
