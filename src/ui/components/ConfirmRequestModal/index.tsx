@@ -6,7 +6,9 @@ import {useRequestsPending} from "@src/ui/ducks/requests";
 import {PendingRequest, PendingRequestType} from "@src/types";
 import RPCAction from "@src/util/constants";
 import postMessage from "@src/util/postMessage";
-import Icon from "@src/ui/components/Icon";
+import "./confirm-modal.scss";
+import Input from "@src/ui/components/Input";
+import Textarea from "@src/ui/components/Textarea";
 
 export default function ConfirmRequestModal(): ReactElement {
     const pendingRequests = useRequestsPending();
@@ -58,6 +60,7 @@ export default function ConfirmRequestModal(): ReactElement {
         case PendingRequestType.INJECT:
             return (
                 <ConnectionApprovalModal
+                    len={pendingRequests.length}
                     pendingRequest={pendingRequest}
                     accept={approve}
                     reject={reject}
@@ -65,14 +68,25 @@ export default function ConfirmRequestModal(): ReactElement {
                     loading={loading}
                 />
             );
-        case PendingRequestType.APPROVE:
         case PendingRequestType.PROOF:
+            return (
+                <ProofModal
+                    len={pendingRequests.length}
+                    pendingRequest={pendingRequest}
+                    accept={approve}
+                    reject={reject}
+                    error={error}
+                    loading={loading}
+                />
+            )
+        case PendingRequestType.APPROVE:
         default:
             return <></>;
     }
 }
 
 function ConnectionApprovalModal(props: {
+    len: number;
     reject: () => void;
     accept: () => void;
     loading: boolean;
@@ -86,9 +100,10 @@ function ConnectionApprovalModal(props: {
     }, [props.pendingRequest]);
 
     return (
-        <FullModal onClose={() => null}>
+        <FullModal className="confirm-modal" onClose={() => null}>
             <FullModalHeader>
                 Connect with ZK Keeper
+                {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
                 <img
@@ -101,6 +116,89 @@ function ConnectionApprovalModal(props: {
                 <div className="text-sm text-gray-500 text-center">
                     This site is requesting access to view your current identity. Always make sure you trust the site you interact with.
                 </div>
+            </FullModalContent>
+            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            <FullModalFooter>
+                <Button
+                    btnType={ButtonType.secondary}
+                    onClick={props.reject}
+                    loading={props.loading}
+                >
+                    Reject
+                </Button>
+                <Button
+                    className="ml-2"
+                    onClick={props.accept}
+                    loading={props.loading}
+                >
+                    Approve
+                </Button>
+            </FullModalFooter>
+        </FullModal>
+    );
+}
+
+function ProofModal(props: {
+    len: number;
+    reject: () => void;
+    accept: () => void;
+    loading: boolean;
+    error: string;
+    pendingRequest: PendingRequest;
+}) {
+    const {
+        circuitFilePath,
+        externalNullifier,
+        merkleProof,
+        signal,
+        zkeyFilePath,
+    } = props.pendingRequest?.payload || {};
+
+    return (
+        <FullModal className="confirm-modal" onClose={() => null}>
+            <FullModalHeader>
+                Generate Proof
+                {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
+            </FullModalHeader>
+            <FullModalContent className="flex flex-col items-center">
+                <Input
+                    className="w-full mb-2"
+                    label="External Nullifier"
+                    value={externalNullifier}
+                />
+                <Input
+                    className="w-full mb-2"
+                    label="Signal"
+                    value={signal}
+                />
+                <Input
+                    className="w-full mb-2"
+                    label="Circuit File URL"
+                    value={circuitFilePath}
+                />
+                <Input
+                    className="w-full mb-2"
+                    label="ZKey File URL"
+                    value={zkeyFilePath}
+                />
+                {
+                    typeof merkleProof === 'string'
+                        ? (
+                            <Input
+                                className="w-full mb-2"
+                                label="Merkle Storage URL"
+                                value={merkleProof}
+                            />
+                        )
+                        : (
+                            <Textarea
+                                className="w-full mb-2"
+                                label="Merkle Proof"
+                                value={JSON.stringify(merkleProof, undefined, 2)}
+                                rows={5}
+                            />
+                        )
+                }
             </FullModalContent>
             { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>

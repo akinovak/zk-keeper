@@ -33,16 +33,23 @@ async function createDummyRequest() {
 async function semaphoreProof(
     externalNullifier: string,
     signal: string,
-    merkleStorageAddress: string,
     circuitFilePath: string,
-    zkeyFilePath: string
+    zkeyFilePath: string,
+    merkleProofOrStorageAddress: string | {
+        root: string
+        indices: Array<any>
+        pathElements: Array<any>
+    },
 ) {
+    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
         payload: {
             externalNullifier,
             signal,
             merkleStorageAddress,
+            merkleProof,
             circuitFilePath,
             zkeyFilePath
         }

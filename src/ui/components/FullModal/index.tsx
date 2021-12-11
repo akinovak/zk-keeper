@@ -24,7 +24,7 @@ export function FullModalHeader(props: {
 }): ReactElement {
     return (
         <div className={classNames('full-modal__header', props.className)}>
-            <div className="text-2xl flex-grow flex-shrink full-modal__header__content">
+            <div className="text-xl flex-grow flex-shrink full-modal__header__content">
                 {props.children}
             </div>
             <div className="flex-grow-0 flex-shrink-0 full-modal__header__action">

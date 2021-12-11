@@ -8,20 +8,33 @@ import { deserializeMerkleProof } from './utils'
 export default class SemaphoreService {
     // eslint-disable-next-line class-methods-use-this
     async genProof(identity: ZkIdentity, request: ISemaphoreProofRequest): Promise<ISafeProof> {
-        const { circuitFilePath, zkeyFilePath, merkleStorageAddress, externalNullifier, signal } = request
-        const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-            identityCommitment: bigintToHex(identity.genIdentityCommitment())
-        })
+        const {
+            circuitFilePath,
+            zkeyFilePath,
+            merkleStorageAddress,
+            externalNullifier,
+            signal,
+            merkleProof: mProof,
+        } = request
+        let merkleProof: MerkleProof = mProof;
 
-        const merkleProof: MerkleProof = deserializeMerkleProof(response.data.merkleProof)
+        if (merkleStorageAddress) {
+            const response: AxiosResponse = await axios.post(merkleStorageAddress, {
+                identityCommitment: bigintToHex(identity.genIdentityCommitment())
+            })
+
+            merkleProof = deserializeMerkleProof(response.data.merkleProof)
+        }
+
         const witness = Semaphore.genWitness(identity.getIdentity(), merkleProof, externalNullifier, signal)
 
         const fullProof: FullProof = await Semaphore.genProof(witness, circuitFilePath, zkeyFilePath)
         const solidityProof = Semaphore.packToSolidityProof(fullProof)
 
         const nullifierHash: bigint = Semaphore.genNullifierHash(externalNullifier, identity.getNullifier())
+        const root = merkleStorageAddress ? bigintToHex(merkleProof.root) : merkleProof.root;
         const publicSignals: Array<string> = [
-            bigintToHex(merkleProof.root),
+            root,
             bigintToHex(nullifierHash),
             bigintToHex(genSignalHash(signal)),
             externalNullifier
