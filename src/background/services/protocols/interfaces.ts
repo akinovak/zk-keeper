@@ -1,5 +1,5 @@
 import { FullProof, MerkleProof } from '@libsem/protocols'
-
+import { MerkleProofArtifacts } from '@src/types'
 
 export interface ISemaphoreProofRequest {
     externalNullifier: string
@@ -7,7 +7,15 @@ export interface ISemaphoreProofRequest {
     merkleStorageAddress?: string
     circuitFilePath: string
     zkeyFilePath: string
-    merkleProof?: MerkleProof
+    merkleProofArtifacts?: MerkleProofArtifacts
+}
+
+export interface IRLNProofRequest extends ISemaphoreProofRequest {
+    rlnIdentifier: string
+}
+
+export interface INRLNProofRequest extends IRLNProofRequest {
+    spamThreshold: number
 }
 
 export interface ISafeProof {
