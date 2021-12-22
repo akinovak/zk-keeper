@@ -1,4 +1,4 @@
-import { Semaphore, MerkleProof, FullProof, genSignalHash } from '@libsem/protocols'
+import { Semaphore, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
 import { ZkIdentity } from '@libsem/identity'
 import { bigintToHex } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
@@ -15,16 +15,19 @@ export default class SemaphoreService {
             merkleStorageAddress,
             externalNullifier,
             signal,
-            merkleProof: mProof,
+            merkleProofArtifacts,
         } = request
-        let merkleProof: MerkleProof = mProof;
-
+        let merkleProof: MerkleProof;
+        const identityCommitment = identity.genIdentityCommitment();
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identity.genIdentityCommitment())
+                identityCommitment: bigintToHex(identityCommitment)
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
+        } else {
+            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, merkleProofArtifacts?.leaves, identityCommitment)
+
         }
 
         const witness = Semaphore.genWitness(identity.getIdentity(), merkleProof, externalNullifier, signal)

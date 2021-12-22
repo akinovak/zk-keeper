@@ -31,11 +31,17 @@ export type NewIdentityRequest = {
     options: any
 }
 
+export type MerkleProofArtifacts = {
+    leaves: string[];
+    depth: number;
+    leavesPerNode: number;
+}
+
 export type ZkInputs = {
     circuitFilePath: string
     zkeyFilePath: string
     merkleStorageAddress?: string
-    merkleProof?: MerkleProof
+    merkleProofArtifacts?: MerkleProofArtifacts;
 }
 
 export enum PendingRequestType {

@@ -1,4 +1,4 @@
-import { NRln, MerkleProof, FullProof, genSignalHash } from '@libsem/protocols'
+import { NRln, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
 import { ZkIdentity } from '@libsem/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
@@ -15,22 +15,25 @@ export default class NRLNService {
             merkleStorageAddress,
             externalNullifier,
             signal,
-            merkleProof: mProof,
+            merkleProofArtifacts,
             rlnIdentifier,
             spamThreshold            
         } = request
-        let merkleProof: MerkleProof = mProof;
+        let merkleProof: MerkleProof;
 
         identity.genRandomSecret(spamThreshold);
         const identitySecret: bigint[] = identity.getSecret();
         const signalHash = genSignalHash(signal);
+        const identityCommitment = identity.genIdentityCommitmentFromSecret();
 
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identity.genIdentityCommitmentFromSecret())
+                identityCommitment: bigintToHex(identityCommitment)
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
+        } else {
+            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, merkleProofArtifacts?.leaves, identityCommitment)
         }
 
         const witness = NRln.genWitness(identitySecret, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))

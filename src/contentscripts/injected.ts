@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
+import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
 
 export type IRequest = {
@@ -35,21 +36,18 @@ async function semaphoreProof(
     signal: string,
     circuitFilePath: string,
     zkeyFilePath: string,
-    merkleProofOrStorageAddress: string | {
-        root: string
-        indices: Array<any>
-        pathElements: Array<any>
-    },
+    merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
+
 ) {
-    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
+    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
         payload: {
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProof,
+            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath
         }
@@ -61,22 +59,18 @@ async function rlnProof(
     signal: string,
     circuitFilePath: string,
     zkeyFilePath: string,
-    merkleProofOrStorageAddress: string | {
-        root: string
-        indices: Array<any>
-        pathElements: Array<any>
-    },
+    merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
    rlnIdentifier: string
 ) {
-    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
+    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
     return post({
         method: RPCAction.RLN_PROOF,
         payload: {
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProof,
+            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath,
             rlnIdentifier
@@ -90,23 +84,19 @@ async function nRlnProof(
     signal: string,
     circuitFilePath: string,
     zkeyFilePath: string,
-    merkleProofOrStorageAddress: string | {
-        root: string
-        indices: Array<any>
-        pathElements: Array<any>
-    },
+    merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
    rlnIdentifier: string,
    spamThreshold: number
 ) {
-    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
+    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
     return post({
         method: RPCAction.NRLN_PROOF,
         payload: {
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProof,
+            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath,
             rlnIdentifier,
