@@ -56,6 +56,66 @@ async function semaphoreProof(
     })
 }
 
+async function rlnProof(
+    externalNullifier: string,
+    signal: string,
+    circuitFilePath: string,
+    zkeyFilePath: string,
+    merkleProofOrStorageAddress: string | {
+        root: string
+        indices: Array<any>
+        pathElements: Array<any>
+    },
+   rlnIdentifier: string
+) {
+    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
+    return post({
+        method: RPCAction.RLN_PROOF,
+        payload: {
+            externalNullifier,
+            signal,
+            merkleStorageAddress,
+            merkleProof,
+            circuitFilePath,
+            zkeyFilePath,
+            rlnIdentifier
+        }
+    })
+}
+
+
+async function nRlnProof(
+    externalNullifier: string,
+    signal: string,
+    circuitFilePath: string,
+    zkeyFilePath: string,
+    merkleProofOrStorageAddress: string | {
+        root: string
+        indices: Array<any>
+        pathElements: Array<any>
+    },
+   rlnIdentifier: string,
+   spamThreshold: number
+) {
+    const merkleProof = typeof merkleProofOrStorageAddress === 'string' ? undefined : merkleProofOrStorageAddress;
+    const merkleStorageAddress = typeof merkleProofOrStorageAddress === 'string' ? merkleProofOrStorageAddress : undefined;
+    return post({
+        method: RPCAction.NRLN_PROOF,
+        payload: {
+            externalNullifier,
+            signal,
+            merkleStorageAddress,
+            merkleProof,
+            circuitFilePath,
+            zkeyFilePath,
+            rlnIdentifier,
+            spamThreshold
+        }
+    })
+}
+
+
 // dev-only
 async function clearApproved() {
     return post({
@@ -94,6 +154,8 @@ const client = {
     getIdentityCommitments,
     createDummyRequest,
     semaphoreProof,
+    rlnProof,
+    nRlnProof,
     // dev-only
     clearApproved
 }

@@ -8,6 +8,7 @@ import { deserializeMerkleProof } from './utils'
 export default class SemaphoreService {
     // eslint-disable-next-line class-methods-use-this
     async genProof(identity: ZkIdentity, request: ISemaphoreProofRequest): Promise<ISafeProof> {
+        try {
         const {
             circuitFilePath,
             zkeyFilePath,
@@ -40,10 +41,14 @@ export default class SemaphoreService {
             externalNullifier
         ]
 
+
         return {
             fullProof,
             solidityProof,
             publicSignals
         }
+    } catch(e) {
+        throw new Error(`Error while generating semaphore proof: ${e}`);
+    }
     }
 }

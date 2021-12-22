@@ -1,5 +1,6 @@
 import { hexToBigint } from 'bigint-conversion'
 import { MerkleProof } from '@libsem/protocols'
+import * as ciromlibjs from "circomlibjs"
 
 // eslint-disable-next-line import/prefer-default-export
 export function deserializeMerkleProof(merkleProof): MerkleProof {
@@ -11,3 +12,8 @@ export function deserializeMerkleProof(merkleProof): MerkleProof {
     deserialized.indices = merkleProof.indices
     return deserialized
 }
+
+export const poseidonHash = (data: Array<bigint>): bigint => {
+    return ciromlibjs.poseidon(data)
+  }
+  

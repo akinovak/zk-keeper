@@ -10,6 +10,14 @@ export interface ISemaphoreProofRequest {
     merkleProof?: MerkleProof
 }
 
+export interface IRLNProofRequest extends ISemaphoreProofRequest {
+    rlnIdentifier: string
+}
+
+export interface INRLNProofRequest extends IRLNProofRequest {
+    spamThreshold: number
+}
+
 export interface ISafeProof {
     fullProof: FullProof
     solidityProof: any

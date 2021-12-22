@@ -8,7 +8,9 @@ import MetamaskService from './services/metamask'
 import ZkValidator from './services/whitelisted'
 import RequestManager from './controllers/request-manager'
 import SemaphoreService from './services/protocols/semaphore'
-import { ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
+import RLNService from './services/protocols/rln'
+import NRLNService from './services/protocols/nrln'
+import { INRLNProofRequest, IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
@@ -20,6 +22,8 @@ export default class ZkKepperController extends Handler {
     private zkValidator: ZkValidator
     private requestManager: RequestManager
     private semaphoreService: SemaphoreService
+    private rlnService: RLNService
+    private nRlnService: NRLNService
     private approvalService: ApprovalService
     constructor() {
         super()
@@ -28,6 +32,8 @@ export default class ZkKepperController extends Handler {
         this.zkValidator = new ZkValidator()
         this.requestManager = new RequestManager()
         this.semaphoreService = new SemaphoreService()
+        this.rlnService = new RLNService()
+        this.nRlnService = new NRLNService()
         this.approvalService = new ApprovalService()
     }
 
@@ -128,6 +134,40 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
+                return this.requestManager.newRequest(
+                    JSON.stringify(safeProof),
+                    PendingRequestType.PROOF,
+                    payload,
+                );
+            }
+        )
+
+        this.add(
+            RPCAction.RLN_PROOF,
+            LockService.ensure,
+            this.zkValidator.validateZkInputs,
+            async (payload: IRLNProofRequest) => {
+                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
+                if (!identity) throw new Error('active identity not found')
+
+                const safeProof: ISafeProof = await this.rlnService.genProof(identity.zkIdentity, payload)
+                return this.requestManager.newRequest(
+                    JSON.stringify(safeProof),
+                    PendingRequestType.PROOF,
+                    payload,
+                );
+            }
+        )
+
+        this.add(
+            RPCAction.NRLN_PROOF,
+            LockService.ensure,
+            this.zkValidator.validateZkInputs,
+            async (payload: INRLNProofRequest) => {
+                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
+                if (!identity) throw new Error('active identity not found')
+
+                const safeProof: ISafeProof = await this.nRlnService.genProof(identity.zkIdentity, payload)
                 return this.requestManager.newRequest(
                     JSON.stringify(safeProof),
                     PendingRequestType.PROOF,

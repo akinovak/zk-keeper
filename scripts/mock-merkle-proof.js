@@ -18,7 +18,7 @@ const serializeMerkleProof = (merkleProof) => {
     return serialized
 }
 
-const numberOfLeaves = 5
+const numberOfLeaves = 2
 const identityCommitments = []
 
 // eslint-disable-next-line no-plusplus
@@ -51,6 +51,6 @@ app.post('/merkle', (req, res) => {
     res.send({ merkleProof: serializedMerkleProof })
 })
 
-app.listen(5000, () => {
+app.listen(8090, () => {
     console.log('Merkle service is listening')
 })

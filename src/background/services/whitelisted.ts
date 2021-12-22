@@ -3,17 +3,22 @@ import { ZkInputs } from '@src/types'
 const whitelistedCircuitPaths: Array<string> = [
     'http://localhost:8000/circuit.wasm',
     'http://localhost:8000/semaphore.wasm',
+    'http://localhost:8000/rln.wasm',
+    'http://localhost:8000/nrln.wasm',
     'https://api.auti.sm/dev/semaphore_wasm',
 ]
 
 const whitelistedKeyPaths: Array<string> = [
     'http://localhost:8000/circuit_final.zkey',
     'http://localhost:8000/semaphore_final.zkey',
+    'http://localhost:8000/rln_final.zkey',
+    'http://localhost:8000/nrln_final.zkey',
     'https://api.auti.sm/dev/semaphore_final_zkey',
 ]
 
 const whitelistedMerkleStorages: Array<string> = [
     'http://localhost:5000/merkle',
+    'http://localhost:8090/merkle'
 ]
 
 export default class ZkValidator {
