@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import ReactDOM from 'react-dom'
 import { genExternalNullifier, Rln } from '@libsem/protocols'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
+const { ZkIdentity } = require('@libsem/identity')
 
 const semaphorePaths = {
     circuitFilePath: "http://localhost:8000/semaphore.wasm",
@@ -20,39 +21,84 @@ const nRlnPaths = {
 
 const merkleStorageAddress = 'http://localhost:8090/merkle'
 
+enum MerkleProofType {
+    STORAGE_ADDRESS,
+    ARTIFACTS
+}
+
+const genMockIdentityCommitments = (): string[] => {
+    let identityCommitments: string[] = [];
+    for(let i = 0; i < 10; i++) {
+        const mockIdentity = new ZkIdentity()
+        identityCommitments.push(bigintToHex(mockIdentity.genIdentityCommitment()))
+    }
+    return identityCommitments;
+    
+}
+
 function App() {
 
     const [client, setClient] = useState(null);
+    const [identityCommitment, setIdentityCommitment] = useState();
+    const mockIdentityCommitments: string[] = genMockIdentityCommitments();
 
-    const genSemaphoreProof = async () => {
+    const genSemaphoreProof = async (proofType: MerkleProofType = MerkleProofType.STORAGE_ADDRESS) => {
 
         const externalNullifier = genExternalNullifier('voting-1')
         const signal = '0x111'
+
+        let storageAddressOrArtifacts: any = merkleStorageAddress;
+        if(proofType === MerkleProofType.ARTIFACTS) {
+
+            if(!mockIdentityCommitments.includes(identityCommitment)) {
+                mockIdentityCommitments.push(identityCommitment);
+            }
+            storageAddressOrArtifacts = {
+                leaves: mockIdentityCommitments,
+                depth: 20,
+                leavesPerNode: 2
+            }
+        }
+
 
         const safeProof = await client.semaphoreProof(
             externalNullifier,
             signal,
             semaphorePaths.circuitFilePath,
             semaphorePaths.zkeyFilePath,
-            merkleStorageAddress,                
+            storageAddressOrArtifacts,                
         )
 
         console.log(safeProof)
 
     };
 
-    const genRLNProof = async () => {
+    const genRLNProof = async (proofType: MerkleProofType = MerkleProofType.STORAGE_ADDRESS) => {
         const externalNullifier = genExternalNullifier('voting-1')
         const signal = '0x111'
         const rlnIdentifier = Rln.genIdentifier();
         const rlnIdentifierHex = bigintToHex(rlnIdentifier);
+
+        let storageAddressOrArtifacts: any = merkleStorageAddress;
+        if(proofType === MerkleProofType.ARTIFACTS) {
+
+            if(!mockIdentityCommitments.includes(identityCommitment)) {
+                mockIdentityCommitments.push(identityCommitment);
+            }
+
+            storageAddressOrArtifacts = {
+                leaves: mockIdentityCommitments,
+                depth: 20,
+                leavesPerNode: 2
+            }
+        }
 
         const safeProof = await client.rlnProof(
             externalNullifier,
             signal,
             rlnPaths.circuitFilePath,
             rlnPaths.zkeyFilePath,
-            merkleStorageAddress,
+            storageAddressOrArtifacts,
             rlnIdentifierHex
         )
 
@@ -60,19 +106,31 @@ function App() {
 
     };
 
-    const genNRLNProof = async () => {
+    const genNRLNProof = async (proofType: MerkleProofType = MerkleProofType.STORAGE_ADDRESS) => {
 
         const externalNullifier = genExternalNullifier('voting-1')
         const signal = '0x111'
         const rlnIdentifier = Rln.genIdentifier();
         const rlnIdentifierHex = bigintToHex(rlnIdentifier);       
 
+        let storageAddressOrArtifacts: any = merkleStorageAddress;
+        if(proofType === MerkleProofType.ARTIFACTS) {
+            if(!mockIdentityCommitments.includes(identityCommitment)) {
+                mockIdentityCommitments.push(identityCommitment);
+            }
+            storageAddressOrArtifacts = {
+                leaves: mockIdentityCommitments,
+                depth: 20,
+                leavesPerNode: 2
+            }
+        }
+
         const safeProof = await client.nRlnProof(
             externalNullifier,
             signal,
             nRlnPaths.circuitFilePath,
             nRlnPaths.zkeyFilePath,
-            merkleStorageAddress,
+            storageAddressOrArtifacts,
             rlnIdentifierHex,
             3
         )
@@ -91,6 +149,17 @@ function App() {
         })();
     }, [])
 
+    useEffect(() => {
+
+        if(client)  {
+            (async function () {
+                const activeIdentity = await client.getActiveIdentity();
+            
+                setIdentityCommitment(activeIdentity);
+            })();
+        }
+        
+    }, [client])
 
 
     return (
@@ -98,15 +167,18 @@ function App() {
     <div>Hello world</div>
     <hr />
     <div>
-        <button onClick={() => genSemaphoreProof()}>Generate Semaphore Proof</button>
+        <button onClick={() => genSemaphoreProof(MerkleProofType.STORAGE_ADDRESS)}>Generate Semaphore Proof from Merkle proof storage address</button> <br /><br />
+        <button onClick={() => genSemaphoreProof(MerkleProofType.ARTIFACTS)}>Generate Semaphore Proof from Merkle proof artifacts</button>
     </div>
     <hr />
     <div>
-        <button onClick={() => genRLNProof()}>Generate RLN Proof</button>
+        <button onClick={() => genRLNProof(MerkleProofType.STORAGE_ADDRESS)}>Generate RLN Proof from Merkle proof storage address</button> <br /><br />
+        <button onClick={() => genRLNProof(MerkleProofType.ARTIFACTS)}>Generate RLN Proof from Merkle proof artifacts</button>
     </div>
     <hr />
     <div>
-        <button onClick={() => genNRLNProof()}>Generate NRLN Proof</button>
+        <button onClick={() => genNRLNProof(MerkleProofType.STORAGE_ADDRESS)}>Generate NRLN Proof from Merkle storage address</button> <br /><br />
+        <button onClick={() => genNRLNProof(MerkleProofType.ARTIFACTS)}>Generate NRLN Proof from Merkle proof artifacts</button>
     </div>
 
     </div>

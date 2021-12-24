@@ -31,7 +31,8 @@ export default class RLNService {
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
         } else {
-            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, merkleProofArtifacts?.leaves, identityCommitment)
+            let leaves = merkleProofArtifacts?.leaves.map(leaf => hexToBigint(leaf));
+            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, leaves, identityCommitment)
         }
 
         const witness = Rln.genWitness(secretHash, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))
@@ -40,10 +41,9 @@ export default class RLNService {
         const solidityProof = Rln.packToSolidityProof(fullProof)
 
         const [y, nullifier] = Rln.calculateOutput(secretHash, BigInt(externalNullifier), hexToBigint(rlnIdentifier), signalHash)
-        const root = merkleStorageAddress ? bigintToHex(merkleProof.root) : merkleProof.root;
         const publicSignals: Array<string> = [
             bigintToHex(y),
-            root,
+            bigintToHex(merkleProof.root),
             bigintToHex(nullifier),
             bigintToHex(signalHash),
             externalNullifier,

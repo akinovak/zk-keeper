@@ -25,6 +25,14 @@ async function getIdentityCommitments() {
     })
 }
 
+
+async function getActiveIdentity() {
+    return post({
+        method: RPCAction.GET_ACTIVE_IDENTITY
+    })
+}
+
+
 async function createDummyRequest() {
     return post({
         method: RPCAction.DUMMY_REQUEST
@@ -47,9 +55,9 @@ async function semaphoreProof(
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProofArtifacts,
             circuitFilePath,
-            zkeyFilePath
+            zkeyFilePath,
+            merkleProofArtifacts
         }
     })
 }
@@ -70,9 +78,9 @@ async function rlnProof(
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath,
+            merkleProofArtifacts,
             rlnIdentifier
         }
     })
@@ -96,9 +104,9 @@ async function nRlnProof(
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath,
+            merkleProofArtifacts,
             rlnIdentifier,
             spamThreshold
         }
@@ -142,6 +150,7 @@ async function addHost(host: string) {
 const client = {
     openPopup,
     getIdentityCommitments,
+    getActiveIdentity,
     createDummyRequest,
     semaphoreProof,
     rlnProof,
