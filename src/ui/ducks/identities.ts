@@ -77,7 +77,7 @@ export const fetchIdentities = () => async (dispatch: Dispatch) => {
     const identities = await postMessage({ method: RPCAction.GET_IDENTITIES });
     const selected = await postMessage({ method: RPCAction.GET_ACTIVE_IDENTITY });
     dispatch(setIdentities(identities));
-    dispatch(setSelected(selected));
+    dispatch(setSelected(selected[0]));
 }
 
 // eslint-disable-next-line @typescript-eslint/default-param-last

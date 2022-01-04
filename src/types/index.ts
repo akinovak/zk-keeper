@@ -1,5 +1,3 @@
-import { MerkleProof } from '@libsem/protocols'
-
 export type Request = {
     method: string
     payload?: any
@@ -78,4 +76,9 @@ export type IdentityMetadata = {
 export type SerializedIdentity = {
     metadata: IdentityMetadata
     secret: string
+}
+
+export enum ZkProofType {
+    SEMAPHORE,
+    RLN
 }

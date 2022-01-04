@@ -4,21 +4,29 @@ const whitelistedCircuitPaths: Array<string> = [
     'http://localhost:8000/circuit.wasm',
     'http://localhost:8000/semaphore.wasm',
     'http://localhost:8000/rln.wasm',
-    'http://localhost:8000/nrln.wasm',
+    'http://localhost:8000/semaphore/semaphore.wasm',
+    'http://localhost:8000/rln_default/rln.wasm',
+    'http://localhost:8000/rln_3/rln.wasm',
     'https://api.auti.sm/dev/semaphore_wasm',
+
+
 ]
 
 const whitelistedKeyPaths: Array<string> = [
     'http://localhost:8000/circuit_final.zkey',
     'http://localhost:8000/semaphore_final.zkey',
     'http://localhost:8000/rln_final.zkey',
-    'http://localhost:8000/nrln_final.zkey',
+    'http://localhost:8000/semaphore/semaphore_final.zkey',
+    'http://localhost:8000/rln_default/rln_final.zkey',
+    'http://localhost:8000/rln_3/rln_final.zkey',
     'https://api.auti.sm/dev/semaphore_final_zkey',
 ]
 
 const whitelistedMerkleStorages: Array<string> = [
     'http://localhost:5000/merkle',
-    'http://localhost:8090/merkle'
+    'http://localhost:8090/merkle',
+    'http://localhost:8090/merkleProofRLN',
+    'http://localhost:8090/merkleProofSemaphore',
 ]
 
 export default class ZkValidator {

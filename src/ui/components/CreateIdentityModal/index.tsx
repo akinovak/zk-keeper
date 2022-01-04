@@ -8,6 +8,7 @@ import Button from "@src/ui/components/Button";
 
 export default function CreateIdentityModal(props: { onClose: () => void }): ReactElement {
     const [nonce, setNonce] = useState(0);
+    const [identityType, setIdentityType] = useState<'InterRep' | 'Random' >('InterRep');
     const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,11 +17,20 @@ export default function CreateIdentityModal(props: { onClose: () => void }): Rea
     const create = useCallback(async () => {
         setLoading(true);
         try {
+
+            let options: any = {
+                nonce,
+                web2Provider,
+            }
+            let provider = 'interrep';
+
+            if(identityType === 'Random') {
+                provider = 'random';
+                options = {};
+            } 
+
             await dispatch(
-                createIdentity('interrep', {
-                    nonce,
-                    web2Provider
-                })
+                createIdentity(provider, options)
             );
             props.onClose();
         } catch (e: any) {
@@ -29,12 +39,24 @@ export default function CreateIdentityModal(props: { onClose: () => void }): Rea
             setLoading(false);
         }
 
-    }, [nonce, web2Provider]);
+    }, [nonce, web2Provider, identityType]);
 
     return (
         <FullModal onClose={props.onClose}>
             <FullModalHeader onClose={props.onClose}>Create Identity</FullModalHeader>
             <FullModalContent>
+                
+                <Dropdown
+                    className="my-2"
+                    label="Identity type"
+                    options={[{ value: 'InterRep' }, { value: 'Random' }]}
+                    onChange={(e) => {
+                        setIdentityType(e.target.value as any)
+                    }}
+                    value={identityType}
+                />
+                {identityType === 'InterRep' &&
+                <>
                 <Dropdown
                     className="my-2"
                     label="Web2 Provider"
@@ -44,7 +66,7 @@ export default function CreateIdentityModal(props: { onClose: () => void }): Rea
                     }}
                     value={web2Provider}
                 />
-                <Input
+<Input
                     className="my-2"
                     type="number"
                     label="Nonce"
@@ -52,6 +74,11 @@ export default function CreateIdentityModal(props: { onClose: () => void }): Rea
                     defaultValue={nonce}
                     onChange={(e) => setNonce(Number(e.target.value))}
                 />
+                </>
+
+                }
+                 
+                
             </FullModalContent>
             { error && <div className="text-xs text-red-500 text-center pb-1">{error}</div>}
             <FullModalFooter>

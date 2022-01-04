@@ -26,9 +26,12 @@ async function getIdentityCommitments() {
 }
 
 
-async function getActiveIdentity() {
+async function getActiveIdentity(spamThreshold: number = 2) {
     return post({
-        method: RPCAction.GET_ACTIVE_IDENTITY
+        method: RPCAction.GET_ACTIVE_IDENTITY,
+        payload: {
+            spamThreshold: spamThreshold
+        }
     })
 }
 
@@ -68,7 +71,8 @@ async function rlnProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-   rlnIdentifier: string
+    rlnIdentifier: string,
+    spamThreshold: number = 2
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
@@ -81,38 +85,11 @@ async function rlnProof(
             circuitFilePath,
             zkeyFilePath,
             merkleProofArtifacts,
-            rlnIdentifier
-        }
-    })
-}
-
-
-async function nRlnProof(
-    externalNullifier: string,
-    signal: string,
-    circuitFilePath: string,
-    zkeyFilePath: string,
-    merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-   rlnIdentifier: string,
-   spamThreshold: number
-) {
-    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
-    return post({
-        method: RPCAction.NRLN_PROOF,
-        payload: {
-            externalNullifier,
-            signal,
-            merkleStorageAddress,
-            circuitFilePath,
-            zkeyFilePath,
-            merkleProofArtifacts,
             rlnIdentifier,
             spamThreshold
         }
     })
 }
-
 
 // dev-only
 async function clearApproved() {
@@ -154,7 +131,6 @@ const client = {
     createDummyRequest,
     semaphoreProof,
     rlnProof,
-    nRlnProof,
     // dev-only
     clearApproved
 }

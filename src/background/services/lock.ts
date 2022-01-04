@@ -25,6 +25,7 @@ class LockService extends SimpleStorage {
         await this.set(ciphertext);
         await this.unlock(password);
         await pushMessage(setStatus(await this.getStatus()));
+        
     }
 
     getStatus = async () => {

@@ -1,4 +1,4 @@
-import { ZkIdentity } from '@libsem/identity'
+import { ZkIdentity, SecretType } from '@libsem/identity'
 import { SerializedIdentity, IdentityMetadata } from '@src/types'
 
 export default class ZkIdentityDecorater {
@@ -11,7 +11,20 @@ export default class ZkIdentityDecorater {
         this.metadata = metadata
     }
 
-    genIdentityCommitment = (): bigint => this.zkIdentity.genIdentityCommitment()
+    genIdentityCommitment = (secretType: SecretType = SecretType.GENERIC, spamThreshold: number = 2): bigint => {
+        if(secretType === SecretType.MULTIPART_SECRET) {
+            this.zkIdentity.genMultipartSecret(spamThreshold);
+        }
+        return this.zkIdentity.genIdentityCommitment(secretType);
+
+    }
+    genIdentityCommitments = (spamThreshold: number = 2): [bigint, bigint] =>  {
+        
+        return [
+            this.genIdentityCommitment(SecretType.GENERIC),
+            this.genIdentityCommitment(SecretType.MULTIPART_SECRET, spamThreshold),
+        ]
+}
 
     serialize = (): string => {
         const serialized = {
