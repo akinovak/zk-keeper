@@ -9,8 +9,7 @@ import ZkValidator from './services/whitelisted'
 import RequestManager from './controllers/request-manager'
 import SemaphoreService from './services/protocols/semaphore'
 import RLNService from './services/protocols/rln'
-import NRLNService from './services/protocols/nrln'
-import { INRLNProofRequest, IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
+import { IGetActiveIdentityRequest, IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
@@ -23,7 +22,6 @@ export default class ZkKepperController extends Handler {
     private requestManager: RequestManager
     private semaphoreService: SemaphoreService
     private rlnService: RLNService
-    private nRlnService: NRLNService
     private approvalService: ApprovalService
     constructor() {
         super()
@@ -33,7 +31,6 @@ export default class ZkKepperController extends Handler {
         this.requestManager = new RequestManager()
         this.semaphoreService = new SemaphoreService()
         this.rlnService = new RLNService()
-        this.nRlnService = new NRLNService()
         this.approvalService = new ApprovalService()
     }
 
@@ -86,17 +83,22 @@ export default class ZkKepperController extends Handler {
                     const { strategy, options } = payload;
                     if (!strategy) throw new Error('strategy not provided');
 
-                    const web3: Web3 = await this.metamaskService.getWeb3();
-                    const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
+
 
                     const numOfIdentites = this.identityService.getNumOfIdentites();
-
                     const config: any = {
                         ...options,
-                        web3,
-                        walletInfo,
                         name: options?.name || `Account # ${numOfIdentites}`
                     };
+
+
+                    if(strategy === 'interrep') {
+                        const web3: Web3 = await this.metamaskService.getWeb3();
+                        const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
+                        config.web3  = web3;
+                        config.walletInfo  = walletInfo;
+                    }
+             
 
                     const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config);
 
@@ -116,12 +118,14 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments)
         this.add(RPCAction.GET_IDENTITIES, LockService.ensure, this.identityService.getIdentities)
         this.add(RPCAction.SET_ACTIVE_IDENTITY, LockService.ensure, this.identityService.setActiveIdentity)
-        this.add(RPCAction.GET_ACTIVE_IDENTITY, LockService.ensure, async () => {
+        this.add(RPCAction.GET_ACTIVE_IDENTITY, LockService.ensure, async (payload: IGetActiveIdentityRequest | undefined) => {
             const identity = await this.identityService.getActiveidentity();
             if (!identity) {
                 return null;
             }
-            return bigintToHex(identity?.genIdentityCommitment());
+            let spamThreshold = payload?.spamThreshold ? payload.spamThreshold : 2;
+            let identitiesHex: string[] = identity.genIdentityCommitments(spamThreshold).map(identity => bigintToHex(identity));
+            return identitiesHex;
         });
 
         // protocols
@@ -151,23 +155,6 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const safeProof: ISafeProof = await this.rlnService.genProof(identity.zkIdentity, payload)
-                return this.requestManager.newRequest(
-                    JSON.stringify(safeProof),
-                    PendingRequestType.PROOF,
-                    payload,
-                );
-            }
-        )
-
-        this.add(
-            RPCAction.NRLN_PROOF,
-            LockService.ensure,
-            this.zkValidator.validateZkInputs,
-            async (payload: INRLNProofRequest) => {
-                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
-                if (!identity) throw new Error('active identity not found')
-
-                const safeProof: ISafeProof = await this.nRlnService.genProof(identity.zkIdentity, payload)
                 return this.requestManager.newRequest(
                     JSON.stringify(safeProof),
                     PendingRequestType.PROOF,

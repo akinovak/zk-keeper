@@ -28,7 +28,9 @@ const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater>
 
 const createRandomIdentity = (config: any): ZkIdentityDecorater => {
     checkParameter(config, 'config', 'object')
-    checkParameter(config.name, 'name', 'string')
+    const {  name } = config;
+
+    checkParameter(name, 'name', 'string')
 
     const identity: ZkIdentity = new ZkIdentity()
     const metadata: IdentityMetadata = {

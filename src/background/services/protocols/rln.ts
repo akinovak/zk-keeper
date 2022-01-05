@@ -1,9 +1,9 @@
-import { Rln, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
-import { ZkIdentity } from '@libsem/identity'
+import { RLN, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
+import { ZkIdentity, SecretType } from '@libsem/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
 import { ISafeProof, IRLNProofRequest } from './interfaces'
-import { deserializeMerkleProof, poseidonHash } from './utils'
+import { deserializeMerkleProof} from './utils'
 
 export default class RLNService {
     // eslint-disable-next-line class-methods-use-this
@@ -16,34 +16,37 @@ export default class RLNService {
             externalNullifier,
             signal,
             merkleProofArtifacts,
-            rlnIdentifier
+            rlnIdentifier            
         } = request
-        let merkleProof: MerkleProof;;
+        let merkleProof: MerkleProof;
+        const spamThreshold = request.spamThreshold ? request.spamThreshold : 2;
 
-        identity.genSecretFromIdentity();
-        const secretHash: bigint = poseidonHash(identity.getSecret());
+        identity.genMultipartSecret(spamThreshold);
+
+        const identitySecret: bigint[] = identity.getMultipartSecret();
         const signalHash = genSignalHash(signal);
-        const identityCommitment = identity.genIdentityCommitment()
+        const identityCommitment = identity.genIdentityCommitment(SecretType.MULTIPART_SECRET);
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identityCommitment)
+                identityCommitment: bigintToHex(identityCommitment),
+                spamThreshold: spamThreshold
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
         } else {
-            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, merkleProofArtifacts?.leaves, identityCommitment)
+            const leaves = merkleProofArtifacts?.leaves.map(leaf => hexToBigint(leaf));
+            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, leaves, identityCommitment)
         }
 
-        const witness = Rln.genWitness(secretHash, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))
+        const witness = RLN.genWitness(identitySecret, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))
 
-        const fullProof: FullProof = await Rln.genProof(witness, circuitFilePath, zkeyFilePath)
-        const solidityProof = Rln.packToSolidityProof(fullProof)
+        const fullProof: FullProof = await RLN.genProof(witness, circuitFilePath, zkeyFilePath)
+        const solidityProof = RLN.packToSolidityProof(fullProof)
 
-        const [y, nullifier] = Rln.calculateOutput(secretHash, BigInt(externalNullifier), hexToBigint(rlnIdentifier), signalHash)
-        const root = merkleStorageAddress ? bigintToHex(merkleProof.root) : merkleProof.root;
+        const [y, nullifier] = RLN.calculateOutput(identitySecret, BigInt(externalNullifier), signalHash, spamThreshold,  hexToBigint(rlnIdentifier))
         const publicSignals: Array<string> = [
             bigintToHex(y),
-            root,
+            bigintToHex(merkleProof.root),
             bigintToHex(nullifier),
             bigintToHex(signalHash),
             externalNullifier,

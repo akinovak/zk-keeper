@@ -25,6 +25,17 @@ async function getIdentityCommitments() {
     })
 }
 
+
+async function getActiveIdentity(spamThreshold: number = 2) {
+    return post({
+        method: RPCAction.GET_ACTIVE_IDENTITY,
+        payload: {
+            spamThreshold: spamThreshold
+        }
+    })
+}
+
+
 async function createDummyRequest() {
     return post({
         method: RPCAction.DUMMY_REQUEST
@@ -47,9 +58,9 @@ async function semaphoreProof(
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProofArtifacts,
             circuitFilePath,
-            zkeyFilePath
+            zkeyFilePath,
+            merkleProofArtifacts
         }
     })
 }
@@ -60,7 +71,8 @@ async function rlnProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-   rlnIdentifier: string
+    rlnIdentifier: string,
+    spamThreshold: number = 2
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
@@ -70,41 +82,14 @@ async function rlnProof(
             externalNullifier,
             signal,
             merkleStorageAddress,
-            merkleProofArtifacts,
             circuitFilePath,
             zkeyFilePath,
-            rlnIdentifier
-        }
-    })
-}
-
-
-async function nRlnProof(
-    externalNullifier: string,
-    signal: string,
-    circuitFilePath: string,
-    zkeyFilePath: string,
-    merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-   rlnIdentifier: string,
-   spamThreshold: number
-) {
-    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
-    return post({
-        method: RPCAction.NRLN_PROOF,
-        payload: {
-            externalNullifier,
-            signal,
-            merkleStorageAddress,
             merkleProofArtifacts,
-            circuitFilePath,
-            zkeyFilePath,
             rlnIdentifier,
             spamThreshold
         }
     })
 }
-
 
 // dev-only
 async function clearApproved() {
@@ -142,10 +127,10 @@ async function addHost(host: string) {
 const client = {
     openPopup,
     getIdentityCommitments,
+    getActiveIdentity,
     createDummyRequest,
     semaphoreProof,
     rlnProof,
-    nRlnProof,
     // dev-only
     clearApproved
 }

@@ -1,6 +1,6 @@
 import { Semaphore, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
 import { ZkIdentity } from '@libsem/identity'
-import { bigintToHex } from 'bigint-conversion'
+import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
 import { ISafeProof, ISemaphoreProofRequest } from './interfaces'
 import { deserializeMerkleProof } from './utils'
@@ -26,7 +26,8 @@ export default class SemaphoreService {
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
         } else {
-            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, merkleProofArtifacts?.leaves, identityCommitment)
+            let leaves = merkleProofArtifacts?.leaves.map(leaf => hexToBigint(leaf));
+            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, leaves, identityCommitment)
 
         }
 
@@ -36,9 +37,8 @@ export default class SemaphoreService {
         const solidityProof = Semaphore.packToSolidityProof(fullProof)
 
         const nullifierHash: bigint = Semaphore.genNullifierHash(externalNullifier, identity.getNullifier())
-        const root = merkleStorageAddress ? bigintToHex(merkleProof.root) : merkleProof.root;
         const publicSignals: Array<string> = [
-            root,
+            bigintToHex(merkleProof.root),
             bigintToHex(nullifierHash),
             bigintToHex(genSignalHash(signal)),
             externalNullifier

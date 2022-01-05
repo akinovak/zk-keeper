@@ -1,5 +1,6 @@
 import { browser } from 'webextension-polyfill-ts'
 ;(async function () {
+    try {
     const url = browser.runtime.getURL('js/injected.js')
     const container = document.head || document.documentElement
     const scriptTag = document.createElement('script')
@@ -22,4 +23,7 @@ import { browser } from 'webextension-polyfill-ts'
             )
         }
     })
+  } catch(e) {
+      console.error("error occured", e);
+  }
 })()
