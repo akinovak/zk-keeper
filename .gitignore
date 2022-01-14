@@ -45,7 +45,6 @@ node_modules/
 dist.zip
 dist/js
 demo/dist
-docs
 zkeyFiles
 
 # dotenv environment variables file
