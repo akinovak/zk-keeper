@@ -1,0 +1,28 @@
+name: docs
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    gh-pages:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Use Node.js 14.x
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14.x
+
+            - run: cd docs && yarn --frozen-lockfile && yarn build
+
+            - name: Github Pages
+              uses: crazy-max/ghaction-github-pages@v2.5.0
+              with:
+                  build_dir: docs/build
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
