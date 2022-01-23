@@ -92,8 +92,8 @@
     "dependencies": {
         "@dimensiondev/metamask-extension-provider": "https://github.com/DimensionDev/extension-provider/tarball/master",
         "@interrep/identity": "^0.10.0",
-        "@libsem/identity": "^1.0.22",
-        "@libsem/protocols": "^1.0.27",
+        "@zk-kit/identity": "^1.1.0",
+        "@zk-kit/protocols": "^1.1.0",
         "@types/classnames": "^2.2.11",
         "axios": "^0.24.0",
         "bigint-conversion": "^2.1.12",

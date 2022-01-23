@@ -1,4 +1,4 @@
-import { FullProof, MerkleProof } from '@libsem/protocols'
+import { FullProof } from '@zk-kit/protocols'
 import { MerkleProofArtifacts, ZkProofType } from '@src/types'
 
 export interface ISemaphoreProofRequest {

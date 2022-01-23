@@ -1,5 +1,5 @@
 import { hexToBigint } from 'bigint-conversion'
-import { MerkleProof } from '@libsem/protocols'
+import { MerkleProof } from '@zk-kit/protocols'
 import * as ciromlibjs from "circomlibjs"
 
 // eslint-disable-next-line import/prefer-default-export

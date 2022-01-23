@@ -12,7 +12,9 @@ describe('# identityFactory', () => {
         const identity1 = await identityFactory('random', { name: 'name' })
         const identity2 = ZkIdentityDecorater.genFromSerialized(identity1.serialize())
 
-        expect(identity1.zkIdentity.getIdentity()).toEqual(identity2.zkIdentity.getIdentity())
+        expect(identity1.zkIdentity.getTrapdoor()).toEqual(identity2.zkIdentity.getTrapdoor())
+        expect(identity1.zkIdentity.getNullifier()).toEqual(identity2.zkIdentity.getNullifier())
+        expect(identity1.zkIdentity.getMultipartSecretHash()).toEqual(identity2.zkIdentity.getMultipartSecretHash())
     })
 
     it('Should not create an InterRep identity without the required parameters', async () => {

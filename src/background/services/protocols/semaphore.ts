@@ -1,9 +1,10 @@
-import { Semaphore, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@libsem/protocols'
-import { ZkIdentity } from '@libsem/identity'
+import { Semaphore, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@zk-kit/protocols'
+import { ZkIdentity } from '@zk-kit/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
 import { ISafeProof, ISemaphoreProofRequest } from './interfaces'
 import { deserializeMerkleProof } from './utils'
+import { MerkleProofArtifacts } from '@src/types'
 
 export default class SemaphoreService {
     // eslint-disable-next-line class-methods-use-this
@@ -26,12 +27,20 @@ export default class SemaphoreService {
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
         } else {
-            let leaves = merkleProofArtifacts?.leaves.map(leaf => hexToBigint(leaf));
-            merkleProof = generateMerkleProof(merkleProofArtifacts?.depth, BigInt(0), merkleProofArtifacts?.leavesPerNode, leaves, identityCommitment)
+            let proofArtifacts = (merkleProofArtifacts as MerkleProofArtifacts);
+
+            let leaves = proofArtifacts.leaves.map(leaf => hexToBigint(leaf));
+            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, identityCommitment)
 
         }
 
-        const witness = Semaphore.genWitness(identity.getIdentity(), merkleProof, externalNullifier, signal)
+        const witness = Semaphore.genWitness(
+            identity.getTrapdoor(), 
+            identity.getNullifier(), 
+            merkleProof, 
+            externalNullifier, 
+            signal
+        )
 
         const fullProof: FullProof = await Semaphore.genProof(witness, circuitFilePath, zkeyFilePath)
         const solidityProof = Semaphore.packToSolidityProof(fullProof)

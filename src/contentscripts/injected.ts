@@ -77,7 +77,7 @@ async function rlnProof(
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
     return post({
-        method: RPCAction.RLN_PROOF,
+        method: spamThreshold === 2 ? RPCAction.RLN_PROOF : RPCAction.NRLN_PROOF,
         payload: {
             externalNullifier,
             signal,
@@ -90,6 +90,7 @@ async function rlnProof(
         }
     })
 }
+
 
 // dev-only
 async function clearApproved() {
