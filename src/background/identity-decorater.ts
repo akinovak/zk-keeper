@@ -12,16 +12,11 @@ export default class ZkIdentityDecorater {
     }
 
     genIdentityCommitment = (secretType: SecretType = SecretType.GENERIC, spamThreshold: number = 2): bigint => {
-        return this.zkIdentity.genIdentityCommitment(secretType, spamThreshold);
-
+        console.log("gen identity commitment", secretType, spamThreshold)
+        let idCommitment = this.zkIdentity.genIdentityCommitment(secretType, spamThreshold);
+        console.log("idCommitment", idCommitment); 
+        return idCommitment;
     }
-    genIdentityCommitments = (spamThreshold: number = 2): [bigint, bigint] =>  {
-        console.log("genIdentityCommitments spamThreshold", spamThreshold);
-        return [
-            this.zkIdentity.genIdentityCommitment(SecretType.MULTIPART),
-            this.zkIdentity.genIdentityCommitment(SecretType.MULTIPART, spamThreshold)
-        ]
-}
 
     serialize = (): string => {
         const serialized = {

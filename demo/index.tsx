@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { genExternalNullifier, RLN } from '@zk-kit/protocols'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
-const { ZkIdentity, SecretType } = require('@zk-kit/identity')
+import { ZkIdentity, SecretType } from '@zk-kit/identity'
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -43,8 +43,7 @@ const genMockIdentityCommitments = (proofType: ZkProofType, spamThreshold: numbe
         if (proofType === ZkProofType.SEMAPHORE) {
             idCommitment = bigintToHex(mockIdentity.genIdentityCommitment());
         } else {
-            mockIdentity.genMultipartSecret(spamThreshold);
-            idCommitment = bigintToHex(mockIdentity.genIdentityCommitment(SecretType.MULTIPART_SECRET));
+            idCommitment = bigintToHex(mockIdentity.genIdentityCommitment(SecretType.MULTIPART, spamThreshold));
         }
 
 
@@ -55,12 +54,15 @@ const genMockIdentityCommitments = (proofType: ZkProofType, spamThreshold: numbe
 
 function App() {
 
+    const NRLN_SPAM_THRESHOLD = 3;
+
     const [client, setClient] = useState(null);
-    const [identityCommitmentGeneric, setIdentityCommitmentGeneric] = useState();
-    const [identityCommitmentMultipart, setIdentityCommitmentMultipart] = useState();
+    const [identityCommitmentSemaphore, setIdentityCommitmentSemaphore] = useState("");
+    const [identityCommitmentRLN, setIdentityCommitmentRLN] = useState("");
+    const [identityCommitmentNRLN, setIdentityCommitmentNRLN] = useState("");
     const mockIdentityCommitmentsSemaphore: string[] = genMockIdentityCommitments(ZkProofType.SEMAPHORE);
     const mockIdentityCommitmentsRLN: string[] = genMockIdentityCommitments(ZkProofType.RLN, 2);
-    const mockIdentityCommitmentsNRLN: string[] = genMockIdentityCommitments(ZkProofType.RLN, 3);
+    const mockIdentityCommitmentsNRLN: string[] = genMockIdentityCommitments(ZkProofType.RLN, NRLN_SPAM_THRESHOLD);
 
     const genSemaphoreProof = async (proofType: MerkleProofType = MerkleProofType.STORAGE_ADDRESS) => {
 
@@ -70,8 +72,8 @@ function App() {
         let storageAddressOrArtifacts: any = merkleStorageAddressSemaphore;
         if (proofType === MerkleProofType.ARTIFACTS) {
 
-            if (!mockIdentityCommitmentsSemaphore.includes(identityCommitmentGeneric)) {
-                mockIdentityCommitmentsSemaphore.push(identityCommitmentGeneric);
+            if (!mockIdentityCommitmentsSemaphore.includes(identityCommitmentSemaphore)) {
+                mockIdentityCommitmentsSemaphore.push(identityCommitmentSemaphore);
             }
             storageAddressOrArtifacts = {
                 leaves: mockIdentityCommitmentsSemaphore,
@@ -109,8 +111,8 @@ function App() {
 
         if (proofType === MerkleProofType.ARTIFACTS) {
 
-            if (!mockIdentityCommitmentsNRLN.includes(identityCommitmentMultipart)) {
-                mockIdentityCommitmentsNRLN.push(identityCommitmentMultipart);
+            if (!mockIdentityCommitmentsNRLN.includes(identityCommitmentNRLN)) {
+                mockIdentityCommitmentsNRLN.push(identityCommitmentNRLN);
             }
 
             storageAddressOrArtifacts = {
@@ -155,8 +157,8 @@ function App() {
 
         if (proofType === MerkleProofType.ARTIFACTS) {
 
-            if (!mockIdentityCommitmentsRLN.includes(identityCommitmentMultipart)) {
-                mockIdentityCommitmentsRLN.push(identityCommitmentMultipart);
+            if (!mockIdentityCommitmentsRLN.includes(identityCommitmentRLN)) {
+                mockIdentityCommitmentsRLN.push(identityCommitmentRLN);
             }
 
             storageAddressOrArtifacts = {
@@ -190,10 +192,14 @@ function App() {
 
     };
 
-    const getActiveIdentity = async (spamThreshold: number) => {
-        const [idCommitmentGeneric, idCommitmentMultipart] = await client.getActiveIdentity(spamThreshold);
-        setIdentityCommitmentGeneric(idCommitmentGeneric)
-        setIdentityCommitmentMultipart(idCommitmentMultipart);
+    const getIdentityCommitments = async () => {
+        const idCommitmentSemaphore = await client.getActiveIdentity(SecretType.GENERIC);
+        const idCommitmentRLN = await client.getActiveIdentity(SecretType.MULTIPART);
+        const idCommitmentNRLN = await client.getActiveIdentity(SecretType.MULTIPART, NRLN_SPAM_THRESHOLD);
+
+        setIdentityCommitmentSemaphore(idCommitmentSemaphore);
+        setIdentityCommitmentRLN(idCommitmentRLN);
+        setIdentityCommitmentNRLN(idCommitmentNRLN);
     }
 
 
@@ -211,9 +217,7 @@ function App() {
 
         if (client) {
             (async function () {
-                const [idCommitmentGeneric, idCommitmentMultipart] = await client.getActiveIdentity(3);
-                setIdentityCommitmentGeneric(idCommitmentGeneric)
-                setIdentityCommitmentMultipart(idCommitmentMultipart);
+                await getIdentityCommitments();
             })();
         }
 
@@ -229,29 +233,29 @@ function App() {
             </div>
             <hr />
             <div>
-                <h2>RLN with default spam threshold</h2>
+                <h2>RLN</h2>
                 <button onClick={() => genRLNProof(MerkleProofType.STORAGE_ADDRESS)}>Generate proof from Merkle proof storage address</button> <br /><br />
                 <button onClick={() => genRLNProof(MerkleProofType.ARTIFACTS)}>Generate proof from Merkle proof artifacts</button>
             </div>
             <hr />
             <div>
-                <h2>RLN with spam threshold 3</h2>
+                <h2>NRLN (spam threshold 3)</h2>
                 <button onClick={() => genNRLNProof(MerkleProofType.STORAGE_ADDRESS)}>Generate proof from Merkle storage address</button> <br /><br />
                 <button onClick={() => genNRLNProof(MerkleProofType.ARTIFACTS)}>Generate proof from Merkle proof artifacts</button>
             </div>
 
             <hr />
             <div>
-                <h2>Get identity commitment for active identity</h2>
-                <button onClick={() => getActiveIdentity(2)}>ID Commitment with 2 part secret</button> <br /><br />
-                <button onClick={() => getActiveIdentity(3)}>ID Commitment with 3 part secret</button>
+                <h2>Get identity commitments</h2>
+                <button onClick={() => getIdentityCommitments()}>Get</button> <br /><br />
             </div>
 
             <hr />
             <div>
                 <h2>Identity commitments for active identity:</h2>
-                <p>Generic - {identityCommitmentGeneric}</p>
-                <p>Multipart - {identityCommitmentMultipart}</p>
+                <p>Semaphore - {identityCommitmentSemaphore}</p>
+                <p>RLN - {identityCommitmentRLN}</p>
+                <p>NRLN - {identityCommitmentNRLN}</p>
             </div>
 
             <ToastContainer />

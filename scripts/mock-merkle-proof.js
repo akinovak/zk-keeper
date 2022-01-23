@@ -11,10 +11,10 @@ const NUMBER_OF_LEAVES = 2
 const serializeMerkleProof = (merkleProof) => {
     const serialized = {}
     serialized.root = bigintToHex(merkleProof.root)
-    serialized.pathElements = merkleProof.pathElements.map((siblings) =>
+    serialized.siblings = merkleProof.siblings.map((siblings) =>
         siblings.map((element) => bigintToHex(element))
     )
-    serialized.indices = merkleProof.indices
+    serialized.pathIndices = merkleProof.pathIndices
     return serialized
 }
 

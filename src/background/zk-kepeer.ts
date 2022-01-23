@@ -126,9 +126,9 @@ export default class ZkKepperController extends Handler {
             if (!identity) {
                 return null;
             }
-            let spamThreshold = payload?.spamThreshold ? payload.spamThreshold : 2;
-            let identitiesHex: string[] = identity.genIdentityCommitments(spamThreshold).map(identity => bigintToHex(identity));
-            return identitiesHex;
+            let identityCommitment: bigint = identity.genIdentityCommitment(payload?.secretType, payload?.spamThreshold);
+            let identityCommitmentHex = bigintToHex(identityCommitment);
+            return identityCommitmentHex;
         });
 
         // protocols

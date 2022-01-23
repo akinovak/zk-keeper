@@ -2,6 +2,7 @@
 
 import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
+import { SecretType } from '@zk-kit/identity'
 
 export type IRequest = {
     method: string
@@ -26,10 +27,11 @@ async function getIdentityCommitments() {
 }
 
 
-async function getActiveIdentity(spamThreshold: number = 2) {
+async function getActiveIdentity(secretType: SecretType.GENERIC, spamThreshold: number = 2) {
     return post({
         method: RPCAction.GET_ACTIVE_IDENTITY,
         payload: {
+            secretType: secretType,
             spamThreshold: spamThreshold
         }
     })

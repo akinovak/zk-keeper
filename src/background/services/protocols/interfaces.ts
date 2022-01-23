@@ -1,5 +1,12 @@
 import { FullProof } from '@zk-kit/protocols'
+import { SecretType } from '@zk-kit/identity'
 import { MerkleProofArtifacts, ZkProofType } from '@src/types'
+
+export enum Protocol {
+    SEMAPHORE,
+    RLN,
+    NRLN
+}
 
 export interface ISemaphoreProofRequest {
     externalNullifier: string
@@ -11,7 +18,8 @@ export interface ISemaphoreProofRequest {
 }
 
 export interface IGetActiveIdentityRequest {
-    spamThreshold?: number
+    secretType: SecretType
+    spamThreshold: number
 }
 
 export interface IRLNProofRequest extends ISemaphoreProofRequest {
