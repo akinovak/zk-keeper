@@ -1,4 +1,4 @@
-import { ZkIdentity, SecretType } from '@libsem/identity'
+import { ZkIdentity, SecretType } from '@zk-kit/identity'
 import { SerializedIdentity, IdentityMetadata } from '@src/types'
 
 export default class ZkIdentityDecorater {
@@ -12,19 +12,11 @@ export default class ZkIdentityDecorater {
     }
 
     genIdentityCommitment = (secretType: SecretType = SecretType.GENERIC, spamThreshold: number = 2): bigint => {
-        if(secretType === SecretType.MULTIPART_SECRET) {
-            this.zkIdentity.genMultipartSecret(spamThreshold);
-        }
-        return this.zkIdentity.genIdentityCommitment(secretType);
-
+        console.log("gen identity commitment", secretType, spamThreshold)
+        let idCommitment = this.zkIdentity.genIdentityCommitment(secretType, spamThreshold);
+        console.log("idCommitment", idCommitment); 
+        return idCommitment;
     }
-    genIdentityCommitments = (spamThreshold: number = 2): [bigint, bigint] =>  {
-        
-        return [
-            this.genIdentityCommitment(SecretType.GENERIC),
-            this.genIdentityCommitment(SecretType.MULTIPART_SECRET, spamThreshold),
-        ]
-}
 
     serialize = (): string => {
         const serialized = {
@@ -41,7 +33,7 @@ export default class ZkIdentityDecorater {
         if (!data.secret) throw new Error('Secret missing')
 
         // TODO overload zkIdentity function to work both with array and string
-        const zkIdentity = ZkIdentity.genFromSerialized(data.secret)
+        const zkIdentity = new ZkIdentity(2, data.secret)
         return new ZkIdentityDecorater(zkIdentity, data.metadata)
     }
 }

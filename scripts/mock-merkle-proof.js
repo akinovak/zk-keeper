@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const express = require('express')
-const { generateMerkleProof } = require('@libsem/protocols')
-const { ZkIdentity, SecretType } = require('@libsem/identity')
+const { generateMerkleProof } = require('@zk-kit/protocols')
+const { ZkIdentity, SecretType } = require('@zk-kit/identity')
 const { bigintToHex, hexToBigint } = require('bigint-conversion')
 
 const DEPTH = 15
@@ -11,17 +11,17 @@ const NUMBER_OF_LEAVES = 2
 const serializeMerkleProof = (merkleProof) => {
     const serialized = {}
     serialized.root = bigintToHex(merkleProof.root)
-    serialized.pathElements = merkleProof.pathElements.map((siblings) =>
+    serialized.siblings = merkleProof.siblings.map((siblings) =>
         siblings.map((element) => bigintToHex(element))
     )
-    serialized.indices = merkleProof.indices
+    serialized.pathIndices = merkleProof.pathIndices
     return serialized
 }
 
 const numberOfLeaves = 2
 const identityCommitmentsSemaphore = []
-const identityCommitmentsRLNDefault = []
-const identityCommitmentsRLNSpamThreshold3 = []
+const identityCommitmentsRLN = []
+const identityCommitmentsNRLN = []
 
 // eslint-disable-next-line no-plusplus
 for (let i = 0; i < numberOfLeaves; i++) {
@@ -32,15 +32,13 @@ for (let i = 0; i < numberOfLeaves; i++) {
 // eslint-disable-next-line no-plusplus
 for (let i = 0; i < numberOfLeaves; i++) {
     const mockIdentity = new ZkIdentity()
-    mockIdentity.genMultipartSecret(2);
-    identityCommitmentsRLNDefault.push(mockIdentity.genIdentityCommitment(SecretType.MULTIPART_SECRET))
+    identityCommitmentsRLN.push(mockIdentity.genIdentityCommitment(SecretType.MULTIPART))
 }
 
 // eslint-disable-next-line no-plusplus
 for (let i = 0; i < numberOfLeaves; i++) {
     const mockIdentity = new ZkIdentity()
-    mockIdentity.genMultipartSecret(3);
-    identityCommitmentsRLNSpamThreshold3.push(mockIdentity.genIdentityCommitment(SecretType.MULTIPART_SECRET))
+    identityCommitmentsNRLN.push(mockIdentity.genIdentityCommitment(SecretType.MULTIPART, 3))
 }
 
 const app = express()
@@ -50,10 +48,10 @@ app.post('/merkleProofRLN', (req, res) => {
     let { identityCommitment, spamThreshold } = req.body
     identityCommitment = hexToBigint(identityCommitment)
 
-    let identityCommitments = identityCommitmentsRLNDefault;
+    let identityCommitments = identityCommitmentsRLN;
     // For testing purposes, if commitment is not in set, add it to obtain valid proof
     if(spamThreshold > 2) {
-        identityCommitments = identityCommitmentsRLNSpamThreshold3;
+        identityCommitments = identityCommitmentsNRLN;
     } 
     if (!identityCommitments.includes(identityCommitment)) {
         identityCommitments.push(identityCommitment)

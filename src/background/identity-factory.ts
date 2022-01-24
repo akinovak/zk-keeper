@@ -1,5 +1,5 @@
 import { IdentityMetadata } from '@src/types'
-import { ZkIdentity } from '@libsem/identity'
+import { ZkIdentity } from '@zk-kit/identity'
 import createIdentity from '@interrep/identity'
 import ZkIdentityDecorater from './identity-decorater'
 import checkParameter from '@src/util/checkParameter'

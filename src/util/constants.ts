@@ -16,6 +16,7 @@ enum RPCAction {
     GET_PENDING_REQUESTS = 'rpc/requests/get',
     SEMAPHORE_PROOF = 'rpc/protocols/semaphore/genProof',
     RLN_PROOF = 'rpc/protocols/rln/genProof',
+    NRLN_PROOF = 'rpc/protocols/nrln/genProof',
     DUMMY_REQUEST = 'rpc/protocols/semaphore/dummyReuqest',
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',

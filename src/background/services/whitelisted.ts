@@ -5,8 +5,8 @@ const whitelistedCircuitPaths: Array<string> = [
     'http://localhost:8000/semaphore.wasm',
     'http://localhost:8000/rln.wasm',
     'http://localhost:8000/semaphore/semaphore.wasm',
-    'http://localhost:8000/rln_default/rln.wasm',
-    'http://localhost:8000/rln_3/rln.wasm',
+    'http://localhost:8000/rln/rln.wasm',
+    'http://localhost:8000/nrln/rln.wasm',
     'https://api.auti.sm/dev/semaphore_wasm',
 
 
@@ -17,8 +17,8 @@ const whitelistedKeyPaths: Array<string> = [
     'http://localhost:8000/semaphore_final.zkey',
     'http://localhost:8000/rln_final.zkey',
     'http://localhost:8000/semaphore/semaphore_final.zkey',
-    'http://localhost:8000/rln_default/rln_final.zkey',
-    'http://localhost:8000/rln_3/rln_final.zkey',
+    'http://localhost:8000/rln/rln_final.zkey',
+    'http://localhost:8000/nrln/rln_final.zkey',
     'https://api.auti.sm/dev/semaphore_final_zkey',
 ]
 
