@@ -147,10 +147,12 @@ async function connect() {
     try {
         const approved = await tryInject(window.location.origin)
         const isApproved = (approved as string) === 'approved'
-        if (isApproved) {
+        console.log("is approved", approved);
+        // if (isApproved) {
+            console.log("approved, adding host");
             await addHost(window.location.origin)
             return client
-        }
+        // }
     } catch (err) {
         // eslint-disable-next-line no-console
         console.log('Err: ', err)

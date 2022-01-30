@@ -5,7 +5,7 @@ import Handler from './controllers/handler'
 import LockService from './services/lock'
 import IdentityService from './services/identity'
 import MetamaskService from './services/metamask'
-import ZkValidator from './services/whitelisted'
+import ZkValidator from './services/zk-validator'
 import RequestManager from './controllers/request-manager'
 import SemaphoreService from './services/protocols/semaphore'
 import RLNService from './services/protocols/rln'
@@ -13,7 +13,7 @@ import { IGetActiveIdentityRequest, IRLNProofRequest, ISafeProof, ISemaphoreProo
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
-import {bigintToHex} from "bigint-conversion";
+import { bigintToHex } from "bigint-conversion";
 import NRLNService from './services/protocols/nrln'
 
 export default class ZkKepperController extends Handler {
@@ -73,7 +73,7 @@ export default class ZkKepperController extends Handler {
 
         // lock
         this.add(RPCAction.SETUP_PASSWORD, (payload: string) => {
-           return LockService.setupPassword(payload);
+            return LockService.setupPassword(payload);
         });
 
         // identites
@@ -95,13 +95,13 @@ export default class ZkKepperController extends Handler {
                     };
 
 
-                    if(strategy === 'interrep') {
+                    if (strategy === 'interrep') {
                         const web3: Web3 = await this.metamaskService.getWeb3();
                         const walletInfo: WalletInfo | null = await this.metamaskService.getWalletInfo();
-                        config.web3  = web3;
-                        config.walletInfo  = walletInfo;
+                        config.web3 = web3;
+                        config.walletInfo = walletInfo;
                     }
-             
+
 
                     const identity: ZkIdentityWrapper | undefined = await identityFactory(strategy, config);
 
@@ -141,11 +141,13 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
-                return this.requestManager.newRequest(
-                    JSON.stringify(safeProof),
-                    PendingRequestType.PROOF,
-                    payload,
-                );
+                return JSON.stringify(safeProof);
+
+                // return this.requestManager.newRequest(
+                //     JSON.stringify(safeProof),
+                //     PendingRequestType.PROOF,
+                //     payload,
+                // );
             }
         )
 
@@ -158,11 +160,12 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const safeProof: ISafeProof = await this.rlnService.genProof(identity.zkIdentity, payload)
-                return this.requestManager.newRequest(
-                    JSON.stringify(safeProof),
-                    PendingRequestType.PROOF,
-                    payload,
-                );
+                return JSON.stringify(safeProof);
+                // return this.requestManager.newRequest(
+                //     JSON.stringify(safeProof),
+                //     PendingRequestType.PROOF,
+                //     payload,
+                // );
             }
         )
 
@@ -175,16 +178,18 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const safeProof: ISafeProof = await this.nrlnService.genProof(identity.zkIdentity, payload)
-                return this.requestManager.newRequest(
-                    JSON.stringify(safeProof),
-                    PendingRequestType.PROOF,
-                    payload,
-                );
+                return JSON.stringify(safeProof);
+
+                // return this.requestManager.newRequest(
+                //     JSON.stringify(safeProof),
+                //     PendingRequestType.PROOF,
+                //     payload,
+                // );
             }
         )
 
         // injecting
-        this.add(RPCAction.TRY_INJECT, LockService.ensure, (payload: any) => {
+        this.add(RPCAction.TRY_INJECT, (payload: any) => {
             const { origin }: { origin: string } = payload;
             if (!origin) throw new Error('Origin not provided');
 

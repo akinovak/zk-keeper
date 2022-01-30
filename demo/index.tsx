@@ -208,7 +208,6 @@ function App() {
         (async function IIFE() {
             const { injected } = window as any
             const client = await injected.connect()
-
             setClient(client);
         })();
     }, [])
