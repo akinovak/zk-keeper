@@ -9,12 +9,11 @@ import ZkValidator from './services/zk-validator'
 import RequestManager from './controllers/request-manager'
 import SemaphoreService from './services/protocols/semaphore'
 import RLNService from './services/protocols/rln'
-import { IGetActiveIdentityRequest, IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
+import { IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
 import { bigintToHex } from "bigint-conversion";
-import NRLNService from './services/protocols/nrln'
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService
@@ -23,7 +22,6 @@ export default class ZkKepperController extends Handler {
     private requestManager: RequestManager
     private semaphoreService: SemaphoreService
     private rlnService: RLNService
-    private nrlnService: NRLNService
     private approvalService: ApprovalService
     constructor() {
         super()
@@ -33,7 +31,6 @@ export default class ZkKepperController extends Handler {
         this.requestManager = new RequestManager()
         this.semaphoreService = new SemaphoreService()
         this.rlnService = new RLNService()
-        this.nrlnService = new NRLNService()
         this.approvalService = new ApprovalService()
     }
 
@@ -121,12 +118,12 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.GET_COMMITMENTS, LockService.ensure, this.identityService.getIdentityCommitments)
         this.add(RPCAction.GET_IDENTITIES, LockService.ensure, this.identityService.getIdentities)
         this.add(RPCAction.SET_ACTIVE_IDENTITY, LockService.ensure, this.identityService.setActiveIdentity)
-        this.add(RPCAction.GET_ACTIVE_IDENTITY, LockService.ensure, async (payload: IGetActiveIdentityRequest | undefined) => {
+        this.add(RPCAction.GET_ACTIVE_IDENTITY, LockService.ensure, async () => {
             const identity = await this.identityService.getActiveidentity();
             if (!identity) {
                 return null;
             }
-            let identityCommitment: bigint = identity.genIdentityCommitment(payload?.secretType, payload?.spamThreshold);
+            let identityCommitment: bigint = identity.genIdentityCommitment();
             let identityCommitmentHex = bigintToHex(identityCommitment);
             return identityCommitmentHex;
         });
@@ -143,11 +140,6 @@ export default class ZkKepperController extends Handler {
                 const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
                 return JSON.stringify(safeProof);
 
-                // return this.requestManager.newRequest(
-                //     JSON.stringify(safeProof),
-                //     PendingRequestType.PROOF,
-                //     payload,
-                // );
             }
         )
 
@@ -161,30 +153,7 @@ export default class ZkKepperController extends Handler {
 
                 const safeProof: ISafeProof = await this.rlnService.genProof(identity.zkIdentity, payload)
                 return JSON.stringify(safeProof);
-                // return this.requestManager.newRequest(
-                //     JSON.stringify(safeProof),
-                //     PendingRequestType.PROOF,
-                //     payload,
-                // );
-            }
-        )
-
-        this.add(
-            RPCAction.NRLN_PROOF,
-            LockService.ensure,
-            this.zkValidator.validateZkInputs,
-            async (payload: IRLNProofRequest) => {
-                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
-                if (!identity) throw new Error('active identity not found')
-
-                const safeProof: ISafeProof = await this.nrlnService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(safeProof);
-
-                // return this.requestManager.newRequest(
-                //     JSON.stringify(safeProof),
-                //     PendingRequestType.PROOF,
-                //     payload,
-                // );
+ 
             }
         )
 

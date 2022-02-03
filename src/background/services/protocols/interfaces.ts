@@ -1,6 +1,5 @@
 import { FullProof } from '@zk-kit/protocols'
-import { SecretType } from '@zk-kit/identity'
-import { MerkleProofArtifacts, ZkProofType } from '@src/types'
+import { MerkleProofArtifacts } from '@src/types'
 
 export enum Protocol {
     SEMAPHORE,
@@ -17,14 +16,8 @@ export interface ISemaphoreProofRequest {
     merkleProofArtifacts?: MerkleProofArtifacts
 }
 
-export interface IGetActiveIdentityRequest {
-    secretType: SecretType
-    spamThreshold: number
-}
-
 export interface IRLNProofRequest extends ISemaphoreProofRequest {
     rlnIdentifier: string
-    spamThreshold?: number
 }
 
 export interface ISafeProof {

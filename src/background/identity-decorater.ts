@@ -1,4 +1,4 @@
-import { ZkIdentity, SecretType } from '@zk-kit/identity'
+import { ZkIdentity } from '@zk-kit/identity'
 import { SerializedIdentity, IdentityMetadata } from '@src/types'
 
 export default class ZkIdentityDecorater {
@@ -11,10 +11,8 @@ export default class ZkIdentityDecorater {
         this.metadata = metadata
     }
 
-    genIdentityCommitment = (secretType: SecretType = SecretType.GENERIC, spamThreshold: number = 2): bigint => {
-        console.log("gen identity commitment", secretType, spamThreshold)
-        let idCommitment = this.zkIdentity.genIdentityCommitment(secretType, spamThreshold);
-        console.log("idCommitment", idCommitment); 
+    genIdentityCommitment = (): bigint => {
+        let idCommitment = this.zkIdentity.genIdentityCommitment();
         return idCommitment;
     }
 

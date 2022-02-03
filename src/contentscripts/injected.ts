@@ -2,7 +2,6 @@
 
 import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
-import { SecretType } from '@zk-kit/identity'
 
 export type IRequest = {
     method: string
@@ -27,13 +26,9 @@ async function getIdentityCommitments() {
 }
 
 
-async function getActiveIdentity(secretType: SecretType.GENERIC, spamThreshold: number = 2) {
+async function getActiveIdentity() {
     return post({
-        method: RPCAction.GET_ACTIVE_IDENTITY,
-        payload: {
-            secretType: secretType,
-            spamThreshold: spamThreshold
-        }
+        method: RPCAction.GET_ACTIVE_IDENTITY
     })
 }
 
@@ -73,13 +68,12 @@ async function rlnProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-    rlnIdentifier: string,
-    spamThreshold: number = 2
+    rlnIdentifier: string
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
     return post({
-        method: spamThreshold === 2 ? RPCAction.RLN_PROOF : RPCAction.NRLN_PROOF,
+        method: RPCAction.RLN_PROOF,
         payload: {
             externalNullifier,
             signal,
@@ -87,8 +81,7 @@ async function rlnProof(
             circuitFilePath,
             zkeyFilePath,
             merkleProofArtifacts,
-            rlnIdentifier,
-            spamThreshold
+            rlnIdentifier
         }
     })
 }
@@ -147,12 +140,10 @@ async function connect() {
     try {
         const approved = await tryInject(window.location.origin)
         const isApproved = (approved as string) === 'approved'
-        console.log("is approved", approved);
-        // if (isApproved) {
-            console.log("approved, adding host");
+        if (isApproved) {
             await addHost(window.location.origin)
             return client
-        // }
+        }
     } catch (err) {
         // eslint-disable-next-line no-console
         console.log('Err: ', err)

@@ -1,5 +1,5 @@
 import { RLN, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@zk-kit/protocols'
-import { ZkIdentity, SecretType } from '@zk-kit/identity'
+import { ZkIdentity } from '@zk-kit/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
 import { ISafeProof, IRLNProofRequest } from './interfaces'
@@ -21,13 +21,12 @@ export default class RLNService {
         } = request
         let merkleProof: MerkleProof;
 
-        const identitySecretHash: bigint = identity.getMultipartSecretHash();
+        const identitySecretHash: bigint = identity.getSecretHash();
         const signalHash = genSignalHash(signal);
-        const identityCommitment = identity.genIdentityCommitment(SecretType.MULTIPART);
+        const identityCommitment = identity.genIdentityCommitment();
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identityCommitment),
-                spamThreshold: 2
+                identityCommitment: bigintToHex(identityCommitment)
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
