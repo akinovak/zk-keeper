@@ -20,9 +20,10 @@ export default class SemaphoreService {
         } = request
         let merkleProof: MerkleProof;
         const identityCommitment = identity.genIdentityCommitment();
+        const identityCommitmentHex = bigintToHex(identityCommitment);
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identityCommitment)
+                identityCommitment: identityCommitmentHex
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
@@ -30,8 +31,8 @@ export default class SemaphoreService {
             let proofArtifacts = (merkleProofArtifacts as MerkleProofArtifacts);
 
             let leaves = proofArtifacts.leaves.map(leaf => hexToBigint(leaf));
-            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, identityCommitment)
-
+            const leafIndex = proofArtifacts.leaves.indexOf(identityCommitmentHex);
+            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, leafIndex)
         }
 
         const witness = Semaphore.genWitness(

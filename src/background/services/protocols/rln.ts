@@ -24,16 +24,18 @@ export default class RLNService {
         const identitySecretHash: bigint = identity.getSecretHash();
         const signalHash = genSignalHash(signal);
         const identityCommitment = identity.genIdentityCommitment();
+        const identityCommitmentHex = bigintToHex(identityCommitment);
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
-                identityCommitment: bigintToHex(identityCommitment)
+                identityCommitment: identityCommitmentHex
             })
 
             merkleProof = deserializeMerkleProof(response.data.merkleProof)
         } else {
             let proofArtifacts = (merkleProofArtifacts as MerkleProofArtifacts);
             const leaves = proofArtifacts.leaves.map(leaf => hexToBigint(leaf));
-            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, identityCommitment)
+            const leafIndex = proofArtifacts.leaves.indexOf(identityCommitmentHex);
+            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, leafIndex)
         }
 
         const witness = RLN.genWitness(identitySecretHash, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))

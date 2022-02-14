@@ -8,13 +8,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const semaphorePath = {
-    circuitFilePath: "http://localhost:8000/semaphore/semaphore.wasm",
-    zkeyFilePath: "http://localhost:8000/semaphore/semaphore_final.zkey"
+    circuitFilePath: "http://localhost:8095/semaphore/semaphore.wasm",
+    zkeyFilePath: "http://localhost:8095/semaphore/semaphore_final.zkey"
 };
 
 const rlnPath = {
-    circuitFilePath: "http://localhost:8000/rln/rln.wasm",
-    zkeyFilePath: "http://localhost:8000/rln/rln_final.zkey"
+    circuitFilePath: "http://localhost:8095/rln/rln.wasm",
+    zkeyFilePath: "http://localhost:8095/rln/rln_final.zkey"
 };
 
 const merkleStorageAddress = 'http://localhost:8090/merkleProof'
@@ -47,7 +47,7 @@ function App() {
         const externalNullifier = genExternalNullifier('voting-1')
         const signal = '0x111'
 
-        let storageAddressOrArtifacts: any = merkleStorageAddress;
+        let storageAddressOrArtifacts: any = `${merkleStorageAddress}/Semaphore`;
         if (proofType === MerkleProofType.ARTIFACTS) {
 
             if (!mockIdentityCommitments.includes(identityCommitment)) {
@@ -55,8 +55,8 @@ function App() {
             }
             storageAddressOrArtifacts = {
                 leaves: mockIdentityCommitments,
-                depth: 15,
-                leavesPerNode: 2
+                depth: 20,
+                leavesPerNode: 5
             }
         }
 
@@ -83,7 +83,7 @@ function App() {
         const rlnIdentifier = RLN.genIdentifier();
         const rlnIdentifierHex = bigintToHex(rlnIdentifier);
 
-        let storageAddressOrArtifacts: any = merkleStorageAddress;
+        let storageAddressOrArtifacts: any = `${merkleStorageAddress}/RLN`;
 
         if (proofType === MerkleProofType.ARTIFACTS) {
 
