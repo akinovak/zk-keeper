@@ -7,7 +7,7 @@ const { bigintToHex, hexToBigint } = require('bigint-conversion')
 const DEPTH_RLN = 15
 const NUMBER_OF_LEAVES_RLN = 2
 const DEPTH_SEMAPHORE = 20
-const NUMBER_OF_LEAVES_SEMAPHORE = 5
+const NUMBER_OF_LEAVES_SEMAPHORE = 2
 const ZERO_VALUE = BigInt(0)
 
 
@@ -15,30 +15,30 @@ const serializeMerkleProof = (merkleProof) => {
     const serialized = {}
     serialized.root = bigintToHex(merkleProof.root)
     serialized.siblings = merkleProof.siblings.map((siblings) =>
-        siblings.map((element) => bigintToHex(element))
+        Array.isArray(siblings) ? siblings.map((element) => bigintToHex(element)) : bigintToHex(siblings)
     )
     serialized.pathIndices = merkleProof.pathIndices
     serialized.leaf = bigintToHex(merkleProof.leaf)
     return serialized
 }
 
-const generateMerkleProofRLN = (identityCommitments, leafIndex) => {
+const generateMerkleProofRLN = (identityCommitments, identityCommitment) => {
     return generateMerkleProof(
         DEPTH_RLN,
         ZERO_VALUE,
         NUMBER_OF_LEAVES_RLN,
         identityCommitments,
-        leafIndex
+        identityCommitment
     )
 }
 
-const generateMerkleProofSemaphore = (identityCommitments, leafIndex) => {
+const generateMerkleProofSemaphore = (identityCommitments, identityCommitment) => {
     return generateMerkleProof(
         DEPTH_SEMAPHORE,
         ZERO_VALUE,
         NUMBER_OF_LEAVES_SEMAPHORE,
         identityCommitments,
-        leafIndex
+        identityCommitment
     )
 }
 
@@ -63,9 +63,7 @@ app.post('/merkleProof/:type', (req, res) => {
     if (!identityCommitments.includes(identityCommitment)) {
         identityCommitments.push(identityCommitment)
     }
-    const leafIndex = identityCommitments.indexOf(identityCommitment);
-
-    const merkleProof = type === 'RLN' ? generateMerkleProofRLN(identityCommitments, leafIndex) : generateMerkleProofSemaphore(identityCommitments, leafIndex)
+    const merkleProof = type === 'RLN' ? generateMerkleProofRLN(identityCommitments, identityCommitment) : generateMerkleProofSemaphore(identityCommitments, identityCommitment)
 
     const serializedMerkleProof = serializeMerkleProof(merkleProof)
     console.log('Sending proof with root: ', serializedMerkleProof.root)

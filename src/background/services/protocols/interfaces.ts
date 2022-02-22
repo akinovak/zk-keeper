@@ -1,4 +1,4 @@
-import { FullProof } from '@zk-kit/protocols'
+import { SemaphoreFullProof, SemaphoreSolidityProof } from '@zk-kit/protocols'
 import { MerkleProofArtifacts } from '@src/types'
 
 export enum Protocol {
@@ -7,7 +7,7 @@ export enum Protocol {
     NRLN
 }
 
-export interface ISemaphoreProofRequest {
+export interface SemaphoreProofRequest {
     externalNullifier: string
     signal: string
     merkleStorageAddress?: string
@@ -16,12 +16,12 @@ export interface ISemaphoreProofRequest {
     merkleProofArtifacts?: MerkleProofArtifacts
 }
 
-export interface IRLNProofRequest extends ISemaphoreProofRequest {
+export interface RLNProofRequest extends SemaphoreProofRequest {
     rlnIdentifier: string
 }
 
-export interface ISafeProof {
-    fullProof: FullProof
-    solidityProof: any
-    publicSignals: string[]
+
+export interface SemaphoreProof {
+    fullProof: SemaphoreFullProof
+    solidityProof: SemaphoreSolidityProof
 }

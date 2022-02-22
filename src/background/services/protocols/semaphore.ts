@@ -1,14 +1,14 @@
-import { Semaphore, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@zk-kit/protocols'
+import { Semaphore, MerkleProof, SemaphoreFullProof, SemaphoreSolidityProof, SemaphorePublicSignals, genSignalHash, generateMerkleProof } from '@zk-kit/protocols'
 import { ZkIdentity } from '@zk-kit/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
-import { ISafeProof, ISemaphoreProofRequest } from './interfaces'
+import { SemaphoreProof, SemaphoreProofRequest } from './interfaces'
 import { deserializeMerkleProof } from './utils'
 import { MerkleProofArtifacts } from '@src/types'
 
 export default class SemaphoreService {
     // eslint-disable-next-line class-methods-use-this
-    async genProof(identity: ZkIdentity, request: ISemaphoreProofRequest): Promise<ISafeProof> {
+    async genProof(identity: ZkIdentity, request: SemaphoreProofRequest): Promise<SemaphoreProof> {
         try {
         const {
             circuitFilePath,
@@ -31,8 +31,7 @@ export default class SemaphoreService {
             let proofArtifacts = (merkleProofArtifacts as MerkleProofArtifacts);
 
             let leaves = proofArtifacts.leaves.map(leaf => hexToBigint(leaf));
-            const leafIndex = proofArtifacts.leaves.indexOf(identityCommitmentHex);
-            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, leafIndex)
+            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, identityCommitment)
         }
 
         const witness = Semaphore.genWitness(
@@ -43,22 +42,13 @@ export default class SemaphoreService {
             signal
         )
 
-        const fullProof: FullProof = await Semaphore.genProof(witness, circuitFilePath, zkeyFilePath)
-        const solidityProof = Semaphore.packToSolidityProof(fullProof)
+        const fullProof: SemaphoreFullProof = await Semaphore.genProof(witness, circuitFilePath, zkeyFilePath)
 
-        const nullifierHash: bigint = Semaphore.genNullifierHash(externalNullifier, identity.getNullifier())
-        const publicSignals: Array<string> = [
-            bigintToHex(merkleProof.root),
-            bigintToHex(nullifierHash),
-            bigintToHex(genSignalHash(signal)),
-            externalNullifier
-        ]
-
+        const solidityProof: SemaphoreSolidityProof = Semaphore.packToSolidityProof(fullProof)
 
         return {
             fullProof,
-            solidityProof,
-            publicSignals
+            solidityProof
         }
     } catch(e) {
         throw new Error(`Error while generating semaphore proof: ${e}`);

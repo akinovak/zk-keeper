@@ -9,11 +9,12 @@ import ZkValidator from './services/zk-validator'
 import RequestManager from './controllers/request-manager'
 import SemaphoreService from './services/protocols/semaphore'
 import RLNService from './services/protocols/rln'
-import { IRLNProofRequest, ISafeProof, ISemaphoreProofRequest } from './services/protocols/interfaces'
+import { RLNProofRequest, SemaphoreProof, SemaphoreProofRequest } from './services/protocols/interfaces'
 import ApprovalService from './services/approval'
 import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
 import { bigintToHex } from "bigint-conversion";
+import { RLNFullProof } from '@zk-kit/protocols'
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService
@@ -133,12 +134,12 @@ export default class ZkKepperController extends Handler {
             RPCAction.SEMAPHORE_PROOF,
             LockService.ensure,
             this.zkValidator.validateZkInputs,
-            async (payload: ISemaphoreProofRequest) => {
+            async (payload: SemaphoreProofRequest) => {
                 const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
                 if (!identity) throw new Error('active identity not found')
 
-                const safeProof: ISafeProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(safeProof);
+                const proof: SemaphoreProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
+                return JSON.stringify(proof);
 
             }
         )
@@ -147,12 +148,12 @@ export default class ZkKepperController extends Handler {
             RPCAction.RLN_PROOF,
             LockService.ensure,
             this.zkValidator.validateZkInputs,
-            async (payload: IRLNProofRequest) => {
+            async (payload: RLNProofRequest) => {
                 const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
                 if (!identity) throw new Error('active identity not found')
 
-                const safeProof: ISafeProof = await this.rlnService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(safeProof);
+                const proof: RLNFullProof = await this.rlnService.genProof(identity.zkIdentity, payload)
+                return JSON.stringify(proof);
  
             }
         )

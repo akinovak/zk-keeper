@@ -1,14 +1,14 @@
-import { RLN, MerkleProof, FullProof, genSignalHash, generateMerkleProof } from '@zk-kit/protocols'
+import { RLN, MerkleProof, RLNFullProof, generateMerkleProof } from '@zk-kit/protocols'
 import { ZkIdentity } from '@zk-kit/identity'
 import { bigintToHex, hexToBigint } from 'bigint-conversion'
 import axios, { AxiosResponse } from 'axios'
-import { ISafeProof, IRLNProofRequest } from './interfaces'
+import { RLNProofRequest } from './interfaces'
 import { deserializeMerkleProof} from './utils'
 import { MerkleProofArtifacts } from '@src/types'
 
 export default class RLNService {
     // eslint-disable-next-line class-methods-use-this
-    async genProof(identity: ZkIdentity, request: IRLNProofRequest): Promise<ISafeProof> {
+    async genProof(identity: ZkIdentity, request: RLNProofRequest): Promise<RLNFullProof> {
         try {
         const {
             circuitFilePath,
@@ -22,9 +22,9 @@ export default class RLNService {
         let merkleProof: MerkleProof;
 
         const identitySecretHash: bigint = identity.getSecretHash();
-        const signalHash = genSignalHash(signal);
         const identityCommitment = identity.genIdentityCommitment();
         const identityCommitmentHex = bigintToHex(identityCommitment);
+        const rlnIdentifierBigInt = hexToBigint(rlnIdentifier);
         if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
                 identityCommitment: identityCommitmentHex
@@ -34,31 +34,12 @@ export default class RLNService {
         } else {
             let proofArtifacts = (merkleProofArtifacts as MerkleProofArtifacts);
             const leaves = proofArtifacts.leaves.map(leaf => hexToBigint(leaf));
-            const leafIndex = proofArtifacts.leaves.indexOf(identityCommitmentHex);
-            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, leafIndex)
+            merkleProof = generateMerkleProof(proofArtifacts.depth, BigInt(0), proofArtifacts.leavesPerNode, leaves, identityCommitment)
         }
 
-        const witness = RLN.genWitness(identitySecretHash, merkleProof, externalNullifier, signal, hexToBigint(rlnIdentifier))
-
-        const fullProof: FullProof = await RLN.genProof(witness, circuitFilePath, zkeyFilePath)
-        const solidityProof = RLN.packToSolidityProof(fullProof)
-
-        const [y, nullifier] = RLN.calculateOutput(identitySecretHash, BigInt(externalNullifier), hexToBigint(rlnIdentifier), signalHash)
-        const publicSignals: Array<string> = [
-            bigintToHex(y),
-            bigintToHex(merkleProof.root),
-            bigintToHex(nullifier),
-            bigintToHex(signalHash),
-            externalNullifier,
-            rlnIdentifier
-        ]
-
-
-        return {
-            fullProof,
-            solidityProof,
-            publicSignals
-        }
+        const witness = RLN.genWitness(identitySecretHash, merkleProof, externalNullifier, signal, rlnIdentifierBigInt)
+        const fullProof: RLNFullProof = await RLN.genProof(witness, circuitFilePath, zkeyFilePath)
+        return fullProof
     } catch(e) {
         throw new Error(`Error while generating RLN proof: ${e}`);
     }

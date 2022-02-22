@@ -6,7 +6,7 @@ export function deserializeMerkleProof(merkleProof): MerkleProof {
     const deserialized = {} as MerkleProof
     deserialized.root = hexToBigint(merkleProof.root)
     deserialized.siblings = merkleProof.siblings.map((siblings) =>
-        siblings.map((element) => hexToBigint(element))
+        Array.isArray(siblings) ? siblings.map((element) => hexToBigint(element)) : hexToBigint(siblings)
     )
     deserialized.pathIndices = merkleProof.pathIndices
     deserialized.leaf = hexToBigint(merkleProof.leaf)
