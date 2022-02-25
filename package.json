@@ -92,7 +92,7 @@
     },
     "dependencies": {
         "@dimensiondev/metamask-extension-provider": "https://github.com/DimensionDev/extension-provider/tarball/master",
-        "@interrep/identity": "^0.10.0",
+        "@interep/identity": "^0.1.1",
         "@types/classnames": "^2.2.11",
         "@zk-kit/identity": "^1.4.1",
         "@zk-kit/protocols": "^1.8.2",

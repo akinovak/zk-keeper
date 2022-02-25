@@ -51,6 +51,7 @@ export default class MetamaskService {
         }
 
         if (this.provider?.selectedAddress) {
+        
             const accounts = await this.web3.eth.requestAccounts()
             const networkType = await this.web3.eth.net.getNetworkType()
             const chainId = await this.web3.eth.getChainId();
