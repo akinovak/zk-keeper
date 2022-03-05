@@ -2,6 +2,7 @@
 
 import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
+import {MerkleProof} from "@zk-kit/protocols";
 
 export type IRequest = {
     method: string
@@ -45,7 +46,7 @@ async function semaphoreProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-
+    merkleProof?: MerkleProof,
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
@@ -57,7 +58,8 @@ async function semaphoreProof(
             merkleStorageAddress,
             circuitFilePath,
             zkeyFilePath,
-            merkleProofArtifacts
+            merkleProofArtifacts,
+            merkleProof,
         }
     })
 }
@@ -137,29 +139,34 @@ const client = {
  */
 // eslint-disable-next-line consistent-return
 async function connect() {
+    let result;
     try {
         const approved = await tryInject(window.location.origin)
         const isApproved = (approved as string) === 'approved'
         if (isApproved) {
             await addHost(window.location.origin)
-            return client
+            result = client;
         }
     } catch (err) {
         // eslint-disable-next-line no-console
         console.log('Err: ', err)
-        return null
+        result = null
     }
+
+    await post({ method: RPCAction.CLOSE_POPUP });
+
+    return result
 }
 
 declare global {
     interface Window {
-        injected: {
+        zkpr: {
             connect: () => any
         }
     }
 }
 
-window.injected = {
+window.zkpr = {
     connect
 }
 

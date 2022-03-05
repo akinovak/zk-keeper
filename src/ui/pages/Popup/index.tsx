@@ -30,6 +30,10 @@ export default function Popup(): ReactElement {
         })();
     }, []);
 
+    useEffect(() => {
+        dispatch(fetchRequestPendingStatus());
+    }, [unlocked])
+
     // const finalizeRequest = useCallback(
     //     (id: string, action: string) =>
     //         postMessage({
@@ -42,10 +46,6 @@ export default function Popup(): ReactElement {
     //     []
     // )
     //
-    if (pendingRequests.length) {
-        const [pendingRequest] = pendingRequests
-        return <ConfirmRequestModal />;
-    }
 
     if (loading) {
         return <></>;
@@ -57,6 +57,9 @@ export default function Popup(): ReactElement {
         content = <Onboarding />;
     } else if (!unlocked) {
         content = <Login />;
+    } else if (pendingRequests.length) {
+        const [pendingRequest] = pendingRequests
+        return <ConfirmRequestModal />;
     } else {
         content = (
             <Switch>

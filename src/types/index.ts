@@ -1,3 +1,5 @@
+import {MerkleProof} from "@zk-kit/protocols";
+
 export type Request = {
     method: string
     payload?: any
@@ -40,6 +42,7 @@ export type ZkInputs = {
     zkeyFilePath: string
     merkleStorageAddress?: string
     merkleProofArtifacts?: MerkleProofArtifacts;
+    merkleProof?: MerkleProof;
 }
 
 export enum PendingRequestType {

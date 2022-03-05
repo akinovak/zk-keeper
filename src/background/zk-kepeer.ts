@@ -15,6 +15,7 @@ import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
 import { bigintToHex } from "bigint-conversion";
 import { RLNFullProof } from '@zk-kit/protocols'
+import BrowserUtils from './controllers/browser-utils';
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService
@@ -139,8 +140,7 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const proof: SemaphoreProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(proof);
-
+                return proof;
             }
         )
 
@@ -154,7 +154,7 @@ export default class ZkKepperController extends Handler {
 
                 const proof: RLNFullProof = await this.rlnService.genProof(identity.zkIdentity, payload)
                 return JSON.stringify(proof);
- 
+
             }
         )
 
@@ -174,6 +174,9 @@ export default class ZkKepperController extends Handler {
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add)
         this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove)
+        this.add(RPCAction.CLOSE_POPUP, async () => {
+            return BrowserUtils.closePopup();
+        })
 
         // dev
         this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.empty)

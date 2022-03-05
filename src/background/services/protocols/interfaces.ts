@@ -1,4 +1,4 @@
-import { SemaphoreFullProof, SemaphoreSolidityProof } from '@zk-kit/protocols'
+import {MerkleProof, SemaphoreFullProof, SemaphoreSolidityProof} from '@zk-kit/protocols'
 import { MerkleProofArtifacts } from '@src/types'
 
 export enum Protocol {
@@ -14,6 +14,7 @@ export interface SemaphoreProofRequest {
     circuitFilePath: string
     zkeyFilePath: string
     merkleProofArtifacts?: MerkleProofArtifacts
+    merkleProof?: MerkleProof
 }
 
 export interface RLNProofRequest extends SemaphoreProofRequest {
