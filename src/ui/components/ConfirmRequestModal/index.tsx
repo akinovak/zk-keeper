@@ -9,6 +9,7 @@ import postMessage from "@src/util/postMessage";
 import "./confirm-modal.scss";
 import Input from "@src/ui/components/Input";
 import Textarea from "@src/ui/components/Textarea";
+import Dropdown from "@src/ui/components/Dropdown";
 
 export default function ConfirmRequestModal(): ReactElement {
     const pendingRequests = useRequestsPending();
@@ -18,13 +19,14 @@ export default function ConfirmRequestModal(): ReactElement {
     const [activeIndex, setActiveIndex] = useState(0);
     const pendingRequest = pendingRequests[activeIndex];
 
-    const reject = useCallback(async () => {
+    const reject = useCallback(async (err?: any) => {
         setLoading(true);
         try {
             const id = pendingRequest?.id;
             const req: RequestResolutionAction<undefined> = {
                 id,
                 status: 'reject',
+                data: err,
             }
             await postMessage({
                 method: RPCAction.FINALIZE_REQUEST,
@@ -37,13 +39,14 @@ export default function ConfirmRequestModal(): ReactElement {
         }
     }, [pendingRequest]);
 
-    const approve = useCallback(async () => {
+    const approve = useCallback(async (data?: any) => {
         setLoading(true);
         try {
             const id = pendingRequest?.id;
             const req: RequestResolutionAction<undefined> = {
                 id,
                 status: 'accept',
+                data,
             }
             await postMessage({
                 method: RPCAction.FINALIZE_REQUEST,
@@ -64,8 +67,8 @@ export default function ConfirmRequestModal(): ReactElement {
                 <ConnectionApprovalModal
                     len={pendingRequests.length}
                     pendingRequest={pendingRequest}
-                    accept={approve}
-                    reject={reject}
+                    accept={() => approve()}
+                    reject={() => reject()}
                     error={error}
                     loading={loading}
                 />
@@ -75,8 +78,8 @@ export default function ConfirmRequestModal(): ReactElement {
                 <ProofModal
                     len={pendingRequests.length}
                     pendingRequest={pendingRequest}
-                    accept={approve}
-                    reject={reject}
+                    accept={() => approve()}
+                    reject={() => reject()}
                     error={error}
                     loading={loading}
                 />
@@ -86,13 +89,23 @@ export default function ConfirmRequestModal(): ReactElement {
                 <DummyApprovalModal
                     len={pendingRequests.length}
                     pendingRequest={pendingRequest}
+                    accept={() => approve()}
+                    reject={() => reject()}
+                    error={error}
+                    loading={loading}
+                />
+            );
+        case PendingRequestType.CREATE_IDENTITY:
+            return (
+                <CreateIdentityApprovalModal
+                    len={pendingRequests.length}
+                    pendingRequest={pendingRequest}
                     accept={approve}
                     reject={reject}
                     error={error}
                     loading={loading}
                 />
             );
-        case PendingRequestType.CREATE_IDENTITY:
         default:
             return (
                 <DefaultApprovalModal
@@ -193,6 +206,96 @@ function DummyApprovalModal(props: {
                 <Button
                     className="ml-2"
                     onClick={props.accept}
+                    loading={props.loading}
+                >
+                    Approve
+                </Button>
+            </FullModalFooter>
+        </FullModal>
+    );
+}
+
+function CreateIdentityApprovalModal(props: {
+    len: number;
+    reject: (error?: any) => void;
+    accept: (data?: any) => void;
+    loading: boolean;
+    error: string;
+    pendingRequest: PendingRequest;
+}) {
+    const [nonce, setNonce] = useState(0);
+    const [identityType, setIdentityType] = useState<'InterRep' | 'Random' >('InterRep');
+    const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter');
+
+    const create = useCallback(async () => {
+        let options: any = {
+            nonce,
+            web2Provider,
+        }
+        let provider = 'interrep';
+
+        if(identityType === 'Random') {
+            provider = 'random';
+            options = {};
+        }
+
+        props.accept({
+            provider,
+            options,
+        })
+    }, [nonce, web2Provider, identityType, props.accept]);
+
+    return (
+        <FullModal className="confirm-modal" onClose={() => null}>
+            <FullModalHeader>
+                Create Identity
+                {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
+            </FullModalHeader>
+            <FullModalContent>
+
+                <Dropdown
+                    className="my-2"
+                    label="Identity type"
+                    options={[{ value: 'InterRep' }, { value: 'Random' }]}
+                    onChange={(e) => {
+                        setIdentityType(e.target.value as any)
+                    }}
+                    value={identityType}
+                />
+                {identityType === 'InterRep' &&
+                    <>
+                        <Dropdown
+                            className="my-2"
+                            label="Web2 Provider"
+                            options={[{ value: 'Twitter' }, { value: 'Reddit' }, { value: 'Github' }]}
+                            onChange={(e) => {
+                                setWeb2Provider(e.target.value as any)
+                            }}
+                            value={web2Provider}
+                        />
+                        <Input
+                            className="my-2"
+                            type="number"
+                            label="Nonce"
+                            step={1}
+                            defaultValue={nonce}
+                            onChange={(e) => setNonce(Number(e.target.value))}
+                        />
+                    </>
+                }
+            </FullModalContent>
+            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            <FullModalFooter>
+                <Button
+                    btnType={ButtonType.secondary}
+                    onClick={() => props.reject()}
+                    loading={props.loading}
+                >
+                    Reject
+                </Button>
+                <Button
+                    className="ml-2"
+                    onClick={create}
                     loading={props.loading}
                 >
                     Approve

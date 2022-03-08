@@ -163,6 +163,9 @@ function IdentityList(): ReactElement {
     }, []);
     const [showingModal, showModal] = useState(false)
 
+    useEffect(() => {
+        dispatch(fetchIdentities());
+    }, [])
 
     return (
         <>

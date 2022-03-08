@@ -195,14 +195,29 @@ export default class ZkKepperController extends Handler {
             return BrowserUtils.closePopup();
         })
 
-        this.add(RPCAction.CREATE_IDENTITY_REQ, LockService.ensure, async () => {
-            const res = await this.requestManager.newRequest(
-                PendingRequestType.CREATE_IDENTITY,
-                { origin },
-            );
+        this.add(
+            RPCAction.CREATE_IDENTITY_REQ,
+            LockService.ensure,
+            this.metamaskService.ensure,
+            async () => {
+                const res: any = await this.requestManager.newRequest(
+                    PendingRequestType.CREATE_IDENTITY,
+                    { origin },
+                );
 
-            return res;
-        });
+                const {
+                    provider,
+                    options,
+                } = res;
+
+                return this.handle({
+                    method: RPCAction.CREATE_IDENTITY,
+                    payload: {
+                        strategy: provider,
+                        options,
+                    },
+                })
+            });
 
         // dev
         this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.empty)

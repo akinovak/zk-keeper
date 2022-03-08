@@ -1,5 +1,7 @@
-import { browser } from 'webextension-polyfill-ts'
-;(async function () {
+import { browser } from 'webextension-polyfill-ts';
+import {ActionType} from "@src/ui/ducks/identities";
+
+(async function () {
     try {
     const url = browser.runtime.getURL('js/injected.js')
     const container = document.head || document.documentElement
@@ -22,7 +24,19 @@ import { browser } from 'webextension-polyfill-ts'
                 '*'
             )
         }
-    })
+    });
+
+    browser.runtime.onMessage.addListener((action) => {
+       switch (action.type) {
+           case ActionType.SET_SELECTED:
+               window.postMessage({
+                   target: 'injected-injectedscript',
+                   payload: [null, action.payload],
+                   nonce: 'identityChanged',
+               }, '*');
+               return;
+       }
+    });
   } catch(e) {
       console.error("error occured", e);
   }

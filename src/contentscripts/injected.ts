@@ -141,6 +141,29 @@ async function addHost(host: string) {
     })
 }
 
+const EVENTS: {
+    [eventName: string]: ((data: unknown) => void)[];
+} = {};
+
+const on = (eventName: string, cb: (data: unknown) => void) => {
+    const bucket = EVENTS[eventName] || [];
+    bucket.push(cb);
+    EVENTS[eventName] = bucket;
+}
+
+const off = (eventName: string, cb: (data: unknown) => void) => {
+    const bucket = EVENTS[eventName] || [];
+    EVENTS[eventName] = bucket.filter(callback => callback === cb);
+}
+
+const emit = (eventName: string, payload?: any) => {
+    const bucket = EVENTS[eventName] || [];
+
+    for (let cb of bucket) {
+        cb(payload);
+    }
+}
+
 /**
  * Injected Client
  */
@@ -151,6 +174,8 @@ const client = {
     createIdentity,
     semaphoreProof,
     rlnProof,
+    on,
+    off,
     // dev-only
     clearApproved,
     createDummyRequest,
@@ -216,7 +241,14 @@ async function post(message: IRequest) {
 
 window.addEventListener('message', (event) => {
     const { data } = event
+
     if (data && data.target === 'injected-injectedscript') {
+        if (data.nonce === "identityChanged") {
+            const [err, res] = data.payload;
+            emit('identityChanged', res);
+            return;
+        }
+
         if (!promises[data.nonce]) return
 
         const [err, res] = data.payload
