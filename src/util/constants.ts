@@ -7,6 +7,7 @@ enum RPCAction {
     CONNECT_METAMASK = 'rpc/metamask/connectMetamask',
     GET_WALLET_INFO = 'rpc/metamask/getWalletInfo',
     CREATE_IDENTITY = 'rpc/identity/createIdentity',
+    CREATE_IDENTITY_REQ = 'rpc/identity/createIdentityRequest',
     SET_ACTIVE_IDENTITY = 'rpc/identity/setActiveIdentity',
     GET_ACTIVE_IDENTITY = 'rpc/identity/getActiveidentity',
     GET_COMMITMENTS = 'rpc/identity/getIdentityCommitments',

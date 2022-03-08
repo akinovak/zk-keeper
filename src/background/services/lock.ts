@@ -9,6 +9,7 @@ class LockService extends SimpleStorage {
     private isUnlocked: boolean
     private password?: string
     private passwordChecker: string
+    private unlockCB?: any
 
     constructor() {
         super(passwordKey);
@@ -25,7 +26,7 @@ class LockService extends SimpleStorage {
         await this.set(ciphertext);
         await this.unlock(password);
         await pushMessage(setStatus(await this.getStatus()));
-        
+
     }
 
     getStatus = async () => {
@@ -35,6 +36,22 @@ class LockService extends SimpleStorage {
             initialized: !!ciphertext,
             unlocked: this.isUnlocked,
         };
+    }
+
+    awaitUnlock = async () => {
+        if (this.isUnlocked) return;
+
+        return new Promise((resolve) => {
+            this.unlockCB = resolve;
+        });
+    }
+
+    onUnlocked = () => {
+        if (this.unlockCB) {
+            this.unlockCB();
+            this.unlockCB = undefined;
+        }
+        return true;
     }
 
     unlock = async (password: string): Promise<boolean> => {

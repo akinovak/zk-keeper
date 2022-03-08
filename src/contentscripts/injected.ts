@@ -33,11 +33,33 @@ async function getActiveIdentity() {
     })
 }
 
+async function createIdentity() {
+    try {
+        const res = await post({
+            method: RPCAction.CREATE_IDENTITY_REQ
+        });
+
+        await post({ method: RPCAction.CLOSE_POPUP });
+        return res;
+    } catch (e) {
+        await post({ method: RPCAction.CLOSE_POPUP });
+        throw e;
+    }
+}
+
 
 async function createDummyRequest() {
-    return post({
-        method: RPCAction.DUMMY_REQUEST
-    })
+    try {
+        const res = await post({
+            method: RPCAction.DUMMY_REQUEST
+        });
+
+        await post({ method: RPCAction.CLOSE_POPUP });
+        return res;
+    } catch (e) {
+        await post({ method: RPCAction.CLOSE_POPUP });
+        throw e;
+    }
 }
 
 async function semaphoreProof(
@@ -126,11 +148,12 @@ const client = {
     openPopup,
     getIdentityCommitments,
     getActiveIdentity,
-    createDummyRequest,
+    createIdentity,
     semaphoreProof,
     rlnProof,
     // dev-only
-    clearApproved
+    clearApproved,
+    createDummyRequest,
 }
 
 /**
@@ -142,8 +165,8 @@ async function connect() {
     let result;
     try {
         const approved = await tryInject(window.location.origin)
-        const isApproved = (approved as string) === 'approved'
-        if (isApproved) {
+
+        if (approved) {
             await addHost(window.location.origin)
             result = client;
         }

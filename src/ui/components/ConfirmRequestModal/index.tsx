@@ -3,7 +3,7 @@ import {useDispatch} from "react-redux";
 import FullModal, {FullModalContent, FullModalFooter, FullModalHeader} from "@src/ui/components/FullModal";
 import Button, {ButtonType} from "@src/ui/components/Button";
 import {useRequestsPending} from "@src/ui/ducks/requests";
-import {PendingRequest, PendingRequestType} from "@src/types";
+import {PendingRequest, PendingRequestType, RequestResolutionAction} from "@src/types";
 import RPCAction from "@src/util/constants";
 import postMessage from "@src/util/postMessage";
 import "./confirm-modal.scss";
@@ -22,12 +22,13 @@ export default function ConfirmRequestModal(): ReactElement {
         setLoading(true);
         try {
             const id = pendingRequest?.id;
+            const req: RequestResolutionAction<undefined> = {
+                id,
+                status: 'reject',
+            }
             await postMessage({
                 method: RPCAction.FINALIZE_REQUEST,
-                payload: {
-                    id,
-                    action: 'reject',
-                },
+                payload: req,
             });
         } catch (e: any) {
             setError(e.message);
@@ -40,12 +41,13 @@ export default function ConfirmRequestModal(): ReactElement {
         setLoading(true);
         try {
             const id = pendingRequest?.id;
+            const req: RequestResolutionAction<undefined> = {
+                id,
+                status: 'accept',
+            }
             await postMessage({
                 method: RPCAction.FINALIZE_REQUEST,
-                payload: {
-                    id,
-                    action: 'accept',
-                },
+                payload: req,
             });
         } catch (e: any) {
             setError(e.message);
@@ -79,9 +81,29 @@ export default function ConfirmRequestModal(): ReactElement {
                     loading={loading}
                 />
             )
-        case PendingRequestType.APPROVE:
+        case PendingRequestType.DUMMY:
+            return (
+                <DummyApprovalModal
+                    len={pendingRequests.length}
+                    pendingRequest={pendingRequest}
+                    accept={approve}
+                    reject={reject}
+                    error={error}
+                    loading={loading}
+                />
+            );
+        case PendingRequestType.CREATE_IDENTITY:
         default:
-            return <></>;
+            return (
+                <DefaultApprovalModal
+                    len={pendingRequests.length}
+                    pendingRequest={pendingRequest}
+                    accept={approve}
+                    reject={reject}
+                    error={error}
+                    loading={loading}
+                />
+            );
     }
 }
 
@@ -130,6 +152,91 @@ function ConnectionApprovalModal(props: {
                     className="ml-2"
                     onClick={props.accept}
                     loading={props.loading}
+                >
+                    Approve
+                </Button>
+            </FullModalFooter>
+        </FullModal>
+    );
+}
+
+function DummyApprovalModal(props: {
+    len: number;
+    reject: () => void;
+    accept: () => void;
+    loading: boolean;
+    error: string;
+    pendingRequest: PendingRequest;
+}) {
+    const payload = props.pendingRequest.payload;
+
+    return (
+        <FullModal className="confirm-modal" onClose={() => null}>
+            <FullModalHeader>
+                Dummy Request
+                {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
+            </FullModalHeader>
+            <FullModalContent className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                    {payload}
+                </div>
+            </FullModalContent>
+            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            <FullModalFooter>
+                <Button
+                    btnType={ButtonType.secondary}
+                    onClick={props.reject}
+                    loading={props.loading}
+                >
+                    Reject
+                </Button>
+                <Button
+                    className="ml-2"
+                    onClick={props.accept}
+                    loading={props.loading}
+                >
+                    Approve
+                </Button>
+            </FullModalFooter>
+        </FullModal>
+    );
+}
+
+function DefaultApprovalModal(props: {
+    len: number;
+    reject: () => void;
+    accept: () => void;
+    loading: boolean;
+    error: string;
+    pendingRequest: PendingRequest;
+}) {
+    const payload = props.pendingRequest.payload;
+
+    return (
+        <FullModal className="confirm-modal" onClose={() => null}>
+            <FullModalHeader>
+                Unhandled Request
+                {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
+            </FullModalHeader>
+            <FullModalContent className="flex flex-col">
+                <div className="text-sm font-semibold mb-2 break-all">
+                    {JSON.stringify(props.pendingRequest)}
+                </div>
+            </FullModalContent>
+            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            <FullModalFooter>
+                <Button
+                    btnType={ButtonType.secondary}
+                    onClick={props.reject}
+                    loading={props.loading}
+                >
+                    Reject
+                </Button>
+                <Button
+                    className="ml-2"
+                    onClick={props.accept}
+                    loading={props.loading}
+                    disabled
                 >
                     Approve
                 </Button>

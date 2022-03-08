@@ -1,6 +1,6 @@
 import pushMessage from '@src/util/pushMessage'
 import { EventEmitter2 } from 'eventemitter2'
-import { FinalizedRequest, PendingRequest, PendingRequestType, RequestResolutionAction } from '@src/types'
+import { PendingRequest, PendingRequestType, RequestResolutionAction } from '@src/types'
 import { setPendingRequest } from '@src/ui/ducks/requests'
 import BrowserUtils from './browser-utils'
 import {browser} from "webextension-polyfill-ts";
@@ -17,10 +17,9 @@ export default class RequestManager extends EventEmitter2 {
 
     getRequests = (): PendingRequest[] => this.pendingRequests
 
-    finalizeRequest = async (payload: FinalizedRequest): Promise<boolean> => {
-        const { id, action } = payload
+    finalizeRequest = async (action: RequestResolutionAction<any>): Promise<boolean> => {
+        const { id } = action
         if (!id) throw new Error('id not provided')
-        if (!action) throw new Error('action is not provided')
         // TODO add some mutex lock just in case something strange occurs
         this.pendingRequests = this.pendingRequests.filter((pendingRequest: PendingRequest) => pendingRequest.id !== id)
         this.emit(`${id}:finalized`, action)
@@ -36,7 +35,7 @@ export default class RequestManager extends EventEmitter2 {
         return id
     }
 
-    newRequest = async (data: any, type: PendingRequestType, payload?: any) => {
+    newRequest = async (type: PendingRequestType, payload?: any) => {
         const id: string = await this.addToQueue(type, payload)
         const popup = await BrowserUtils.openPopup()
 
@@ -50,18 +49,18 @@ export default class RequestManager extends EventEmitter2 {
 
             browser.windows.onRemoved.addListener(onPopupClose);
 
-            this.once(`${id}:finalized`, (action: RequestResolutionAction) => {
+            this.once(`${id}:finalized`, (action: RequestResolutionAction<any>) => {
                 browser.windows.onRemoved.removeListener(onPopupClose);
-                switch (action) {
+                switch (action.status) {
                     case 'accept':
-                        resolve(data)
+                        resolve(action.data)
                         return
                     case 'reject':
                         // eslint-disable-next-line prefer-promise-reject-errors
                         reject(new Error('user rejected.'))
                         return
                     default:
-                        throw new Error(`action: ${action} not supproted`)
+                        reject(new Error(`action: ${action.status} not supproted`))
                 }
             })
         })
