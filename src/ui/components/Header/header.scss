@@ -31,3 +31,12 @@
         }
     }
 }
+
+.user-menu {
+    .menuable {
+        &__menu {
+            right: 0;
+            left: auto;
+        }
+    }
+}
