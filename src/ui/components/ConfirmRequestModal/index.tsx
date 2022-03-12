@@ -10,6 +10,8 @@ import "./confirm-modal.scss";
 import Input from "@src/ui/components/Input";
 import Textarea from "@src/ui/components/Textarea";
 import Dropdown from "@src/ui/components/Dropdown";
+import Icon from "@src/ui/components/Icon";
+import copy from "copy-to-clipboard";
 
 export default function ConfirmRequestModal(): ReactElement {
     const pendingRequests = useRequestsPending();
@@ -73,7 +75,7 @@ export default function ConfirmRequestModal(): ReactElement {
                     loading={loading}
                 />
             );
-        case PendingRequestType.PROOF:
+        case PendingRequestType.SEMAPHORE_PROOF:
             return (
                 <ProofModal
                     len={pendingRequests.length}
@@ -362,15 +364,56 @@ function ProofModal(props: {
         merkleProof,
         signal,
         zkeyFilePath,
+        origin,
     } = props.pendingRequest?.payload || {};
+
+    useEffect(() => {
+        const url = new URL(origin);
+        console.log(url)
+    }, [origin]);
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
             <FullModalHeader>
-                Generate Proof
+                Generate Semaphore Proof
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
+                <img
+                    className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0"
+                    src={`${origin}/favicon.ico`}
+                />
+                <div className="text-lg font-semibold mb-2 text-center">
+                    {`${origin} is requesting a semaphore proof`}
+                </div>
+                <div className="semaphore-proof__files flex flex-row items-center mb-2">
+                    <div className="semaphore-proof__file">
+                        <div className="semaphore-proof__file__title">Circuit</div>
+                        <Icon fontAwesome="fas fa-link" onClick={() => window.open(circuitFilePath, '_blank')} />
+                    </div>
+                    <div className="semaphore-proof__file">
+                        <div className="semaphore-proof__file__title">ZKey</div>
+                        <Icon fontAwesome="fas fa-link" onClick={() => window.open(zkeyFilePath, '_blank')}/>
+                    </div>
+                    <div className="semaphore-proof__file">
+                        <div className="semaphore-proof__file__title">Merkle</div>
+                        {
+                            typeof merkleProof === 'string'
+                                ? (
+                                    <Icon
+                                        fontAwesome="fas fa-link"
+                                        onClick={() => window.open(merkleProof, '_blank')}
+                                    />
+                                )
+                                : (
+                                    <Icon
+                                        fontAwesome="fas fa-copy"
+                                        onClick={() => copy(JSON.stringify(merkleProof))}
+                                    />
+                                )
+                        }
+                    </div>
+                </div>
                 <Input
                     className="w-full mb-2"
                     label="External Nullifier"
@@ -381,34 +424,6 @@ function ProofModal(props: {
                     label="Signal"
                     value={signal}
                 />
-                <Input
-                    className="w-full mb-2"
-                    label="Circuit File URL"
-                    value={circuitFilePath}
-                />
-                <Input
-                    className="w-full mb-2"
-                    label="ZKey File URL"
-                    value={zkeyFilePath}
-                />
-                {
-                    typeof merkleProof === 'string'
-                        ? (
-                            <Input
-                                className="w-full mb-2"
-                                label="Merkle Storage URL"
-                                value={merkleProof}
-                            />
-                        )
-                        : (
-                            <Textarea
-                                className="w-full mb-2"
-                                label="Merkle Proof"
-                                value={JSON.stringify(merkleProof, undefined, 2)}
-                                rows={5}
-                            />
-                        )
-                }
             </FullModalContent>
             { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>

@@ -51,6 +51,7 @@ export default function Login(): ReactElement {
                         label="Password"
                         value={pw}
                         onChange={e => setPW(e.target.value)}
+                        autoFocus
                     />
                 </div>
             </div>

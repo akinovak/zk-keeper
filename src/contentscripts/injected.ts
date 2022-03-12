@@ -72,6 +72,7 @@ async function semaphoreProof(
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
+
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
         payload: {
@@ -82,7 +83,7 @@ async function semaphoreProof(
             zkeyFilePath,
             merkleProofArtifacts,
             merkleProof,
-        }
+        },
     })
 }
 
@@ -228,6 +229,10 @@ async function post(message: IRequest) {
                 target: 'injected-contentscript',
                 message: {
                     ...message,
+                    meta: {
+                      ...message.meta,
+                      origin: window.location.origin,
+                    },
                     type: message.method
                 },
                 nonce: messageNonce

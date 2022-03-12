@@ -136,12 +136,35 @@ export default class ZkKepperController extends Handler {
             RPCAction.SEMAPHORE_PROOF,
             LockService.ensure,
             this.zkValidator.validateZkInputs,
-            async (payload: SemaphoreProofRequest) => {
+            async (payload: SemaphoreProofRequest, meta: any) => {
                 const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
-                if (!identity) throw new Error('active identity not found')
+                const approved: boolean = await this.approvalService.isApproved(meta.origin);
 
-                const proof: SemaphoreProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
-                return proof;
+                if (!identity) throw new Error('active identity not found');
+                if (!approved) throw new Error(`${meta.origin} is not approved`);
+
+                try {
+                    await this.requestManager.newRequest(
+                        PendingRequestType.SEMAPHORE_PROOF,
+                        {
+                            ...payload,
+                            origin: meta.origin,
+                        },
+                    );
+
+                    await BrowserUtils.closePopup();
+
+                    const proof: SemaphoreProof = await this.semaphoreService.genProof(
+                        identity.zkIdentity,
+                        payload,
+                    );
+
+                    return proof;
+                } catch (err) {
+                    await BrowserUtils.closePopup();
+                    throw err;
+                }
+
             }
         )
 
@@ -154,7 +177,7 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const proof: RLNFullProof = await this.rlnService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(proof);
+                return proof;
 
             }
         )
@@ -174,6 +197,7 @@ export default class ZkKepperController extends Handler {
             const includes: boolean = await this.approvalService.isApproved(origin);
 
             if (includes) return true;
+
             try {
                 await this.requestManager.newRequest(
                     PendingRequestType.INJECT,
@@ -186,7 +210,6 @@ export default class ZkKepperController extends Handler {
             }
         })
         this.add(RPCAction.APPROVE_HOST, LockService.ensure, async (payload: any) => {
-            console.log(payload);
             this.approvalService.add(payload);
         })
         this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)

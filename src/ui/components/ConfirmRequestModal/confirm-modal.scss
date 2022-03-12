@@ -3,3 +3,18 @@
         min-height: 36rem;
     }
 }
+
+.semaphore-proof__files {
+
+}
+
+.semaphore-proof__file {
+    font-size: .75rem;
+    margin: .5rem;
+
+    .icon {
+        font-size: 1rem !important;
+        cursor: pointer;
+        margin-top: .25rem;
+    }
+}
