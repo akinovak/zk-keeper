@@ -49,7 +49,7 @@ export default class ApprovalService extends SimpleStorage {
         const store = await this.permissions.get();
         const permission = store ? store[host] : false;
         return {
-            noApproval: !!permission.noApproval,
+            noApproval: !!permission?.noApproval,
         };
     }
 
