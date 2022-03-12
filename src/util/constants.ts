@@ -22,6 +22,8 @@ enum RPCAction {
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',
     IS_HOST_APPROVED = 'rpc/hosts/isHostApprove',
+    GET_HOST_PERMISSIONS = 'rpc/hosts/getHostPermissions',
+    SET_HOST_PERMISSIONS = 'rpc/hosts/setHostPermissions',
     REMOVE_HOST = 'rpc/hosts/remove',
     CLOSE_POPUP = 'rpc/popup/close',
     // DEV RPCS

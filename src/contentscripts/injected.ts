@@ -33,6 +33,25 @@ async function getActiveIdentity() {
     })
 }
 
+async function getHostPermissions(host: string) {
+    return post({
+        method: RPCAction.GET_HOST_PERMISSIONS,
+        payload: host,
+    })
+}
+
+async function setHostPermissions(host: string, permissions?: {
+    noApproval?: boolean;
+}) {
+    return post({
+        method: RPCAction.SET_HOST_PERMISSIONS,
+        payload: {
+            host: host,
+            ...permissions,
+        }
+    })
+}
+
 async function createIdentity() {
     try {
         const res = await post({
@@ -173,6 +192,8 @@ const client = {
     getIdentityCommitments,
     getActiveIdentity,
     createIdentity,
+    getHostPermissions,
+    setHostPermissions,
     semaphoreProof,
     rlnProof,
     on,

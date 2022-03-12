@@ -137,20 +137,30 @@ export default class ZkKepperController extends Handler {
             LockService.ensure,
             this.zkValidator.validateZkInputs,
             async (payload: SemaphoreProofRequest, meta: any) => {
+                const { unlocked } = await LockService.getStatus();
+
+                if (!unlocked) {
+                    await BrowserUtils.openPopup();
+                    await LockService.awaitUnlock();
+                }
+
                 const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
                 const approved: boolean = await this.approvalService.isApproved(meta.origin);
+                const perm: any = await this.approvalService.getPermission(meta.origin);
 
                 if (!identity) throw new Error('active identity not found');
                 if (!approved) throw new Error(`${meta.origin} is not approved`);
 
                 try {
-                    await this.requestManager.newRequest(
-                        PendingRequestType.SEMAPHORE_PROOF,
-                        {
-                            ...payload,
-                            origin: meta.origin,
-                        },
-                    );
+                    if (!perm.noApproval) {
+                        await this.requestManager.newRequest(
+                            PendingRequestType.SEMAPHORE_PROOF,
+                            {
+                                ...payload,
+                                origin: meta.origin,
+                            },
+                        );
+                    }
 
                     await BrowserUtils.closePopup();
 
@@ -214,6 +224,16 @@ export default class ZkKepperController extends Handler {
         })
         this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove)
+
+        this.add(RPCAction.GET_HOST_PERMISSIONS , LockService.ensure, async (payload: any) => {
+            return this.approvalService.getPermission(payload);
+        })
+
+        this.add(RPCAction.SET_HOST_PERMISSIONS, LockService.ensure, async (payload: any) => {
+            const { host, ...permissions } = payload
+            return this.approvalService.setPermission(host, permissions);
+        })
+
         this.add(RPCAction.CLOSE_POPUP, async () => {
             return BrowserUtils.closePopup();
         })

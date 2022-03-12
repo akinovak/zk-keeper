@@ -12,6 +12,7 @@ import Textarea from "@src/ui/components/Textarea";
 import Dropdown from "@src/ui/components/Dropdown";
 import Icon from "@src/ui/components/Icon";
 import copy from "copy-to-clipboard";
+import Checkbox from "@src/ui/components/Checkbox";
 
 export default function ConfirmRequestModal(): ReactElement {
     const pendingRequests = useRequestsPending();
@@ -131,10 +132,31 @@ function ConnectionApprovalModal(props: {
     pendingRequest: PendingRequest;
 }) {
     const origin = props.pendingRequest.payload?.origin;
+    const [checked, setChecked] = useState(false);
+
     useEffect(() => {
-        const url = new URL(props.pendingRequest.payload.origin);
-        console.log(url)
-    }, [props.pendingRequest]);
+        (async () => {
+            if (origin) {
+                const res = await postMessage({
+                    method: RPCAction.GET_HOST_PERMISSIONS,
+                    payload: origin,
+                });
+                setChecked(res?.noApproval);
+            }
+        })();
+
+    }, [origin])
+
+    const setApproval = useCallback(async (noApproval: boolean) => {
+        const res = await postMessage({
+            method: RPCAction.SET_HOST_PERMISSIONS,
+            payload: {
+                host: origin,
+                noApproval: noApproval,
+            },
+        });
+        setChecked(res?.noApproval);
+    }, [origin]);
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -152,6 +174,19 @@ function ConnectionApprovalModal(props: {
                 </div>
                 <div className="text-sm text-gray-500 text-center">
                     This site is requesting access to view your current identity. Always make sure you trust the site you interact with.
+                </div>
+                <div className="font-bold mt-4">Permissions</div>
+                <div className="flex flex-row items-start">
+                    <Checkbox
+                        className="mr-2 mt-2 flex-shrink-0"
+                        checked={checked}
+                        onChange={e => {
+                            setApproval(e.target.checked)
+                        }}
+                    />
+                    <div className="text-sm mt-2">
+                        Allow host to create proof without approvals
+                    </div>
                 </div>
             </FullModalContent>
             { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
@@ -254,7 +289,6 @@ function CreateIdentityApprovalModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent>
-
                 <Dropdown
                     className="my-2"
                     label="Identity type"
@@ -315,8 +349,6 @@ function DefaultApprovalModal(props: {
     error: string;
     pendingRequest: PendingRequest;
 }) {
-    const payload = props.pendingRequest.payload;
-
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
             <FullModalHeader>
@@ -366,11 +398,6 @@ function ProofModal(props: {
         zkeyFilePath,
         origin,
     } = props.pendingRequest?.payload || {};
-
-    useEffect(() => {
-        const url = new URL(origin);
-        console.log(url)
-    }, [origin]);
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
