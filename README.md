@@ -1,3 +1,3 @@
 # zk-keeper
 
-Chrome extension for secure seamphore operations
+Chrome extension for secure Semaphore operations
