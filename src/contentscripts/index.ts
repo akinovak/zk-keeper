@@ -1,5 +1,6 @@
 import { browser } from 'webextension-polyfill-ts';
-import {ActionType} from "@src/ui/ducks/identities";
+import {ActionType as IdentityActionType} from "@src/ui/ducks/identities";
+import {ActionType as AppActionType} from "@src/ui/ducks/app";
 
 (async function () {
     try {
@@ -28,12 +29,21 @@ import {ActionType} from "@src/ui/ducks/identities";
 
     browser.runtime.onMessage.addListener((action) => {
        switch (action.type) {
-           case ActionType.SET_SELECTED:
+           case IdentityActionType.SET_SELECTED:
                window.postMessage({
                    target: 'injected-injectedscript',
                    payload: [null, action.payload],
                    nonce: 'identityChanged',
                }, '*');
+               return;
+           case AppActionType.SET_STATUS:
+               if (!action.payload.unlocked) {
+                   window.postMessage({
+                       target: 'injected-injectedscript',
+                       payload: [null],
+                       nonce: 'logout',
+                   }, '*');
+               }
                return;
        }
     });

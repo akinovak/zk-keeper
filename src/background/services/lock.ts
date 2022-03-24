@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js'
 import SimpleStorage from './simple-storage'
 import pushMessage from "@src/util/pushMessage";
 import {setStatus} from "@src/ui/ducks/app";
+import {browser} from "webextension-polyfill-ts";
 
 const passwordKey: string = '@password@'
 
@@ -26,7 +27,6 @@ class LockService extends SimpleStorage {
         await this.set(ciphertext);
         await this.unlock(password);
         await pushMessage(setStatus(await this.getStatus()));
-
     }
 
     getStatus = async () => {
@@ -85,7 +85,12 @@ class LockService extends SimpleStorage {
     logout = async (): Promise<boolean> => {
         this.isUnlocked = false;
         this.password = undefined;
-        await pushMessage(setStatus(await this.getStatus()));
+        const status = await this.getStatus();
+        await pushMessage(setStatus(status));
+        const tabs = await browser.tabs.query({active: true});
+        for (let tab of tabs) {
+            await browser.tabs.sendMessage(tab.id as number, setStatus(status));
+        }
         return true;
     }
 

@@ -274,6 +274,11 @@ window.addEventListener('message', (event) => {
             emit('identityChanged', res);
             return;
         }
+        if (data.nonce === "logout") {
+            const [err, res] = data.payload;
+            emit('logout', res);
+            return;
+        }
 
         if (!promises[data.nonce]) return
 

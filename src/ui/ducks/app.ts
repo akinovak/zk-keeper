@@ -5,7 +5,7 @@ import {useSelector} from "react-redux";
 import {AppRootState} from "@src/ui/store/configureAppStore";
 import deepEqual from "fast-deep-equal";
 
-enum ActionType {
+export enum ActionType {
     SET_STATUS = 'app/setStatus',
 }
 
