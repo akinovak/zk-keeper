@@ -6,6 +6,7 @@ import Icon from "@src/ui/components/Icon";
 import postMessage from "@src/util/postMessage";
 import RPCAction from "@src/util/constants";
 import Checkbox from "@src/ui/components/Checkbox";
+import { getLinkPreview } from "link-preview-js";
 
 export default function ConnectionModal(props: {
     onClose: () => void;
@@ -18,6 +19,7 @@ export default function ConnectionModal(props: {
 
     const [checked, setChecked] = useState(false);
     const [url, setUrl] = useState<URL>();
+    const [faviconUrl, setFaviconUrl] = useState('');
 
     useEffect(() => {
         (async function onConnectionModalMount() {
@@ -51,6 +53,16 @@ export default function ConnectionModal(props: {
         })();
 
     }, [url])
+
+    useEffect(() => {
+        (async () => {
+            if (url?.origin) {
+                const data = await getLinkPreview(url?.origin);
+                const [favicon] = data?.favicons || [];
+                setFaviconUrl(favicon);
+            }
+        })();
+    }, [url]);
 
     const onRemoveHost = useCallback(async () => {
         await postMessage({
@@ -99,7 +111,7 @@ export default function ConnectionModal(props: {
                                         backgroundSize: "contain",
                                         backgroundPosition: "center",
                                         backgroundRepeat: "no-repeat",
-                                        backgroundImage: `url(${url?.origin}/favicon.ico)`
+                                        backgroundImage: `url(${faviconUrl})`
                                     }}
                                 />
                             </div>

@@ -13,6 +13,7 @@ import Dropdown from "@src/ui/components/Dropdown";
 import Icon from "@src/ui/components/Icon";
 import copy from "copy-to-clipboard";
 import Checkbox from "@src/ui/components/Checkbox";
+import { getLinkPreview } from "link-preview-js";
 
 export default function ConfirmRequestModal(): ReactElement {
     const pendingRequests = useRequestsPending();
@@ -133,7 +134,6 @@ function ConnectionApprovalModal(props: {
 }) {
     const origin = props.pendingRequest.payload?.origin;
     const [checked, setChecked] = useState(false);
-
     useEffect(() => {
         (async () => {
             if (origin) {
@@ -144,8 +144,19 @@ function ConnectionApprovalModal(props: {
                 setChecked(res?.noApproval);
             }
         })();
+    }, [origin]);
 
-    }, [origin])
+    const [faviconUrl, setFaviconUrl] = useState('');
+
+    useEffect(() => {
+        (async () => {
+            if (origin) {
+                const data = await getLinkPreview(origin);
+                const [favicon] = data?.favicons || [];
+                setFaviconUrl(favicon);
+            }
+        })();
+    }, [origin]);
 
     const setApproval = useCallback(async (noApproval: boolean) => {
         const res = await postMessage({
@@ -165,10 +176,19 @@ function ConnectionApprovalModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
-                <img
+                <div
                     className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0"
-                    src={`${origin}/favicon.ico`}
-                />
+                >
+                    <div
+                        className="w-16 h-16"
+                        style={{
+                            backgroundSize: "contain",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            backgroundImage: `url(${faviconUrl})`,
+                        }}
+                    />
+                </div>
                 <div className="text-lg font-semibold mb-2 text-center">
                     {`${origin} would like to connect to your identity`}
                 </div>
@@ -399,6 +419,18 @@ function ProofModal(props: {
         origin,
     } = props.pendingRequest?.payload || {};
 
+    const [faviconUrl, setFaviconUrl] = useState('');
+
+    useEffect(() => {
+        (async () => {
+            if (origin) {
+                const data = await getLinkPreview(origin);
+                const [favicon] = data?.favicons || [];
+                setFaviconUrl(favicon);
+            }
+        })();
+    }, [origin]);
+
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
             <FullModalHeader>
@@ -406,10 +438,19 @@ function ProofModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
-                <img
+                <div
                     className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0"
-                    src={`${origin}/favicon.ico`}
-                />
+                >
+                    <div
+                        className="w-16 h-16"
+                        style={{
+                            backgroundSize: "contain",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            backgroundImage: `url(${faviconUrl}`
+                        }}
+                    />
+                </div>
                 <div className="text-lg font-semibold mb-2 text-center">
                     {`${origin} is requesting a semaphore proof`}
                 </div>
