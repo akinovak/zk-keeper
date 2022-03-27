@@ -6,10 +6,10 @@ import './index.scss'
 import Icon from '@src/ui/components/Icon'
 
 type Props = {
-    checked: boolean
-    onChange: ChangeEventHandler
-    className?: string
-    disabled?: boolean
+    checked: boolean;
+    onChange: ChangeEventHandler<HTMLInputElement>;
+    className?: string;
+    disabled?: boolean;
 }
 
 export default function Checkbox(props: Props): ReactElement {

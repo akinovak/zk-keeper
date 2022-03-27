@@ -9,7 +9,7 @@ import { AppRootState } from '@src/ui/store/configureAppStore'
 import deepEqual from 'fast-deep-equal'
 import ZkIdentityDecorater from "@src/background/identity-decorater";
 
-enum ActionType {
+export enum ActionType {
     SET_COMMITMENTS = 'app/identities/setCommitments',
     SET_SELECTED = 'app/identities/setSelected',
     SET_REQUEST_PENDING = 'app/identities/setRequestPending'
@@ -77,7 +77,7 @@ export const fetchIdentities = () => async (dispatch: Dispatch) => {
     const identities = await postMessage({ method: RPCAction.GET_IDENTITIES });
     const selected = await postMessage({ method: RPCAction.GET_ACTIVE_IDENTITY });
     dispatch(setIdentities(identities));
-    dispatch(setSelected(selected[0]));
+    dispatch(setSelected(selected));
 }
 
 // eslint-disable-next-line @typescript-eslint/default-param-last

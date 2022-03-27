@@ -1,6 +1,7 @@
 import { bigintToHex } from 'bigint-conversion'
 import pushMessage from '@src/util/pushMessage'
 import {setIdentities, setSelected} from '@src/ui/ducks/identities'
+import {browser} from "webextension-polyfill-ts";
 import SimpleStorage from './simple-storage'
 import LockService from './lock'
 import ZkIdentityDecorater from '../identity-decorater'
@@ -65,6 +66,10 @@ export default class IdentityService extends SimpleStorage {
         if (this.identities.has(identityCommitment)) {
             this.activeIdentity = this.identities.get(identityCommitment);
             pushMessage(setSelected(identityCommitment));
+            const tabs = await browser.tabs.query({active: true});
+            for (let tab of tabs) {
+                await browser.tabs.sendMessage(tab.id as number, setSelected(identityCommitment));
+            }
         }
     }
 

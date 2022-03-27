@@ -1,3 +1,5 @@
+import {MerkleProof} from "@zk-kit/protocols";
+
 export type Request = {
     method: string
     payload?: any
@@ -40,13 +42,15 @@ export type ZkInputs = {
     zkeyFilePath: string
     merkleStorageAddress?: string
     merkleProofArtifacts?: MerkleProofArtifacts;
+    merkleProof?: MerkleProof;
 }
 
 export enum PendingRequestType {
-    PROOF,
+    SEMAPHORE_PROOF,
     DUMMY,
     APPROVE,
-    INJECT
+    INJECT,
+    CREATE_IDENTITY,
 }
 
 export type PendingRequest = {
@@ -55,11 +59,15 @@ export type PendingRequest = {
     payload?: any
 }
 
-export type RequestResolutionAction = 'accept' | 'reject'
+export type RequestResolutionAction<data> = {
+    id: string;
+    status: 'accept' | 'reject';
+    data?: data;
+}
 
 export type FinalizedRequest = {
     id: string
-    action: RequestResolutionAction
+    action: boolean
 }
 
 export type ApprovalAction = {

@@ -8,7 +8,7 @@
     cursor: pointer;
     transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out, color 200ms ease-in-out;
     opacity: 1;
-    border: 2px solid rgba($black, 0.1);
+    border: 2px solid $gray-800;
 
     input {
         position: absolute;
@@ -26,13 +26,13 @@
     .icon {
         font-size: 0.75rem;
         position: absolute;
-        top: 0.25rem;
-        left: 0.25rem;
+        top: 0.125rem;
+        left: 0.125rem;
         color: transparent;
     }
 
     &:hover {
-        border-color: rgba($black, 0.2);
+        border-color: $gray-600;
     }
 
     &--checked {

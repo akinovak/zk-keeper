@@ -2,6 +2,7 @@
 
 import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
+import {MerkleProof} from "@zk-kit/protocols";
 
 export type IRequest = {
     method: string
@@ -32,11 +33,52 @@ async function getActiveIdentity() {
     })
 }
 
+async function getHostPermissions(host: string) {
+    return post({
+        method: RPCAction.GET_HOST_PERMISSIONS,
+        payload: host,
+    })
+}
+
+async function setHostPermissions(host: string, permissions?: {
+    noApproval?: boolean;
+}) {
+    return post({
+        method: RPCAction.SET_HOST_PERMISSIONS,
+        payload: {
+            host: host,
+            ...permissions,
+        }
+    })
+}
+
+async function createIdentity() {
+    try {
+        const res = await post({
+            method: RPCAction.CREATE_IDENTITY_REQ
+        });
+
+        await post({ method: RPCAction.CLOSE_POPUP });
+        return res;
+    } catch (e) {
+        await post({ method: RPCAction.CLOSE_POPUP });
+        throw e;
+    }
+}
+
 
 async function createDummyRequest() {
-    return post({
-        method: RPCAction.DUMMY_REQUEST
-    })
+    try {
+        const res = await post({
+            method: RPCAction.DUMMY_REQUEST
+        });
+
+        await post({ method: RPCAction.CLOSE_POPUP });
+        return res;
+    } catch (e) {
+        await post({ method: RPCAction.CLOSE_POPUP });
+        throw e;
+    }
 }
 
 async function semaphoreProof(
@@ -45,10 +87,11 @@ async function semaphoreProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-
+    merkleProof?: MerkleProof,
 ) {
     const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
     const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
+
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
         payload: {
@@ -57,8 +100,9 @@ async function semaphoreProof(
             merkleStorageAddress,
             circuitFilePath,
             zkeyFilePath,
-            merkleProofArtifacts
-        }
+            merkleProofArtifacts,
+            merkleProof,
+        },
     })
 }
 
@@ -117,6 +161,29 @@ async function addHost(host: string) {
     })
 }
 
+const EVENTS: {
+    [eventName: string]: ((data: unknown) => void)[];
+} = {};
+
+const on = (eventName: string, cb: (data: unknown) => void) => {
+    const bucket = EVENTS[eventName] || [];
+    bucket.push(cb);
+    EVENTS[eventName] = bucket;
+}
+
+const off = (eventName: string, cb: (data: unknown) => void) => {
+    const bucket = EVENTS[eventName] || [];
+    EVENTS[eventName] = bucket.filter(callback => callback === cb);
+}
+
+const emit = (eventName: string, payload?: any) => {
+    const bucket = EVENTS[eventName] || [];
+
+    for (let cb of bucket) {
+        cb(payload);
+    }
+}
+
 /**
  * Injected Client
  */
@@ -124,11 +191,16 @@ const client = {
     openPopup,
     getIdentityCommitments,
     getActiveIdentity,
-    createDummyRequest,
+    createIdentity,
+    getHostPermissions,
+    setHostPermissions,
     semaphoreProof,
     rlnProof,
+    on,
+    off,
     // dev-only
-    clearApproved
+    clearApproved,
+    createDummyRequest,
 }
 
 /**
@@ -137,29 +209,34 @@ const client = {
  */
 // eslint-disable-next-line consistent-return
 async function connect() {
+    let result;
     try {
         const approved = await tryInject(window.location.origin)
-        const isApproved = (approved as string) === 'approved'
-        if (isApproved) {
+
+        if (approved) {
             await addHost(window.location.origin)
-            return client
+            result = client;
         }
     } catch (err) {
         // eslint-disable-next-line no-console
         console.log('Err: ', err)
-        return null
+        result = null
     }
+
+    await post({ method: RPCAction.CLOSE_POPUP });
+
+    return result
 }
 
 declare global {
     interface Window {
-        injected: {
+        zkpr: {
             connect: () => any
         }
     }
 }
 
-window.injected = {
+window.zkpr = {
     connect
 }
 
@@ -173,6 +250,10 @@ async function post(message: IRequest) {
                 target: 'injected-contentscript',
                 message: {
                     ...message,
+                    meta: {
+                      ...message.meta,
+                      origin: window.location.origin,
+                    },
                     type: message.method
                 },
                 nonce: messageNonce
@@ -186,7 +267,19 @@ async function post(message: IRequest) {
 
 window.addEventListener('message', (event) => {
     const { data } = event
+
     if (data && data.target === 'injected-injectedscript') {
+        if (data.nonce === "identityChanged") {
+            const [err, res] = data.payload;
+            emit('identityChanged', res);
+            return;
+        }
+        if (data.nonce === "logout") {
+            const [err, res] = data.payload;
+            emit('logout', res);
+            return;
+        }
+
         if (!promises[data.nonce]) return
 
         const [err, res] = data.payload

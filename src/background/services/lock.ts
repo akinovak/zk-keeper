@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js'
 import SimpleStorage from './simple-storage'
 import pushMessage from "@src/util/pushMessage";
 import {setStatus} from "@src/ui/ducks/app";
+import {browser} from "webextension-polyfill-ts";
 
 const passwordKey: string = '@password@'
 
@@ -9,6 +10,7 @@ class LockService extends SimpleStorage {
     private isUnlocked: boolean
     private password?: string
     private passwordChecker: string
+    private unlockCB?: any
 
     constructor() {
         super(passwordKey);
@@ -25,7 +27,6 @@ class LockService extends SimpleStorage {
         await this.set(ciphertext);
         await this.unlock(password);
         await pushMessage(setStatus(await this.getStatus()));
-        
     }
 
     getStatus = async () => {
@@ -35,6 +36,22 @@ class LockService extends SimpleStorage {
             initialized: !!ciphertext,
             unlocked: this.isUnlocked,
         };
+    }
+
+    awaitUnlock = async () => {
+        if (this.isUnlocked) return;
+
+        return new Promise((resolve) => {
+            this.unlockCB = resolve;
+        });
+    }
+
+    onUnlocked = () => {
+        if (this.unlockCB) {
+            this.unlockCB();
+            this.unlockCB = undefined;
+        }
+        return true;
     }
 
     unlock = async (password: string): Promise<boolean> => {
@@ -68,7 +85,12 @@ class LockService extends SimpleStorage {
     logout = async (): Promise<boolean> => {
         this.isUnlocked = false;
         this.password = undefined;
-        await pushMessage(setStatus(await this.getStatus()));
+        const status = await this.getStatus();
+        await pushMessage(setStatus(status));
+        const tabs = await browser.tabs.query({active: true});
+        for (let tab of tabs) {
+            await browser.tabs.sendMessage(tab.id as number, setStatus(status));
+        }
         return true;
     }
 

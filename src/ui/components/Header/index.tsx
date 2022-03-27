@@ -8,6 +8,7 @@ import RPCAction from "@src/util/constants";
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import "./header.scss";
 import classNames from "classnames";
+import Menuable from "@src/ui/components/Menuable";
 
 export default function Header(): ReactElement {
     const network = useNetwork();
@@ -16,6 +17,10 @@ export default function Header(): ReactElement {
 
     const connectMetamask = useCallback(async () => {
         await postMessage({ method: RPCAction.CONNECT_METAMASK });
+    }, []);
+
+    const disconnect = useCallback(async () => {
+        await postMessage({ method: RPCAction.LOCK });
     }, []);
 
     return (
@@ -33,7 +38,17 @@ export default function Header(): ReactElement {
                     {
                         account
                             ? (
-                                <Jazzicon diameter={32} seed={jsNumberForAddress(account)} />
+                                <Menuable
+                                    className="flex user-menu"
+                                    items={[
+                                        {
+                                            label: 'Logout',
+                                            onClick: disconnect,
+                                        },
+                                    ]}
+                                >
+                                    <Jazzicon diameter={32} seed={jsNumberForAddress(account)} />
+                                </Menuable>
                             )
                             : (
                                 <div

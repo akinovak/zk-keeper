@@ -162,9 +162,14 @@ function App() {
 
     useEffect(() => {
         (async function IIFE() {
-            const { injected } = window as any
-            const client = await injected.connect()
+            const { zkpr } = window as any
+            const client = await zkpr.connect()
             setClient(client);
+
+            await client.on("identityChanged", (idCommitment) => {
+                setIdentityCommitment(idCommitment);
+            })
+
         })();
     }, [])
 

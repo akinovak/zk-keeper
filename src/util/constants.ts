@@ -7,6 +7,7 @@ enum RPCAction {
     CONNECT_METAMASK = 'rpc/metamask/connectMetamask',
     GET_WALLET_INFO = 'rpc/metamask/getWalletInfo',
     CREATE_IDENTITY = 'rpc/identity/createIdentity',
+    CREATE_IDENTITY_REQ = 'rpc/identity/createIdentityRequest',
     SET_ACTIVE_IDENTITY = 'rpc/identity/setActiveIdentity',
     GET_ACTIVE_IDENTITY = 'rpc/identity/getActiveidentity',
     GET_COMMITMENTS = 'rpc/identity/getIdentityCommitments',
@@ -21,7 +22,10 @@ enum RPCAction {
     REQUEST_ADD_REMOVE_APPROVAL = 'rpc/hosts/request',
     APPROVE_HOST = 'rpc/hosts/approve',
     IS_HOST_APPROVED = 'rpc/hosts/isHostApprove',
+    GET_HOST_PERMISSIONS = 'rpc/hosts/getHostPermissions',
+    SET_HOST_PERMISSIONS = 'rpc/hosts/setHostPermissions',
     REMOVE_HOST = 'rpc/hosts/remove',
+    CLOSE_POPUP = 'rpc/popup/close',
     // DEV RPCS
     CLEAR_APPROVED_HOSTS = 'rpc/hosts/clear'
 }

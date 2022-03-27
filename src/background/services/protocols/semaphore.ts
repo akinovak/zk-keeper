@@ -17,11 +17,15 @@ export default class SemaphoreService {
             externalNullifier,
             signal,
             merkleProofArtifacts,
+            merkleProof: _merkleProof,
         } = request
         let merkleProof: MerkleProof;
         const identityCommitment = identity.genIdentityCommitment();
         const identityCommitmentHex = bigintToHex(identityCommitment);
-        if (merkleStorageAddress) {
+
+        if (_merkleProof) {
+            merkleProof = _merkleProof;
+        } else if (merkleStorageAddress) {
             const response: AxiosResponse = await axios.post(merkleStorageAddress, {
                 identityCommitment: identityCommitmentHex
             })
@@ -35,10 +39,10 @@ export default class SemaphoreService {
         }
 
         const witness = Semaphore.genWitness(
-            identity.getTrapdoor(), 
-            identity.getNullifier(), 
-            merkleProof, 
-            externalNullifier, 
+            identity.getTrapdoor(),
+            identity.getNullifier(),
+            merkleProof,
+            externalNullifier,
             signal
         )
 

@@ -22,6 +22,7 @@ import "./home.scss";
 import {ellipsify} from "@src/util/account";
 import FullModal, {FullModalContent, FullModalHeader} from "@src/ui/components/FullModal";
 import CreateIdentityModal from "@src/ui/components/CreateIdentityModal";
+import ConnectionModal from "@src/ui/components/ConnectionModal";
 
 export default function Home(): ReactElement {
     const dispatch = useDispatch()
@@ -61,47 +62,65 @@ export default function Home(): ReactElement {
 function HomeInfo(): ReactElement {
     const network = useNetwork();
     const [connected, setConnected] = useState(false);
+    const [showingModal, showModal] = useState(false);
 
     useEffect(() => {
         (async () => {
-            try {
-                const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
-                const [tab] = tabs || [];
-
-                if (tab?.url) {
-                    const {origin} = new URL(tab.url);
-                    let isHostApproved = await postMessage({
-                        method: RPCAction.IS_HOST_APPROVED,
-                        payload: origin,
-                    });
-
-                    setConnected(isHostApproved);
-                }
-            } catch(e) {
-                setConnected(false);
-            }
+            await refreshConnectionStatus();
         })();
-
     }, []);
 
+    const refreshConnectionStatus = useCallback(async () => {
+        try {
+            const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
+            const [tab] = tabs || [];
+
+            if (tab?.url) {
+                const {origin} = new URL(tab.url);
+                let isHostApproved = await postMessage({
+                    method: RPCAction.IS_HOST_APPROVED,
+                    payload: origin,
+                });
+
+                setConnected(isHostApproved);
+            }
+        } catch(e) {
+            setConnected(false);
+        }
+    }, [])
+
     return (
-        <div className="home__info">
-            <div className="home__connection-button">
-                <div
-                    className={classNames('home__connection-button__icon', {
-                        'home__connection-button__icon--connected': connected,
-                    })}
+        <>
+            { showingModal && (
+                <ConnectionModal
+                    onClose={() => showModal(false)}
+                    refreshConnectionStatus={refreshConnectionStatus}
                 />
-                <div className="text-xs home__connection-button__text">
-                    { connected ? 'Connected' : 'Not Connected'}
+            )}
+            <div className="home__info">
+                <div
+                    className={classNames('home__connection-button', {
+                        'home__connection-button--connected': connected,
+                    })}
+                    onClick={connected ? () => showModal(true) : undefined}
+                >
+                    <div
+                        className={classNames('home__connection-button__icon', {
+                            'home__connection-button__icon--connected': connected,
+                        })}
+                    />
+                    <div className="text-xs home__connection-button__text">
+                        { connected ? 'Connected' : 'Not Connected'}
+                    </div>
+                </div>
+                <div>
+                    <div className="text-3xl font-semibold">
+                        { network ? `0.0000 ${network.nativeCurrency.symbol}` : '-'}
+                    </div>
                 </div>
             </div>
-            <div>
-                <div className="text-3xl font-semibold">
-                    { network ? `0.0000 ${network.nativeCurrency.symbol}` : '-'}
-                </div>
-            </div>
-        </div>
+        </>
+
     )
 }
 
@@ -163,6 +182,9 @@ function IdentityList(): ReactElement {
     }, []);
     const [showingModal, showModal] = useState(false)
 
+    useEffect(() => {
+        dispatch(fetchIdentities());
+    }, [])
 
     return (
         <>

@@ -15,6 +15,7 @@ import ZkIdentityWrapper from './identity-decorater'
 import identityFactory from './identity-factory'
 import { bigintToHex } from "bigint-conversion";
 import { RLNFullProof } from '@zk-kit/protocols'
+import BrowserUtils from './controllers/browser-utils';
 
 export default class ZkKepperController extends Handler {
     private identityService: IdentityService
@@ -42,7 +43,8 @@ export default class ZkKepperController extends Handler {
             LockService.unlock,
             this.metamaskService.ensure,
             this.identityService.unlock,
-            this.approvalService.unlock
+            this.approvalService.unlock,
+            LockService.onUnlocked
         );
 
         this.add(RPCAction.LOCK, LockService.logout);
@@ -134,12 +136,44 @@ export default class ZkKepperController extends Handler {
             RPCAction.SEMAPHORE_PROOF,
             LockService.ensure,
             this.zkValidator.validateZkInputs,
-            async (payload: SemaphoreProofRequest) => {
-                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
-                if (!identity) throw new Error('active identity not found')
+            async (payload: SemaphoreProofRequest, meta: any) => {
+                const { unlocked } = await LockService.getStatus();
 
-                const proof: SemaphoreProof = await this.semaphoreService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(proof);
+                if (!unlocked) {
+                    await BrowserUtils.openPopup();
+                    await LockService.awaitUnlock();
+                }
+
+                const identity: ZkIdentityWrapper | undefined = await this.identityService.getActiveidentity()
+                const approved: boolean = await this.approvalService.isApproved(meta.origin);
+                const perm: any = await this.approvalService.getPermission(meta.origin);
+
+                if (!identity) throw new Error('active identity not found');
+                if (!approved) throw new Error(`${meta.origin} is not approved`);
+
+                try {
+                    if (!perm.noApproval) {
+                        await this.requestManager.newRequest(
+                            PendingRequestType.SEMAPHORE_PROOF,
+                            {
+                                ...payload,
+                                origin: meta.origin,
+                            },
+                        );
+                    }
+
+                    await BrowserUtils.closePopup();
+
+                    const proof: SemaphoreProof = await this.semaphoreService.genProof(
+                        identity.zkIdentity,
+                        payload,
+                    );
+
+                    return proof;
+                } catch (err) {
+                    await BrowserUtils.closePopup();
+                    throw err;
+                }
 
             }
         )
@@ -153,32 +187,85 @@ export default class ZkKepperController extends Handler {
                 if (!identity) throw new Error('active identity not found')
 
                 const proof: RLNFullProof = await this.rlnService.genProof(identity.zkIdentity, payload)
-                return JSON.stringify(proof);
- 
+                return proof;
+
             }
         )
 
         // injecting
-        this.add(RPCAction.TRY_INJECT, (payload: any) => {
+        this.add(RPCAction.TRY_INJECT, async (payload: any) => {
             const { origin }: { origin: string } = payload;
             if (!origin) throw new Error('Origin not provided');
 
-            const includes: boolean = this.approvalService.isApproved(origin);
-            if (includes) return 'approved';
-            return this.requestManager.newRequest(
-                'approved',
-                PendingRequestType.INJECT,
-                { origin },
-            );
+            const { unlocked } = await LockService.getStatus();
+
+            if (!unlocked) {
+                await BrowserUtils.openPopup();
+                await LockService.awaitUnlock();
+            }
+
+            const includes: boolean = await this.approvalService.isApproved(origin);
+
+            if (includes) return true;
+
+            try {
+                await this.requestManager.newRequest(
+                    PendingRequestType.INJECT,
+                    { origin },
+                )
+                return true;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
         })
-        this.add(RPCAction.APPROVE_HOST, LockService.ensure, this.approvalService.add)
+        this.add(RPCAction.APPROVE_HOST, LockService.ensure, async (payload: any) => {
+            this.approvalService.add(payload);
+        })
         this.add(RPCAction.IS_HOST_APPROVED, LockService.ensure, this.approvalService.isApproved)
         this.add(RPCAction.REMOVE_HOST, LockService.ensure, this.approvalService.remove)
+
+        this.add(RPCAction.GET_HOST_PERMISSIONS , LockService.ensure, async (payload: any) => {
+            return this.approvalService.getPermission(payload);
+        })
+
+        this.add(RPCAction.SET_HOST_PERMISSIONS, LockService.ensure, async (payload: any) => {
+            const { host, ...permissions } = payload
+            return this.approvalService.setPermission(host, permissions);
+        })
+
+        this.add(RPCAction.CLOSE_POPUP, async () => {
+            return BrowserUtils.closePopup();
+        })
+
+        this.add(
+            RPCAction.CREATE_IDENTITY_REQ,
+            LockService.ensure,
+            this.metamaskService.ensure,
+            async () => {
+                const res: any = await this.requestManager.newRequest(
+                    PendingRequestType.CREATE_IDENTITY,
+                    { origin },
+                );
+
+                const {
+                    provider,
+                    options,
+                } = res;
+
+                return this.handle({
+                    method: RPCAction.CREATE_IDENTITY,
+                    payload: {
+                        strategy: provider,
+                        options,
+                    },
+                })
+            });
 
         // dev
         this.add(RPCAction.CLEAR_APPROVED_HOSTS, this.approvalService.empty)
         this.add(RPCAction.DUMMY_REQUEST, async () =>
-            this.requestManager.newRequest('hello from dummy', PendingRequestType.DUMMY)
+            this.requestManager.newRequest(PendingRequestType.DUMMY, 'hello from dummy')
         )
 
         return this

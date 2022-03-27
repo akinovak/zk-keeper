@@ -1,5 +1,8 @@
-import { browser } from 'webextension-polyfill-ts'
-;(async function () {
+import { browser } from 'webextension-polyfill-ts';
+import {ActionType as IdentityActionType} from "@src/ui/ducks/identities";
+import {ActionType as AppActionType} from "@src/ui/ducks/app";
+
+(async function () {
     try {
     const url = browser.runtime.getURL('js/injected.js')
     const container = document.head || document.documentElement
@@ -22,7 +25,28 @@ import { browser } from 'webextension-polyfill-ts'
                 '*'
             )
         }
-    })
+    });
+
+    browser.runtime.onMessage.addListener((action) => {
+       switch (action.type) {
+           case IdentityActionType.SET_SELECTED:
+               window.postMessage({
+                   target: 'injected-injectedscript',
+                   payload: [null, action.payload],
+                   nonce: 'identityChanged',
+               }, '*');
+               return;
+           case AppActionType.SET_STATUS:
+               if (!action.payload.unlocked) {
+                   window.postMessage({
+                       target: 'injected-injectedscript',
+                       payload: [null],
+                       nonce: 'logout',
+                   }, '*');
+               }
+               return;
+       }
+    });
   } catch(e) {
       console.error("error occured", e);
   }
