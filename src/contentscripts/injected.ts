@@ -2,7 +2,7 @@
 
 import { MerkleProofArtifacts } from '@src/types'
 import RPCAction from '@src/util/constants'
-import {MerkleProof} from "@zk-kit/protocols";
+import { MerkleProof } from '@zk-kit/protocols'
 
 export type IRequest = {
     method: string
@@ -26,7 +26,6 @@ async function getIdentityCommitments() {
     })
 }
 
-
 async function getActiveIdentity() {
     return post({
         method: RPCAction.GET_ACTIVE_IDENTITY
@@ -36,18 +35,21 @@ async function getActiveIdentity() {
 async function getHostPermissions(host: string) {
     return post({
         method: RPCAction.GET_HOST_PERMISSIONS,
-        payload: host,
+        payload: host
     })
 }
 
-async function setHostPermissions(host: string, permissions?: {
-    noApproval?: boolean;
-}) {
+async function setHostPermissions(
+    host: string,
+    permissions?: {
+        noApproval?: boolean
+    }
+) {
     return post({
         method: RPCAction.SET_HOST_PERMISSIONS,
         payload: {
-            host: host,
-            ...permissions,
+            host,
+            ...permissions
         }
     })
 }
@@ -56,28 +58,27 @@ async function createIdentity() {
     try {
         const res = await post({
             method: RPCAction.CREATE_IDENTITY_REQ
-        });
+        })
 
-        await post({ method: RPCAction.CLOSE_POPUP });
-        return res;
+        await post({ method: RPCAction.CLOSE_POPUP })
+        return res
     } catch (e) {
-        await post({ method: RPCAction.CLOSE_POPUP });
-        throw e;
+        await post({ method: RPCAction.CLOSE_POPUP })
+        throw e
     }
 }
-
 
 async function createDummyRequest() {
     try {
         const res = await post({
             method: RPCAction.DUMMY_REQUEST
-        });
+        })
 
-        await post({ method: RPCAction.CLOSE_POPUP });
-        return res;
+        await post({ method: RPCAction.CLOSE_POPUP })
+        return res
     } catch (e) {
-        await post({ method: RPCAction.CLOSE_POPUP });
-        throw e;
+        await post({ method: RPCAction.CLOSE_POPUP })
+        throw e
     }
 }
 
@@ -87,10 +88,12 @@ async function semaphoreProof(
     circuitFilePath: string,
     zkeyFilePath: string,
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
-    merkleProof?: MerkleProof,
+    merkleProof?: MerkleProof
 ) {
-    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
+    const merkleProofArtifacts =
+        typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress
+    const merkleStorageAddress =
+        typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined
 
     return post({
         method: RPCAction.SEMAPHORE_PROOF,
@@ -101,8 +104,8 @@ async function semaphoreProof(
             circuitFilePath,
             zkeyFilePath,
             merkleProofArtifacts,
-            merkleProof,
-        },
+            merkleProof
+        }
     })
 }
 
@@ -114,8 +117,10 @@ async function rlnProof(
     merkleProofArtifactsOrStorageAddress: string | MerkleProofArtifacts,
     rlnIdentifier: string
 ) {
-    const merkleProofArtifacts = typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress;
-    const merkleStorageAddress = typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined;
+    const merkleProofArtifacts =
+        typeof merkleProofArtifactsOrStorageAddress === 'string' ? undefined : merkleProofArtifactsOrStorageAddress
+    const merkleStorageAddress =
+        typeof merkleProofArtifactsOrStorageAddress === 'string' ? merkleProofArtifactsOrStorageAddress : undefined
     return post({
         method: RPCAction.RLN_PROOF,
         payload: {
@@ -129,7 +134,6 @@ async function rlnProof(
         }
     })
 }
-
 
 // dev-only
 async function clearApproved() {
@@ -162,25 +166,25 @@ async function addHost(host: string) {
 }
 
 const EVENTS: {
-    [eventName: string]: ((data: unknown) => void)[];
-} = {};
+    [eventName: string]: ((data: unknown) => void)[]
+} = {}
 
 const on = (eventName: string, cb: (data: unknown) => void) => {
-    const bucket = EVENTS[eventName] || [];
-    bucket.push(cb);
-    EVENTS[eventName] = bucket;
+    const bucket = EVENTS[eventName] || []
+    bucket.push(cb)
+    EVENTS[eventName] = bucket
 }
 
 const off = (eventName: string, cb: (data: unknown) => void) => {
-    const bucket = EVENTS[eventName] || [];
-    EVENTS[eventName] = bucket.filter(callback => callback === cb);
+    const bucket = EVENTS[eventName] || []
+    EVENTS[eventName] = bucket.filter((callback) => callback === cb)
 }
 
 const emit = (eventName: string, payload?: any) => {
-    const bucket = EVENTS[eventName] || [];
+    const bucket = EVENTS[eventName] || []
 
-    for (let cb of bucket) {
-        cb(payload);
+    for (const cb of bucket) {
+        cb(payload)
     }
 }
 
@@ -200,7 +204,7 @@ const client = {
     off,
     // dev-only
     clearApproved,
-    createDummyRequest,
+    createDummyRequest
 }
 
 /**
@@ -209,13 +213,13 @@ const client = {
  */
 // eslint-disable-next-line consistent-return
 async function connect() {
-    let result;
+    let result
     try {
         const approved = await tryInject(window.location.origin)
 
         if (approved) {
             await addHost(window.location.origin)
-            result = client;
+            result = client
         }
     } catch (err) {
         // eslint-disable-next-line no-console
@@ -223,7 +227,7 @@ async function connect() {
         result = null
     }
 
-    await post({ method: RPCAction.CLOSE_POPUP });
+    await post({ method: RPCAction.CLOSE_POPUP })
 
     return result
 }
@@ -251,8 +255,8 @@ async function post(message: IRequest) {
                 message: {
                     ...message,
                     meta: {
-                      ...message.meta,
-                      origin: window.location.origin,
+                        ...message.meta,
+                        origin: window.location.origin
                     },
                     type: message.method
                 },
@@ -269,15 +273,21 @@ window.addEventListener('message', (event) => {
     const { data } = event
 
     if (data && data.target === 'injected-injectedscript') {
-        if (data.nonce === "identityChanged") {
-            const [err, res] = data.payload;
-            emit('identityChanged', res);
-            return;
+        if (data.nonce === 'identityChanged') {
+            const [err, res] = data.payload
+            emit('identityChanged', res)
+            return
         }
-        if (data.nonce === "logout") {
-            const [err, res] = data.payload;
-            emit('logout', res);
-            return;
+        if (data.nonce === 'logout') {
+            const [err, res] = data.payload
+            emit('logout', res)
+            return
+        }
+
+        if (data.nonce === 'login') {
+            const [err, res] = data.payload
+            emit('login', res)
+            return
         }
 
         if (!promises[data.nonce]) return

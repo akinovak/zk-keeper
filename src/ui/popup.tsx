@@ -10,7 +10,7 @@ const store = configureAppStore()
 
 browser.runtime.onMessage.addListener((action) => {
     if (action?.type) {
-        store.dispatch(action);
+        store.dispatch(action)
     }
 })
 

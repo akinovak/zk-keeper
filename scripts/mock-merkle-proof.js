@@ -10,7 +10,6 @@ const DEPTH_SEMAPHORE = 20
 const NUMBER_OF_LEAVES_SEMAPHORE = 2
 const ZERO_VALUE = BigInt(0)
 
-
 const serializeMerkleProof = (merkleProof) => {
     const serialized = {}
     serialized.root = bigintToHex(merkleProof.root)
@@ -23,13 +22,7 @@ const serializeMerkleProof = (merkleProof) => {
 }
 
 const generateMerkleProofRLN = (identityCommitments, identityCommitment) => {
-    return generateMerkleProof(
-        DEPTH_RLN,
-        ZERO_VALUE,
-        NUMBER_OF_LEAVES_RLN,
-        identityCommitments,
-        identityCommitment
-    )
+    return generateMerkleProof(DEPTH_RLN, ZERO_VALUE, NUMBER_OF_LEAVES_RLN, identityCommitments, identityCommitment)
 }
 
 const generateMerkleProofSemaphore = (identityCommitments, identityCommitment) => {
@@ -50,26 +43,26 @@ for (let i = 0; i < 2; i++) {
     identityCommitments.push(mockIdentity.genIdentityCommitment())
 }
 
-
 const app = express()
 app.use(express.json())
 
-
 app.post('/merkleProof/:type', (req, res) => {
-    let type = req.params.type;
+    let type = req.params.type
     let { identityCommitment } = req.body
     identityCommitment = hexToBigint(identityCommitment)
 
     if (!identityCommitments.includes(identityCommitment)) {
         identityCommitments.push(identityCommitment)
     }
-    const merkleProof = type === 'RLN' ? generateMerkleProofRLN(identityCommitments, identityCommitment) : generateMerkleProofSemaphore(identityCommitments, identityCommitment)
+    const merkleProof =
+        type === 'RLN'
+            ? generateMerkleProofRLN(identityCommitments, identityCommitment)
+            : generateMerkleProofSemaphore(identityCommitments, identityCommitment)
 
     const serializedMerkleProof = serializeMerkleProof(merkleProof)
     console.log('Sending proof with root: ', serializedMerkleProof.root)
     res.send({ merkleProof: serializedMerkleProof })
 })
-
 
 app.listen(8090, () => {
     console.log('Merkle service is listening')

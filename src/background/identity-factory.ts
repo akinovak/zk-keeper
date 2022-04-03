@@ -1,8 +1,8 @@
 import { IdentityMetadata } from '@src/types'
 import { ZkIdentity } from '@zk-kit/identity'
 import createIdentity from '@interep/identity'
-import ZkIdentityDecorater from './identity-decorater'
 import checkParameter from '@src/util/checkParameter'
+import ZkIdentityDecorater from './identity-decorater'
 
 const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater> => {
     checkParameter(config, 'config', 'object')
@@ -14,7 +14,7 @@ const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater>
     checkParameter(web3, 'web3', 'object')
     checkParameter(walletInfo, 'walletInfo', 'object')
 
-    const sign = (message: string) => web3.eth.personal.sign(message, walletInfo?.account);
+    const sign = (message: string) => web3.eth.personal.sign(message, walletInfo?.account)
 
     const identity: ZkIdentity = await createIdentity(sign, web2Provider, nonce)
     const metadata: IdentityMetadata = {
@@ -28,7 +28,7 @@ const createInterrepIdentity = async (config: any): Promise<ZkIdentityDecorater>
 
 const createRandomIdentity = (config: any): ZkIdentityDecorater => {
     checkParameter(config, 'config', 'object')
-    const {  name } = config;
+    const { name } = config
 
     checkParameter(name, 'name', 'string')
 
@@ -44,7 +44,7 @@ const createRandomIdentity = (config: any): ZkIdentityDecorater => {
 
 const strategiesMap = {
     random: createRandomIdentity,
-    interrep: createInterrepIdentity,
+    interrep: createInterrepIdentity
 }
 
 const identityFactory = async (strategy: keyof typeof strategiesMap, config: any): Promise<ZkIdentityDecorater> =>

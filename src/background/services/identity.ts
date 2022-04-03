@@ -1,11 +1,11 @@
 import { bigintToHex } from 'bigint-conversion'
 import pushMessage from '@src/util/pushMessage'
-import {setIdentities, setSelected} from '@src/ui/ducks/identities'
-import {browser} from "webextension-polyfill-ts";
+import { setIdentities, setSelected } from '@src/ui/ducks/identities'
+import { browser } from 'webextension-polyfill-ts'
+import { IdentityMetadata } from '@src/types'
 import SimpleStorage from './simple-storage'
 import LockService from './lock'
 import ZkIdentityDecorater from '../identity-decorater'
-import {IdentityMetadata} from "@src/types";
 
 const DB_KEY = '@@IDS-t1@@'
 
@@ -28,7 +28,7 @@ export default class IdentityService extends SimpleStorage {
         await this.loadInMemory(JSON.parse(decrypted))
         await this.setDefaultIdentity()
 
-        pushMessage(setIdentities(await this.getIdentities()));
+        pushMessage(setIdentities(await this.getIdentities()))
         return true
     }
 
@@ -43,7 +43,7 @@ export default class IdentityService extends SimpleStorage {
             await this.setDefaultIdentity()
         }
 
-        pushMessage(setIdentities(await this.getIdentities()));
+        pushMessage(setIdentities(await this.getIdentities()))
     }
 
     loadInMemory = async (decrypted: any) => {
@@ -64,18 +64,16 @@ export default class IdentityService extends SimpleStorage {
 
     setActiveIdentity = async (identityCommitment: string) => {
         if (this.identities.has(identityCommitment)) {
-            this.activeIdentity = this.identities.get(identityCommitment);
-            pushMessage(setSelected(identityCommitment));
-            const tabs = await browser.tabs.query({active: true});
-            for (let tab of tabs) {
-                await browser.tabs.sendMessage(tab.id as number, setSelected(identityCommitment));
+            this.activeIdentity = this.identities.get(identityCommitment)
+            pushMessage(setSelected(identityCommitment))
+            const tabs = await browser.tabs.query({ active: true })
+            for (const tab of tabs) {
+                await browser.tabs.sendMessage(tab.id as number, setSelected(identityCommitment))
             }
         }
     }
 
-    getActiveidentity = async (): Promise<ZkIdentityDecorater | undefined> => {
-        return this.activeIdentity;
-    }
+    getActiveidentity = async (): Promise<ZkIdentityDecorater | undefined> => this.activeIdentity
 
     getIdentityCommitments = async () => {
         const commitments: string[] = []
@@ -85,15 +83,15 @@ export default class IdentityService extends SimpleStorage {
         return commitments
     }
 
-    getIdentities = async (): Promise<{commitment: string; metadata: IdentityMetadata}[]> => {
-        const commitments = await this.getIdentityCommitments();
-        return commitments.map(commitment => {
-            const id = this.identities.get(commitment);
+    getIdentities = async (): Promise<{ commitment: string; metadata: IdentityMetadata }[]> => {
+        const commitments = await this.getIdentityCommitments()
+        return commitments.map((commitment) => {
+            const id = this.identities.get(commitment)
             return {
-                commitment: commitment,
-                metadata: id!.metadata,
-            };
-        });
+                commitment,
+                metadata: id!.metadata
+            }
+        })
     }
 
     insert = async (newIdentity: ZkIdentityDecorater): Promise<boolean> => {

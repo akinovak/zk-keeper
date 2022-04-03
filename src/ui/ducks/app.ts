@@ -1,12 +1,12 @@
-import {Dispatch} from "redux";
-import postMessage from "@src/util/postMessage";
-import RPCAction from "@src/util/constants";
-import {useSelector} from "react-redux";
-import {AppRootState} from "@src/ui/store/configureAppStore";
-import deepEqual from "fast-deep-equal";
+import { Dispatch } from 'redux'
+import postMessage from '@src/util/postMessage'
+import RPCAction from '@src/util/constants'
+import { useSelector } from 'react-redux'
+import { AppRootState } from '@src/ui/store/configureAppStore'
+import deepEqual from 'fast-deep-equal'
 
 export enum ActionType {
-    SET_STATUS = 'app/setStatus',
+    SET_STATUS = 'app/setStatus'
 }
 
 type Action<payload> = {
@@ -17,30 +17,30 @@ type Action<payload> = {
 }
 
 type State = {
-    initialized: boolean;
-    unlocked: boolean;
+    initialized: boolean
+    unlocked: boolean
 }
 
 const initialState: State = {
     initialized: false,
-    unlocked: false,
-};
+    unlocked: false
+}
 
 export const setStatus = (status: {
-    initialized: boolean,
-    unlocked: boolean,
+    initialized: boolean
+    unlocked: boolean
 }): Action<{
-    initialized: boolean,
-    unlocked: boolean,
+    initialized: boolean
+    unlocked: boolean
 }> => ({
-   type: ActionType.SET_STATUS,
-   payload: status,
-});
+    type: ActionType.SET_STATUS,
+    payload: status
+})
 
 export const fetchStatus = () => async (dispatch: Dispatch) => {
-    const status = await postMessage({ method: RPCAction.GET_STATUS });
-    dispatch(setStatus(status));
-};
+    const status = await postMessage({ method: RPCAction.GET_STATUS })
+    dispatch(setStatus(status))
+}
 
 export default function app(state = initialState, action: Action<any>): State {
     switch (action.type) {
@@ -48,15 +48,11 @@ export default function app(state = initialState, action: Action<any>): State {
             return {
                 ...state,
                 initialized: action.payload.initialized,
-                unlocked: action.payload.unlocked,
-            };
+                unlocked: action.payload.unlocked
+            }
         default:
-            return state;
+            return state
     }
 }
 
-export const useAppStatus = () => {
-    return useSelector((state: AppRootState) => {
-        return state.app;
-    }, deepEqual);
-}
+export const useAppStatus = () => useSelector((state: AppRootState) => state.app, deepEqual)

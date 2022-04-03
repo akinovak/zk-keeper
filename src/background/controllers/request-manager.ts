@@ -2,8 +2,8 @@ import pushMessage from '@src/util/pushMessage'
 import { EventEmitter2 } from 'eventemitter2'
 import { PendingRequest, PendingRequestType, RequestResolutionAction } from '@src/types'
 import { setPendingRequest } from '@src/ui/ducks/requests'
+import { browser } from 'webextension-polyfill-ts'
 import BrowserUtils from './browser-utils'
-import {browser} from "webextension-polyfill-ts";
 
 let nonce = 0
 
@@ -42,15 +42,15 @@ export default class RequestManager extends EventEmitter2 {
         return new Promise((resolve, reject) => {
             const onPopupClose = (windowId: number) => {
                 if (windowId === popup.id) {
-                    reject(new Error('user rejected.'));
-                    browser.windows.onRemoved.removeListener(onPopupClose);
+                    reject(new Error('user rejected.'))
+                    browser.windows.onRemoved.removeListener(onPopupClose)
                 }
             }
 
-            browser.windows.onRemoved.addListener(onPopupClose);
+            browser.windows.onRemoved.addListener(onPopupClose)
 
             this.once(`${id}:finalized`, (action: RequestResolutionAction<any>) => {
-                browser.windows.onRemoved.removeListener(onPopupClose);
+                browser.windows.onRemoved.removeListener(onPopupClose)
                 switch (action.status) {
                     case 'accept':
                         resolve(action.data)

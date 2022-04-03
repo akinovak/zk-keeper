@@ -20,10 +20,11 @@ export default function Input(props: Props) {
             {label && <div className="input-group__label">{label}</div>}
             <div className="input-group__group">
                 <input
-                    className={classNames("input", {
-                        'input--full-width': !url && !fontAwesome,
+                    className={classNames('input', {
+                        'input--full-width': !url && !fontAwesome
                     })}
-                    title={label} {...(inputProps as any)}
+                    title={label}
+                    {...(inputProps as any)}
                 />
                 {(!!url || !!fontAwesome) && (
                     <Icon fontAwesome={fontAwesome} url={url} size={size} onClick={onIconClick} />

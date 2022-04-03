@@ -1,4 +1,4 @@
-import {MerkleProof} from "@zk-kit/protocols";
+import { MerkleProof } from '@zk-kit/protocols'
 
 export type Request = {
     method: string
@@ -8,9 +8,9 @@ export type Request = {
 }
 
 export type WalletInfo = {
-    account: string;
-    networkType: string;
-    chainId: number;
+    account: string
+    networkType: string
+    chainId: number
 }
 
 export type CreateInterrepIdentityMetadata = {
@@ -32,17 +32,17 @@ export type NewIdentityRequest = {
 }
 
 export type MerkleProofArtifacts = {
-    leaves: string[];
-    depth: number;
-    leavesPerNode: number;
+    leaves: string[]
+    depth: number
+    leavesPerNode: number
 }
 
 export type ZkInputs = {
     circuitFilePath: string
     zkeyFilePath: string
     merkleStorageAddress?: string
-    merkleProofArtifacts?: MerkleProofArtifacts;
-    merkleProof?: MerkleProof;
+    merkleProofArtifacts?: MerkleProofArtifacts
+    merkleProof?: MerkleProof
 }
 
 export enum PendingRequestType {
@@ -50,7 +50,7 @@ export enum PendingRequestType {
     DUMMY,
     APPROVE,
     INJECT,
-    CREATE_IDENTITY,
+    CREATE_IDENTITY
 }
 
 export type PendingRequest = {
@@ -60,9 +60,9 @@ export type PendingRequest = {
 }
 
 export type RequestResolutionAction<data> = {
-    id: string;
-    status: 'accept' | 'reject';
-    data?: data;
+    id: string
+    status: 'accept' | 'reject'
+    data?: data
 }
 
 export type FinalizedRequest = {

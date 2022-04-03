@@ -1,7 +1,7 @@
 {
-    "name": "ext-template",
+    "name": "zk-keeper",
     "version": "1.0.0",
-    "description": "Chrome Extension boilerplate",
+    "description": "ZK-Keeper",
     "main": "index.js",
     "scripts": {
         "build": "NODE_ENV=production webpack --config webpack.prod.js",
@@ -28,12 +28,12 @@
         "extension",
         "boilerplate"
     ],
-    "author": "0xTsukino",
+    "author": "Privacy and Scaling explorations team",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com"
+        "url": "https://github.com/akinovak/zk-keeper"
     },
-    "homepage": "https://github.com",
+    "homepage": "https://github.com/akinovak/zk-keeper",
     "devDependencies": {
         "@babel/core": "^7.15.5",
         "@babel/plugin-proposal-export-namespace-from": "^7.14.5",
@@ -74,6 +74,7 @@
         "file-loader": "^6.2.0",
         "http-server": "^14.0.0",
         "image-webpack-loader": "^7.0.1",
+        "jest": "^27.5.1",
         "lint-staged": "^12.1.2",
         "npm-force-resolutions": "0.0.10",
         "path-browserify": "^1.0.1",

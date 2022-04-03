@@ -10,7 +10,7 @@ const rootReducer = combineReducers({
     web3,
     identities,
     requests,
-    app,
+    app
 })
 
 export type AppRootState = ReturnType<typeof rootReducer>

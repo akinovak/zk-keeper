@@ -12,8 +12,8 @@ export default class ZkIdentityDecorater {
     }
 
     genIdentityCommitment = (): bigint => {
-        let idCommitment = this.zkIdentity.genIdentityCommitment();
-        return idCommitment;
+        const idCommitment = this.zkIdentity.genIdentityCommitment()
+        return idCommitment
     }
 
     serialize = (): string => {

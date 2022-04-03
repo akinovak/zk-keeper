@@ -1,7 +1,7 @@
 import { browser } from 'webextension-polyfill-ts'
 
 class BrowserUtils {
-    cached: any | null;
+    cached: any | null
 
     constructor() {
         browser.windows.onRemoved.addListener((windowId) => {
@@ -17,8 +17,8 @@ class BrowserUtils {
 
     openPopup = async () => {
         if (this.cached) {
-            this.focusWindow(this.cached.id);
-            return this.cached;
+            this.focusWindow(this.cached.id)
+            return this.cached
         }
 
         const tab = await this.createTab({ url: 'popup.html', active: false })
@@ -38,7 +38,7 @@ class BrowserUtils {
 
     closePopup = async () => {
         if (this.cached) {
-            browser.windows.remove(this.cached.id);
+            browser.windows.remove(this.cached.id)
         }
     }
 

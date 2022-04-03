@@ -1,69 +1,74 @@
-import React, {ReactElement, useCallback, useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import FullModal, {FullModalContent, FullModalFooter, FullModalHeader} from "@src/ui/components/FullModal";
-import Button, {ButtonType} from "@src/ui/components/Button";
-import {useRequestsPending} from "@src/ui/ducks/requests";
-import {PendingRequest, PendingRequestType, RequestResolutionAction} from "@src/types";
-import RPCAction from "@src/util/constants";
-import postMessage from "@src/util/postMessage";
-import "./confirm-modal.scss";
-import Input from "@src/ui/components/Input";
-import Textarea from "@src/ui/components/Textarea";
-import Dropdown from "@src/ui/components/Dropdown";
-import Icon from "@src/ui/components/Icon";
-import copy from "copy-to-clipboard";
-import Checkbox from "@src/ui/components/Checkbox";
-import { getLinkPreview } from "link-preview-js";
+import React, { ReactElement, useCallback, useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+import FullModal, { FullModalContent, FullModalFooter, FullModalHeader } from '@src/ui/components/FullModal'
+import Button, { ButtonType } from '@src/ui/components/Button'
+import { useRequestsPending } from '@src/ui/ducks/requests'
+import { PendingRequest, PendingRequestType, RequestResolutionAction } from '@src/types'
+import RPCAction from '@src/util/constants'
+import postMessage from '@src/util/postMessage'
+import './confirm-modal.scss'
+import Input from '@src/ui/components/Input'
+import Dropdown from '@src/ui/components/Dropdown'
+import Icon from '@src/ui/components/Icon'
+import copy from 'copy-to-clipboard'
+import Checkbox from '@src/ui/components/Checkbox'
+import { getLinkPreview } from 'link-preview-js'
 
 export default function ConfirmRequestModal(): ReactElement {
-    const pendingRequests = useRequestsPending();
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const dispatch = useDispatch();
-    const [activeIndex, setActiveIndex] = useState(0);
-    const pendingRequest = pendingRequests[activeIndex];
+    const pendingRequests = useRequestsPending()
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+    const dispatch = useDispatch()
+    const [activeIndex, setActiveIndex] = useState(0)
+    const pendingRequest = pendingRequests[activeIndex]
 
-    const reject = useCallback(async (err?: any) => {
-        setLoading(true);
-        try {
-            const id = pendingRequest?.id;
-            const req: RequestResolutionAction<undefined> = {
-                id,
-                status: 'reject',
-                data: err,
+    const reject = useCallback(
+        async (err?: any) => {
+            setLoading(true)
+            try {
+                const id = pendingRequest?.id
+                const req: RequestResolutionAction<undefined> = {
+                    id,
+                    status: 'reject',
+                    data: err
+                }
+                await postMessage({
+                    method: RPCAction.FINALIZE_REQUEST,
+                    payload: req
+                })
+            } catch (e: any) {
+                setError(e.message)
+            } finally {
+                setLoading(false)
             }
-            await postMessage({
-                method: RPCAction.FINALIZE_REQUEST,
-                payload: req,
-            });
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [pendingRequest]);
+        },
+        [pendingRequest]
+    )
 
-    const approve = useCallback(async (data?: any) => {
-        setLoading(true);
-        try {
-            const id = pendingRequest?.id;
-            const req: RequestResolutionAction<undefined> = {
-                id,
-                status: 'accept',
-                data,
+    const approve = useCallback(
+        async (data?: any) => {
+            setLoading(true)
+            try {
+                const id = pendingRequest?.id
+                const req: RequestResolutionAction<undefined> = {
+                    id,
+                    status: 'accept',
+                    data
+                }
+                await postMessage({
+                    method: RPCAction.FINALIZE_REQUEST,
+                    payload: req
+                })
+            } catch (e: any) {
+                setError(e.message)
+            } finally {
+                setLoading(false)
             }
-            await postMessage({
-                method: RPCAction.FINALIZE_REQUEST,
-                payload: req,
-            });
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [pendingRequest]);
+        },
+        [pendingRequest]
+    )
 
-    if (!pendingRequest) return <></>;
+    if (!pendingRequest) return <></>
 
     switch (pendingRequest.type) {
         case PendingRequestType.INJECT:
@@ -76,7 +81,7 @@ export default function ConfirmRequestModal(): ReactElement {
                     error={error}
                     loading={loading}
                 />
-            );
+            )
         case PendingRequestType.SEMAPHORE_PROOF:
             return (
                 <ProofModal
@@ -98,7 +103,7 @@ export default function ConfirmRequestModal(): ReactElement {
                     error={error}
                     loading={loading}
                 />
-            );
+            )
         case PendingRequestType.CREATE_IDENTITY:
             return (
                 <CreateIdentityApprovalModal
@@ -109,7 +114,7 @@ export default function ConfirmRequestModal(): ReactElement {
                     error={error}
                     loading={loading}
                 />
-            );
+            )
         default:
             return (
                 <DefaultApprovalModal
@@ -120,54 +125,57 @@ export default function ConfirmRequestModal(): ReactElement {
                     error={error}
                     loading={loading}
                 />
-            );
+            )
     }
 }
 
-function ConnectionApprovalModal(props: {
-    len: number;
-    reject: () => void;
-    accept: () => void;
-    loading: boolean;
-    error: string;
-    pendingRequest: PendingRequest;
+var ConnectionApprovalModal = function(props: {
+    len: number
+    reject: () => void
+    accept: () => void
+    loading: boolean
+    error: string
+    pendingRequest: PendingRequest
 }) {
-    const origin = props.pendingRequest.payload?.origin;
-    const [checked, setChecked] = useState(false);
+    const origin = props.pendingRequest.payload?.origin
+    const [checked, setChecked] = useState(false)
     useEffect(() => {
-        (async () => {
+        ;(async () => {
             if (origin) {
                 const res = await postMessage({
                     method: RPCAction.GET_HOST_PERMISSIONS,
-                    payload: origin,
-                });
-                setChecked(res?.noApproval);
+                    payload: origin
+                })
+                setChecked(res?.noApproval)
             }
-        })();
-    }, [origin]);
+        })()
+    }, [origin])
 
-    const [faviconUrl, setFaviconUrl] = useState('');
+    const [faviconUrl, setFaviconUrl] = useState('')
 
     useEffect(() => {
-        (async () => {
+        ;(async () => {
             if (origin) {
-                const data = await getLinkPreview(origin);
-                const [favicon] = data?.favicons || [];
-                setFaviconUrl(favicon);
+                const data = await getLinkPreview(origin)
+                const [favicon] = data?.favicons || []
+                setFaviconUrl(favicon)
             }
-        })();
-    }, [origin]);
+        })()
+    }, [origin])
 
-    const setApproval = useCallback(async (noApproval: boolean) => {
-        const res = await postMessage({
-            method: RPCAction.SET_HOST_PERMISSIONS,
-            payload: {
-                host: origin,
-                noApproval: noApproval,
-            },
-        });
-        setChecked(res?.noApproval);
-    }, [origin]);
+    const setApproval = useCallback(
+        async (noApproval: boolean) => {
+            const res = await postMessage({
+                method: RPCAction.SET_HOST_PERMISSIONS,
+                payload: {
+                    host: origin,
+                    noApproval
+                }
+            })
+            setChecked(res?.noApproval)
+        },
+        [origin]
+    )
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -176,16 +184,14 @@ function ConnectionApprovalModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
-                <div
-                    className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0"
-                >
+                <div className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0">
                     <div
                         className="w-16 h-16"
                         style={{
-                            backgroundSize: "contain",
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
-                            backgroundImage: `url(${faviconUrl})`,
+                            backgroundSize: 'contain',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundImage: `url(${faviconUrl})`
                         }}
                     />
                 </div>
@@ -193,52 +199,43 @@ function ConnectionApprovalModal(props: {
                     {`${origin} would like to connect to your identity`}
                 </div>
                 <div className="text-sm text-gray-500 text-center">
-                    This site is requesting access to view your current identity. Always make sure you trust the site you interact with.
+                    This site is requesting access to view your current identity. Always make sure you trust the site
+                    you interact with.
                 </div>
                 <div className="font-bold mt-4">Permissions</div>
                 <div className="flex flex-row items-start">
                     <Checkbox
                         className="mr-2 mt-2 flex-shrink-0"
                         checked={checked}
-                        onChange={e => {
+                        onChange={(e) => {
                             setApproval(e.target.checked)
                         }}
                     />
-                    <div className="text-sm mt-2">
-                        Allow host to create proof without approvals
-                    </div>
+                    <div className="text-sm mt-2">Allow host to create proof without approvals</div>
                 </div>
             </FullModalContent>
-            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            {props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>
-                <Button
-                    btnType={ButtonType.secondary}
-                    onClick={props.reject}
-                    loading={props.loading}
-                >
+                <Button btnType={ButtonType.secondary} onClick={props.reject} loading={props.loading}>
                     Reject
                 </Button>
-                <Button
-                    className="ml-2"
-                    onClick={props.accept}
-                    loading={props.loading}
-                >
+                <Button className="ml-2" onClick={props.accept} loading={props.loading}>
                     Approve
                 </Button>
             </FullModalFooter>
         </FullModal>
-    );
+    )
 }
 
-function DummyApprovalModal(props: {
-    len: number;
-    reject: () => void;
-    accept: () => void;
-    loading: boolean;
-    error: string;
-    pendingRequest: PendingRequest;
+var DummyApprovalModal = function(props: {
+    len: number
+    reject: () => void
+    accept: () => void
+    loading: boolean
+    error: string
+    pendingRequest: PendingRequest
 }) {
-    const payload = props.pendingRequest.payload;
+    const {payload} = props.pendingRequest
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -247,60 +244,50 @@ function DummyApprovalModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col">
-                <div className="text-sm font-semibold mb-2">
-                    {payload}
-                </div>
+                <div className="text-sm font-semibold mb-2">{payload}</div>
             </FullModalContent>
-            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            {props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>
-                <Button
-                    btnType={ButtonType.secondary}
-                    onClick={props.reject}
-                    loading={props.loading}
-                >
+                <Button btnType={ButtonType.secondary} onClick={props.reject} loading={props.loading}>
                     Reject
                 </Button>
-                <Button
-                    className="ml-2"
-                    onClick={props.accept}
-                    loading={props.loading}
-                >
+                <Button className="ml-2" onClick={props.accept} loading={props.loading}>
                     Approve
                 </Button>
             </FullModalFooter>
         </FullModal>
-    );
+    )
 }
 
-function CreateIdentityApprovalModal(props: {
-    len: number;
-    reject: (error?: any) => void;
-    accept: (data?: any) => void;
-    loading: boolean;
-    error: string;
-    pendingRequest: PendingRequest;
+var CreateIdentityApprovalModal = function(props: {
+    len: number
+    reject: (error?: any) => void
+    accept: (data?: any) => void
+    loading: boolean
+    error: string
+    pendingRequest: PendingRequest
 }) {
-    const [nonce, setNonce] = useState(0);
-    const [identityType, setIdentityType] = useState<'InterRep' | 'Random' >('InterRep');
-    const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter');
+    const [nonce, setNonce] = useState(0)
+    const [identityType, setIdentityType] = useState<'InterRep' | 'Random'>('InterRep')
+    const [web2Provider, setWeb2Provider] = useState<'Twitter' | 'Github' | 'Reddit'>('Twitter')
 
     const create = useCallback(async () => {
         let options: any = {
             nonce,
-            web2Provider,
+            web2Provider
         }
-        let provider = 'interrep';
+        let provider = 'interrep'
 
-        if(identityType === 'Random') {
-            provider = 'random';
-            options = {};
+        if (identityType === 'Random') {
+            provider = 'random'
+            options = {}
         }
 
         props.accept({
             provider,
-            options,
+            options
         })
-    }, [nonce, web2Provider, identityType, props.accept]);
+    }, [nonce, web2Provider, identityType, props.accept])
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -318,7 +305,7 @@ function CreateIdentityApprovalModal(props: {
                     }}
                     value={identityType}
                 />
-                {identityType === 'InterRep' &&
+                {identityType === 'InterRep' && (
                     <>
                         <Dropdown
                             className="my-2"
@@ -338,36 +325,28 @@ function CreateIdentityApprovalModal(props: {
                             onChange={(e) => setNonce(Number(e.target.value))}
                         />
                     </>
-                }
+                )}
             </FullModalContent>
-            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            {props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>
-                <Button
-                    btnType={ButtonType.secondary}
-                    onClick={() => props.reject()}
-                    loading={props.loading}
-                >
+                <Button btnType={ButtonType.secondary} onClick={() => props.reject()} loading={props.loading}>
                     Reject
                 </Button>
-                <Button
-                    className="ml-2"
-                    onClick={create}
-                    loading={props.loading}
-                >
+                <Button className="ml-2" onClick={create} loading={props.loading}>
                     Approve
                 </Button>
             </FullModalFooter>
         </FullModal>
-    );
+    )
 }
 
-function DefaultApprovalModal(props: {
-    len: number;
-    reject: () => void;
-    accept: () => void;
-    loading: boolean;
-    error: string;
-    pendingRequest: PendingRequest;
+var DefaultApprovalModal = function(props: {
+    len: number
+    reject: () => void
+    accept: () => void
+    loading: boolean
+    error: string
+    pendingRequest: PendingRequest
 }) {
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -376,60 +355,43 @@ function DefaultApprovalModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col">
-                <div className="text-sm font-semibold mb-2 break-all">
-                    {JSON.stringify(props.pendingRequest)}
-                </div>
+                <div className="text-sm font-semibold mb-2 break-all">{JSON.stringify(props.pendingRequest)}</div>
             </FullModalContent>
-            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            {props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>
-                <Button
-                    btnType={ButtonType.secondary}
-                    onClick={props.reject}
-                    loading={props.loading}
-                >
+                <Button btnType={ButtonType.secondary} onClick={props.reject} loading={props.loading}>
                     Reject
                 </Button>
-                <Button
-                    className="ml-2"
-                    onClick={props.accept}
-                    loading={props.loading}
-                    disabled
-                >
+                <Button className="ml-2" onClick={props.accept} loading={props.loading} disabled>
                     Approve
                 </Button>
             </FullModalFooter>
         </FullModal>
-    );
+    )
 }
 
-function ProofModal(props: {
-    len: number;
-    reject: () => void;
-    accept: () => void;
-    loading: boolean;
-    error: string;
-    pendingRequest: PendingRequest;
+var ProofModal = function(props: {
+    len: number
+    reject: () => void
+    accept: () => void
+    loading: boolean
+    error: string
+    pendingRequest: PendingRequest
 }) {
-    const {
-        circuitFilePath,
-        externalNullifier,
-        merkleProof,
-        signal,
-        zkeyFilePath,
-        origin,
-    } = props.pendingRequest?.payload || {};
+    const { circuitFilePath, externalNullifier, merkleProof, signal, zkeyFilePath, origin } =
+        props.pendingRequest?.payload || {}
 
-    const [faviconUrl, setFaviconUrl] = useState('');
+    const [faviconUrl, setFaviconUrl] = useState('')
 
     useEffect(() => {
-        (async () => {
+        ;(async () => {
             if (origin) {
-                const data = await getLinkPreview(origin);
-                const [favicon] = data?.favicons || [];
-                setFaviconUrl(favicon);
+                const data = await getLinkPreview(origin)
+                const [favicon] = data?.favicons || []
+                setFaviconUrl(favicon)
             }
-        })();
-    }, [origin]);
+        })()
+    }, [origin])
 
     return (
         <FullModal className="confirm-modal" onClose={() => null}>
@@ -438,15 +400,13 @@ function ProofModal(props: {
                 {props.len > 1 && <div className="flex-grow flex flex-row justify-end">{`1 of ${props.len}`}</div>}
             </FullModalHeader>
             <FullModalContent className="flex flex-col items-center">
-                <div
-                    className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0"
-                >
+                <div className="w-16 h-16 rounded-full my-6 border border-gray-800 p-2 flex-shrink-0">
                     <div
                         className="w-16 h-16"
                         style={{
-                            backgroundSize: "contain",
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
+                            backgroundSize: 'contain',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
                             backgroundImage: `url(${faviconUrl}`
                         }}
                     />
@@ -461,55 +421,29 @@ function ProofModal(props: {
                     </div>
                     <div className="semaphore-proof__file">
                         <div className="semaphore-proof__file__title">ZKey</div>
-                        <Icon fontAwesome="fas fa-link" onClick={() => window.open(zkeyFilePath, '_blank')}/>
+                        <Icon fontAwesome="fas fa-link" onClick={() => window.open(zkeyFilePath, '_blank')} />
                     </div>
                     <div className="semaphore-proof__file">
                         <div className="semaphore-proof__file__title">Merkle</div>
-                        {
-                            typeof merkleProof === 'string'
-                                ? (
-                                    <Icon
-                                        fontAwesome="fas fa-link"
-                                        onClick={() => window.open(merkleProof, '_blank')}
-                                    />
-                                )
-                                : (
-                                    <Icon
-                                        fontAwesome="fas fa-copy"
-                                        onClick={() => copy(JSON.stringify(merkleProof))}
-                                    />
-                                )
-                        }
+                        {typeof merkleProof === 'string' ? (
+                            <Icon fontAwesome="fas fa-link" onClick={() => window.open(merkleProof, '_blank')} />
+                        ) : (
+                            <Icon fontAwesome="fas fa-copy" onClick={() => copy(JSON.stringify(merkleProof))} />
+                        )}
                     </div>
                 </div>
-                <Input
-                    className="w-full mb-2"
-                    label="External Nullifier"
-                    value={externalNullifier}
-                />
-                <Input
-                    className="w-full mb-2"
-                    label="Signal"
-                    value={signal}
-                />
+                <Input className="w-full mb-2" label="External Nullifier" value={externalNullifier} />
+                <Input className="w-full mb-2" label="Signal" value={signal} />
             </FullModalContent>
-            { props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
+            {props.error && <div className="text-xs text-red-500 text-center pb-1">{props.error}</div>}
             <FullModalFooter>
-                <Button
-                    btnType={ButtonType.secondary}
-                    onClick={props.reject}
-                    loading={props.loading}
-                >
+                <Button btnType={ButtonType.secondary} onClick={props.reject} loading={props.loading}>
                     Reject
                 </Button>
-                <Button
-                    className="ml-2"
-                    onClick={props.accept}
-                    loading={props.loading}
-                >
+                <Button className="ml-2" onClick={props.accept} loading={props.loading}>
                     Approve
                 </Button>
             </FullModalFooter>
         </FullModal>
-    );
+    )
 }

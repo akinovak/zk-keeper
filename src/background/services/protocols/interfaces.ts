@@ -1,4 +1,4 @@
-import {MerkleProof, SemaphoreFullProof, SemaphoreSolidityProof} from '@zk-kit/protocols'
+import { MerkleProof, SemaphoreFullProof, SemaphoreSolidityProof } from '@zk-kit/protocols'
 import { MerkleProofArtifacts } from '@src/types'
 
 export enum Protocol {
@@ -20,7 +20,6 @@ export interface SemaphoreProofRequest {
 export interface RLNProofRequest extends SemaphoreProofRequest {
     rlnIdentifier: string
 }
-
 
 export interface SemaphoreProof {
     fullProof: SemaphoreFullProof

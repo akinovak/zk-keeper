@@ -1,6 +1,5 @@
 import { browser } from 'webextension-polyfill-ts'
 import { Request } from '@src/types'
-import LockService from './services/lock'
 import ZkKepperController from './zk-kepeer'
 
 // TODO consider adding inTest env
@@ -24,7 +23,6 @@ browser.runtime.onInstalled.addListener(async ({ reason }) => {
         // browser.tabs.create({
         //   url: 'popup.html'
         // });
-
     }
     if (process.env.NODE_ENV === 'development') {
         // browser.tabs.create({ url: 'popup.html' });

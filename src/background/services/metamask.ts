@@ -1,7 +1,7 @@
 import pushMessage from '@src/util/pushMessage'
 import createMetaMaskProvider from '@dimensiondev/metamask-extension-provider'
 import Web3 from 'web3'
-import {setAccount, setChainId, setNetwork, setWeb3Connecting} from '@src/ui/ducks/web3'
+import { setAccount, setChainId, setNetwork, setWeb3Connecting } from '@src/ui/ducks/web3'
 import { WalletInfo } from '@src/types'
 
 export default class MetamaskService {
@@ -9,7 +9,7 @@ export default class MetamaskService {
     web3?: Web3
 
     constructor() {
-        this.ensure();
+        this.ensure()
     }
 
     ensure = async (payload: any = null) => {
@@ -28,9 +28,9 @@ export default class MetamaskService {
 
             this.provider.on('chainChanged', async () => {
                 const networkType = await this.web3?.eth.net.getNetworkType()
-                const chainId = await this.web3?.eth.getChainId();
+                const chainId = await this.web3?.eth.getChainId()
 
-                if (networkType) pushMessage(setNetwork(networkType));
+                if (networkType) pushMessage(setNetwork(networkType))
                 if (chainId) pushMessage(setChainId(chainId))
             })
         }
@@ -51,10 +51,9 @@ export default class MetamaskService {
         }
 
         if (this.provider?.selectedAddress) {
-        
             const accounts = await this.web3.eth.requestAccounts()
             const networkType = await this.web3.eth.net.getNetworkType()
-            const chainId = await this.web3.eth.getChainId();
+            const chainId = await this.web3.eth.getChainId()
 
             if (!accounts.length) {
                 throw new Error('No accounts found')
@@ -63,8 +62,8 @@ export default class MetamaskService {
             return {
                 account: accounts[0],
                 networkType,
-                chainId,
-            };
+                chainId
+            }
         }
 
         return null
@@ -79,7 +78,7 @@ export default class MetamaskService {
             if (this.web3) {
                 const accounts = await this.web3.eth.requestAccounts()
                 const networkType = await this.web3.eth.net.getNetworkType()
-                const chainId = await this.web3.eth.getChainId();
+                const chainId = await this.web3.eth.getChainId()
 
                 if (!accounts.length) {
                     throw new Error('No accounts found')

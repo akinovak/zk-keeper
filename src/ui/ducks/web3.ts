@@ -4,36 +4,39 @@ import { AppRootState } from '@src/ui/store/configureAppStore'
 import { Dispatch } from 'redux'
 import postMessage from '@src/util/postMessage'
 import RPCAction from '@src/util/constants'
-import ChainsJSON from "@src/static/chains.json";
+import ChainsJSON from '@src/static/chains.json'
 
 type ChainInfo = {
-    chainId: number;
-    infoURL: string;
-    name: string;
+    chainId: number
+    infoURL: string
+    name: string
     nativeCurrency: {
-        name: string;
-        symbol: string;
-        decimals: number;
-    };
-    shortName: string;
+        name: string
+        symbol: string
+        decimals: number
+    }
+    shortName: string
 }
 
-export const chainsMap = ChainsJSON.reduce((
-    map: {
-        [id: number]: ChainInfo
+export const chainsMap = ChainsJSON.reduce(
+    (
+        map: {
+            [id: number]: ChainInfo
+        },
+        chainInfo: ChainInfo
+    ) => {
+        map[chainInfo.chainId] = chainInfo
+        return map
     },
-    chainInfo: ChainInfo,
-) => {
-    map[chainInfo.chainId] = chainInfo;
-    return map;
-}, {});
+    {}
+)
 
 enum ActionTypes {
     SET_LOADING = 'web3/setLoading',
     SET_CONNECTING = 'web3/setConnecting',
     SET_ACCOUNT = 'web3/setAccount',
     SET_NETWORK = 'web3/setNetwork',
-    SET_CHAIN_ID = 'web3/setChainId',
+    SET_CHAIN_ID = 'web3/setChainId'
 }
 
 type Action<payload> = {
@@ -121,11 +124,9 @@ export const useWeb3Connecting = () => useSelector((state: AppRootState) => stat
 
 export const useAccount = () => useSelector((state: AppRootState) => state.web3.account, deepEqual)
 
-export const useNetwork = (): ChainInfo | null => {
-    return useSelector((state: AppRootState) => {
-        const chainInfo = chainsMap[state.web3.chainId];
-        return chainInfo || null;
-    }, deepEqual);
-}
+export const useNetwork = (): ChainInfo | null => useSelector((state: AppRootState) => {
+        const chainInfo = chainsMap[state.web3.chainId]
+        return chainInfo || null
+    }, deepEqual)
 
 export const useChainId = () => useSelector((state: AppRootState) => state.web3.chainId, deepEqual)
